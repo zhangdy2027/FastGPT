@@ -94,7 +94,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       whiteSpace={'nowrap'}
     >
       {isPc && (
-        <MyTooltip label={canRouteToDetail ? t('app:app_detail') : ''} offset={[0, 0]}>
+        <MyTooltip offset={[0, 0]}>
           <Flex
             pt={5}
             pb={2}
@@ -102,13 +102,13 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
             alignItems={'center'}
             cursor={canRouteToDetail ? 'pointer' : 'default'}
             fontSize={'sm'}
-            onClick={() =>
-              canRouteToDetail &&
-              router.push({
-                pathname: '/app/detail',
-                query: { appId }
-              })
-            }
+          // onClick={() =>
+          //   canRouteToDetail &&
+          //   router.push({
+          //     pathname: '/app/detail',
+          //     query: { appId }
+          //   })
+          // }
           >
             <Avatar src={appAvatar} borderRadius={'md'} />
             <Box flex={'1 0 0'} w={0} ml={2} fontWeight={'bold'} className={'textEllipsis'}>
@@ -129,7 +129,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       >
         {!isPc && (
           <Flex height={'100%'} align={'center'} justify={'center'}>
-            <MyIcon ml={2} name="core/chat/sideLine" />
+            {/* <MyIcon ml={2} name="core/chat/sideLine" /> */}
             <Box ml={2} fontWeight={'bold'}>
               {t('common:core.chat.History')}
             </Box>
@@ -141,19 +141,24 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
           flex={['0 0 auto', 1]}
           h={'100%'}
           px={6}
-          color={'primary.600'}
+          color={'#F40F0F'}
           borderRadius={'xl'}
+          borderColor={'rgba(244, 15, 15, 0.19)'}
           leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} />}
           overflow={'hidden'}
           onClick={() => {
             onChangeChatId();
             setQuoteData(undefined);
           }}
+          _hover={{
+            bg: 'rgba(244, 15, 15, 0.12)',
+            color: '#F40F0F'
+          }}
         >
           {t('common:core.chat.New Chat')}
         </Button>
         {/* Clear */}
-        {isPc && histories.length > 0 && (
+        {/* {isPc && histories.length > 0 && (
           <IconButton
             ml={3}
             h={'100%'}
@@ -168,7 +173,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               })()
             }
           />
-        )}
+        )} */}
       </Flex>
 
       <ScrollData flex={'1 0 0'} h={0} px={[2, 5]} overflow={'overlay'}>
@@ -197,15 +202,15 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               bg={item.top ? '#E6F6F6 !important' : ''}
               {...(item.id === activeChatId
                 ? {
-                    backgroundColor: 'primary.50 !important',
-                    color: 'primary.600'
-                  }
+                  backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
+                  color: '#F40F0F'
+                }
                 : {
-                    onClick: () => {
-                      onChangeChatId(item.id);
-                      setQuoteData(undefined);
-                    }
-                  })}
+                  onClick: () => {
+                    onChangeChatId(item.id);
+                    setQuoteData(undefined);
+                  }
+                })}
               {...(i !== concatHistory.length - 1 && {
                 mb: '8px'
               })}
@@ -293,7 +298,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       </ScrollData>
 
       {/* exec */}
-      {!isPc && !!canRouteToDetail && (
+      {/* {!isPc && !!canRouteToDetail && (
         <Flex
           mt={2}
           borderTop={theme.borders.base}
@@ -313,7 +318,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
           />
           {t('common:core.chat.Exit Chat')}
         </Flex>
-      )}
+      )} */}
       <EditTitleModal />
       <ConfirmModal />
     </MyBox>

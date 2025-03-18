@@ -72,12 +72,8 @@ const ChatHeader = ({
         />
       )}
 
-      <Flex gap={2} alignItems={'center'}>
-        {!isVariableVisible && <VariablePopover showExternalVariables={isChat} />}
-
-        {/* control */}
-        {!isPlugin && <ToolMenu history={history} />}
-      </Flex>
+      {/* control */}
+      {/* {!isPlugin && <ToolMenu history={history} />} */}
     </Flex>
   );
 };
@@ -148,9 +144,9 @@ const MobileDrawer = ({
             ...(isTeamChat
               ? [{ label: t('app:all_apps'), value: TabEnum.recently }]
               : [
-                  { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
-                  { label: t('app:all_apps'), value: TabEnum.app }
-                ])
+                { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
+                { label: t('app:all_apps'), value: TabEnum.app }
+              ])
           ]}
           value={currentTab}
           onChange={setCurrentTab}
@@ -182,12 +178,12 @@ const MobileDrawer = ({
                     alignItems={'center'}
                     {...(item._id === appId
                       ? {
-                          backgroundColor: 'primary.50 !important',
-                          color: 'primary.600'
-                        }
+                        backgroundColor: 'primary.50 !important',
+                        color: 'primary.600'
+                      }
                       : {
-                          onClick: () => onclickApp(item._id)
-                        })}
+                        onClick: () => onclickApp(item._id)
+                      })}
                   >
                     <Avatar src={item.avatar} w={'24px'} borderRadius={'sm'} />
                     <Box ml={2} className={'textEllipsis'}>
@@ -233,26 +229,27 @@ const MobileHeader = ({
 
   return (
     <>
-      {showHistory && (
-        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
-      )}
+      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => { }} />
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />
           <Box ml={1} className="textEllipsis">
             {name}
           </Box>
-          {isShareChat ? null : (
+          {/* {isShareChat ? null : (
             <MyIcon
               name={'core/chat/chevronSelector'}
               w={'1.25rem'}
               color={isOpenDrawer ? 'primary.600' : 'myGray.900'}
             />
-          )}
+          )} */}
         </Flex>
       </Flex>
-      {isOpenDrawer && !isShareChat && (
+      {/* {isOpenDrawer && !isShareChat && (
         <MobileDrawer apps={apps} appId={appId} onCloseDrawer={onCloseDrawer} />
+      )} */}
+      {showHistory && (
+        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
       )}
     </>
   );
