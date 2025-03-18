@@ -145,9 +145,9 @@ const MobileDrawer = ({
             ...(isTeamChat
               ? [{ label: t('app:all_apps'), value: TabEnum.recently }]
               : [
-                  { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
-                  { label: t('app:all_apps'), value: TabEnum.app }
-                ])
+                { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
+                { label: t('app:all_apps'), value: TabEnum.app }
+              ])
           ]}
           value={currentTab}
           onChange={setCurrentTab}
@@ -179,12 +179,12 @@ const MobileDrawer = ({
                     alignItems={'center'}
                     {...(item._id === appId
                       ? {
-                          backgroundColor: 'primary.50 !important',
-                          color: 'primary.600'
-                        }
+                        backgroundColor: 'primary.50 !important',
+                        color: 'primary.600'
+                      }
                       : {
-                          onClick: () => onclickApp(item._id)
-                        })}
+                        onClick: () => onclickApp(item._id)
+                      })}
                   >
                     <Avatar src={item.avatar} w={'24px'} borderRadius={'sm'} />
                     <Box ml={2} className={'textEllipsis'}>
@@ -234,8 +234,7 @@ const MobileHeader = ({
 
   return (
     <>
-      {/* <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={backToSfzyClick} /> */}
-      <ChevronLeftIcon boxSize={6} onClick={backToSfzyClick}></ChevronLeftIcon>
+      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => { }} />
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />

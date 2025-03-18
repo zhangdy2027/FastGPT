@@ -102,13 +102,13 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
             alignItems={'center'}
             cursor={canRouteToDetail ? 'pointer' : 'default'}
             fontSize={'sm'}
-            // onClick={() =>
-            //   canRouteToDetail &&
-            //   router.push({
-            //     pathname: '/app/detail',
-            //     query: { appId }
-            //   })
-            // }
+          // onClick={() =>
+          //   canRouteToDetail &&
+          //   router.push({
+          //     pathname: '/app/detail',
+          //     query: { appId }
+          //   })
+          // }
           >
             <Avatar src={appAvatar} borderRadius={'md'} />
             <Box flex={'1 0 0'} w={0} ml={2} fontWeight={'bold'} className={'textEllipsis'}>
@@ -146,14 +146,11 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
           borderColor={'rgba(244, 15, 15, 0.19)'}
           leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} />}
           overflow={'hidden'}
-          onClick={() => {
-            onChangeChatId();
-            setQuoteData(undefined);
-          }}
           _hover={{
             bg: 'rgba(244, 15, 15, 0.12)',
             color: '#F40F0F'
           }}
+          onClick={() => onChangeChatId()}
         >
           {t('common:core.chat.New Chat')}
         </Button>
@@ -202,15 +199,15 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               bg={item.top ? '#E6F6F6 !important' : ''}
               {...(item.id === activeChatId
                 ? {
-                    backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
-                    color: '#F40F0F'
-                  }
+                  backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
+                  color: '#F40F0F'
+                }
                 : {
-                    onClick: () => {
-                      onChangeChatId(item.id);
-                      setQuoteData(undefined);
-                    }
-                  })}
+                  onClick: () => {
+                    onChangeChatId(item.id);
+                    setQuoteData(undefined);
+                  }
+                })}
               {...(i !== concatHistory.length - 1 && {
                 mb: '8px'
               })}

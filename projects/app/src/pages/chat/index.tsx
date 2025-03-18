@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import NextHead from '@/components/common/NextHead';
 import { useRouter } from 'next/router';
 import { getInitChatInfo } from '@/web/core/chat/api';
@@ -9,9 +9,7 @@ import {
   DrawerOverlay,
   DrawerContent,
   useTheme,
-  Button,
-  IconButton,
-  Image
+  Button
 } from '@chakra-ui/react';
 import { streamFetch } from '@/web/common/api/fetch';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
@@ -77,6 +75,26 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const [hideSlider, setHideSlider] = useState(false);
   const [sfzyUserInfo, setSfzyUserInfo] = useState<any>({});
+
+  const sendMessageToSfzy = (data: any) => {
+    window.parent.postMessage(data, window.myConfig.sfzyUrl);
+  };
+
+  useEffect(() => {
+    if (window !== window.top) {
+      window.addEventListener('message', (evt) => {
+        if (evt.origin === window.myConfig.sfzyUrl) {
+          console.log('evt>>>', evt);
+          if (evt.data.type === 'userInfo') {
+            setSfzyUserInfo(evt.data.data);
+          }
+        }
+      });
+      sendMessageToSfzy({
+        type: 'chatReady'
+      });
+    }
+  }, []);
 
   // Load chat init data
   const { loading } = useRequest2(
@@ -156,7 +174,9 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
   );
 
   const backToSfzyClick = () => {
-    window.history.back();
+    sendMessageToSfzy({
+      type: 'backToSfzy'
+    });
   };
 
   const workPlatformClick = () => {
@@ -174,6 +194,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     ) : (
       <Drawer
         isOpen={isOpenSlider}
+        placement="right"
         placement="right"
         autoFocus={false}
         size={'xs'}
@@ -196,101 +217,123 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
           flexShrink={0}
           display={hideSlider ? 'none' : 'block'}
         >
-          <SliderApps apps={myApps} activeAppId={appId} />
-        </Box>
+          <Box
+            borderRight={theme.borders.base}
+            w={'220px'}
+            flexShrink={0}
+            display={hideSlider ? 'none' : 'block'}
+          >
+            <SliderApps apps={myApps} activeAppId={appId} />
+          </Box>
       )}
 
-      <Flex
-        flexDirection={'column'}
-        w={'100%'}
-        h={'100%'}
-        background={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}
-        p={isPc ? 4 : 0}
-        boxSizing={'border-box'}
-        gap={4}
-      >
-        {isPc && (
-          <Flex alignItems={'center'}>
-            <Flex
-              borderRadius={'full'}
-              boxShadow={'0px 0px 10px 0px rgba(75, 85, 99, 0.3);'}
-              w={8}
-              h={8}
-              bgColor={'#ffffff'}
-              alignItems={'center'}
-              justifyContent={'center'}
-              cursor={'pointer'}
-              onClick={() => {
-                setHideSlider(!hideSlider);
-              }}
-            >
-              <Image
-                src={hideSlider ? '/imgs/展开.png' : '/imgs/收起.png'}
-                borderRadius="full"
-                alt=""
-                boxSize="24px"
-              />
-            </Flex>
-            <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
-              <Button
-                bgColor={'#D94848'}
-                onClick={backToSfzyClick}
-                leftIcon={<Image alt="" src="/imgs/backIcon.png" boxSize="15px" />}
-              >
-                返回
-              </Button>
-              {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
-            </Flex>
-          </Flex>
-        )}
-        <PageContainer isLoading={loading} p={'0px !important'} w={'100%'} position={'relative'}>
-          <Flex h={'100%'} flexDirection={['column', 'row']}>
-            {/* pc always show history. */}
-            {RenderHistorySlider}
-            {/* chat container */}
-            <Flex
-              position={'relative'}
-              h={[0, '100%']}
-              w={['100%', 0]}
-              flex={'1 0 0'}
-              flexDirection={'column'}
-            >
-              {/* header */}
-              <ChatHeader
-                totalRecordsCount={totalRecordsCount}
-                apps={myApps}
-                history={chatRecords}
-                showHistory
-              />
+          <Flex
+            flexDirection={'column'}
+            w={'100%'}
+            h={'100%'}
+            background={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}
+            p={isPc ? 4 : 0}
+            boxSizing={'border-box'}
+            gap={4}
+          >
+            {isPc && (
+              <Flex alignItems={'center'}>
+                <Button
+                  bgColor={'#D94848'}
+                  onClick={() => {
+                    setHideSlider(!hideSlider);
+                  }}
+                >
+                  XXX
+                </Button>
+                <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
+                  <Button bgColor={'#D94848'} onClick={backToSfzyClick}>
+                    返回
+                  </Button>
+                  <Button bgColor={'#D94848'} onClick={workPlatformClick}>
+                    工作台
+                  </Button>
+                  {sfzyUserInfo.employee_full_name && (
+                    <Box>您好，{sfzyUserInfo.employee_full_name}</Box>
+                  )}
+                </Flex>
+              </Flex>
+            )}
+            <PageContainer isLoading={loading} p={'0px !important'} w={'100%'} position={'relative'}>
+              <Flex h={'100%'} flexDirection={['column', 'row']}>
+                {/* pc always show history. */}
+                {RenderHistorySlider}
+                {/* chat container */}
+                <Flex
+                  position={'relative'}
+                  h={[0, '100%']}
+                  w={['100%', 0]}
+                  flex={'1 0 0'}
+                  flexDirection={'column'}
+                >
+                  {/* header */}
+                  <ChatHeader
+                    totalRecordsCount={totalRecordsCount}
+                    apps={myApps}
+                    history={chatRecords}
+                    showHistory
+                  />
 
-              {/* chat box */}
-              <Box flex={'1 0 0'} bg={'white'}>
-                {isPlugin ? (
-                  <CustomPluginRunBox
-                    appId={appId}
-                    chatId={chatId}
-                    outLinkAuthData={outLinkAuthData}
-                    onNewChat={() => onChangeChatId(getNanoid())}
-                    onStartChat={onStartChat}
-                  />
-                ) : (
-                  <ChatBox
-                    appId={appId}
-                    chatId={chatId}
-                    outLinkAuthData={outLinkAuthData}
-                    showEmptyIntro
-                    feedbackType={'user'}
-                    onStartChat={onStartChat}
-                    chatType={'chat'}
-                    isReady={!loading}
-                  />
-                )}
-              </Box>
-            </Flex>
+                  {/* chat box */}
+                  <Box flex={'1 0 0'} bg={'white'}>
+                    {isPlugin ? (
+                      <CustomPluginRunBox
+                        appId={appId}
+                        chatId={chatId}
+                        outLinkAuthData={outLinkAuthData}
+                        onNewChat={() => onChangeChatId(getNanoid())}
+                        onStartChat={onStartChat}
+                      />
+                    ) : (
+                      <ChatBox
+                        appId={appId}
+                        chatId={chatId}
+                        outLinkAuthData={outLinkAuthData}
+                        showEmptyIntro
+                        feedbackType={'user'}
+                        onStartChat={onStartChat}
+                        chatType={'chat'}
+                        isReady={!loading}
+                      />
+                    )}
+                  </Box>
+                </Flex>
+              </Flex>
+            </PageContainer>
           </Flex>
-        </PageContainer>
-      </Flex>
-    </Flex>
+          {/* chat box */}
+          <Box flex={'1 0 0'} bg={'white'}>
+            {isPlugin ? (
+              <CustomPluginRunBox
+                appId={appId}
+                chatId={chatId}
+                outLinkAuthData={outLinkAuthData}
+                onNewChat={() => onChangeChatId(getNanoid())}
+                onStartChat={onStartChat}
+              />
+            ) : (
+              <ChatBox
+                appId={appId}
+                chatId={chatId}
+                outLinkAuthData={outLinkAuthData}
+                showEmptyIntro
+                feedbackType={'user'}
+                onStartChat={onStartChat}
+                chatType={'chat'}
+                isReady={!loading}
+              />
+            )}
+          </Box>
+        </Flex>
+          </Flex>
+        </PageContainer >
+      </Flex >
+    </Flex >
   );
 };
 
