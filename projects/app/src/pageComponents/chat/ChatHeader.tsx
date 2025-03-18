@@ -69,7 +69,7 @@ const ChatHeader = ({
       )}
 
       {/* control */}
-      {!isPlugin && <ToolMenu history={history} />}
+      {/* {!isPlugin && <ToolMenu history={history} />} */}
     </Flex>
   );
 };
@@ -225,26 +225,27 @@ const MobileHeader = ({
 
   return (
     <>
-      {showHistory && (
-        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
-      )}
+      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => {}} />
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />
           <Box ml={1} className="textEllipsis">
             {name}
           </Box>
-          {isShareChat ? null : (
+          {/* {isShareChat ? null : (
             <MyIcon
               name={'core/chat/chevronSelector'}
               w={'1.25rem'}
               color={isOpenDrawer ? 'primary.600' : 'myGray.900'}
             />
-          )}
+          )} */}
         </Flex>
       </Flex>
-      {isOpenDrawer && !isShareChat && (
+      {/* {isOpenDrawer && !isShareChat && (
         <MobileDrawer apps={apps} appId={appId} onCloseDrawer={onCloseDrawer} />
+      )} */}
+      {showHistory && (
+        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
       )}
     </>
   );
