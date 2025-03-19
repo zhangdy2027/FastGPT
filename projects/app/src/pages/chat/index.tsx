@@ -9,7 +9,9 @@ import {
   DrawerOverlay,
   DrawerContent,
   useTheme,
-  Button
+  Button,
+  IconButton,
+  Image
 } from '@chakra-ui/react';
 import { streamFetch } from '@/web/common/api/fetch';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
@@ -75,26 +77,6 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const [hideSlider, setHideSlider] = useState(false);
   const [sfzyUserInfo, setSfzyUserInfo] = useState<any>({});
-
-  const sendMessageToSfzy = (data: any) => {
-    window.parent.postMessage(data, window.myConfig.sfzyUrl);
-  };
-
-  useEffect(() => {
-    if (window !== window.top) {
-      window.addEventListener('message', (evt) => {
-        if (evt.origin === window.myConfig.sfzyUrl) {
-          console.log('evt>>>', evt);
-          if (evt.data.type === 'userInfo') {
-            setSfzyUserInfo(evt.data.data);
-          }
-        }
-      });
-      sendMessageToSfzy({
-        type: 'chatReady'
-      });
-    }
-  }, []);
 
   // Load chat init data
   const { loading } = useRequest2(
@@ -174,9 +156,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
   );
 
   const backToSfzyClick = () => {
-    sendMessageToSfzy({
-      type: 'backToSfzy'
-    });
+    window.history.back();
   };
 
   const workPlatformClick = () => {
@@ -231,24 +211,42 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       >
         {isPc && (
           <Flex alignItems={'center'}>
-            <Button
-              bgColor={'#D94848'}
+            <Flex
+              borderRadius={'full'}
+              boxShadow={'0px 0px 10px 0px rgba(75, 85, 99, 0.3);'}
+              w={8}
+              h={8}
+              bgColor={'#ffffff'}
+              alignItems={'center'}
+              justifyContent={'center'}
+              cursor={'pointer'}
               onClick={() => {
                 setHideSlider(!hideSlider);
               }}
             >
-              XXX
-            </Button>
+              <Image
+                src={hideSlider ? '/imgs/展开.png' : '/imgs/收起.png'}
+                borderRadius="full"
+                alt=""
+                boxSize="24px"
+              />
+            </Flex>
             <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
-              <Button bgColor={'#D94848'} onClick={backToSfzyClick}>
+              <Button
+                bgColor={'#D94848'}
+                onClick={backToSfzyClick}
+                leftIcon={<Image alt="" src="/imgs/backIcon.png" boxSize="15px" />}
+              >
                 返回
               </Button>
-              <Button bgColor={'#D94848'} onClick={workPlatformClick}>
+              <Button
+                bgColor={'#D94848'}
+                onClick={workPlatformClick}
+                leftIcon={<Image alt="" src="/imgs/operatePlatformIcon.png" boxSize="15px" />}
+              >
                 工作台
               </Button>
-              {sfzyUserInfo.employee_full_name && (
-                <Box>您好，{sfzyUserInfo.employee_full_name}</Box>
-              )}
+              {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
             </Flex>
           </Flex>
         )}

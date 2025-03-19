@@ -370,7 +370,7 @@ const ChatInput = ({
                   ? ''
                   : !havInput || hasFileUploading
                     ? '#E5E5E5'
-                    : 'primary.500'
+                    : '#DB1010'
               }
               cursor={havInput ? 'pointer' : 'not-allowed'}
               lineHeight={1}

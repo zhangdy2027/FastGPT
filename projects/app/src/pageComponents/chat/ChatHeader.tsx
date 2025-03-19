@@ -5,6 +5,7 @@ import Avatar from '@fastgpt/web/components/common/Avatar';
 import ToolMenu from './ToolMenu';
 import type { ChatItemType } from '@fastgpt/global/core/chat/type';
 import { useTranslation } from 'next-i18next';
+import { ChevronLeftIcon } from '@chakra-ui/icons';
 
 import MyTag from '@fastgpt/web/components/common/Tag/index';
 import { useContextSelector } from 'use-context-selector';
@@ -227,9 +228,14 @@ const MobileHeader = ({
   const { isOpen: isOpenDrawer, onToggle: toggleDrawer, onClose: onCloseDrawer } = useDisclosure();
   const isShareChat = router.pathname === '/chat/share';
 
+  const backToSfzyClick = () => {
+    window.history.back();
+  };
+
   return (
     <>
-      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => { }} />
+      {/* <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={backToSfzyClick} /> */}
+      <ChevronLeftIcon boxSize={6} onClick={backToSfzyClick}></ChevronLeftIcon>
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />
