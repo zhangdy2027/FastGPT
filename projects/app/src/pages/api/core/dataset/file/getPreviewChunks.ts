@@ -106,12 +106,6 @@ async function handler(
     llmModel: getLLMModel(dataset.agentModel)
   });
 
-  chunkSplitter = computeChunkSplitter({
-    chunkSettingMode,
-    chunkSplitMode,
-    chunkSplitter
-  });
-
   const { rawText } = await readDatasetSourceRawText({
     teamId,
     tmbId,
