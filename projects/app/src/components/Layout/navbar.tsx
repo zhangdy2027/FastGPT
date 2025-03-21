@@ -44,13 +44,13 @@ const Navbar = ({ unread }: { unread: number }) => {
 
   const navbarList = useMemo(
     () => [
-      {
-        label: t('common:navbar.Chat'),
-        icon: 'core/chat/chatLight',
-        activeIcon: 'core/chat/chatFill',
-        link: `/chat?appId=${lastChatAppId}`,
-        activeLink: ['/chat']
-      },
+      // {
+      //   label: t('common:navbar.Chat'),
+      //   icon: 'core/chat/chatLight',
+      //   activeIcon: 'core/chat/chatFill',
+      //   link: `/chat?appId=${lastChatAppId}`,
+      //   activeLink: ['/chat']
+      // },
       {
         label: t('common:navbar.Studio'),
         icon: 'core/app/aiLight',
@@ -194,8 +194,8 @@ const Navbar = ({ unread }: { unread: number }) => {
       )}
 
       {feConfigs?.navbarItems
-        ?.filter((item) => item.isActive)
-        .map((item) => (
+        ?.filter((item: any) => item.isActive)
+        .map((item: any) => (
           <MyTooltip key={item.id} label={item.name} placement={'right-end'}>
             <Link
               as={NextLink}
