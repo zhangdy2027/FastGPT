@@ -174,9 +174,12 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
   );
 
   const backToSfzyClick = () => {
-    sendMessageToSfzy({
-      type: 'backToSfzy'
-    });
+    const pamras = new URLSearchParams(location.search);
+    if (pamras.get('redir') === 'true') {
+      location.href = window.myConfig.sfzyUrl;
+    } else {
+      window.history.back();
+    }
   };
 
   const workPlatformClick = () => {
