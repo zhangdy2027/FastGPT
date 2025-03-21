@@ -102,13 +102,13 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
             alignItems={'center'}
             cursor={canRouteToDetail ? 'pointer' : 'default'}
             fontSize={'sm'}
-          // onClick={() =>
-          //   canRouteToDetail &&
-          //   router.push({
-          //     pathname: '/app/detail',
-          //     query: { appId }
-          //   })
-          // }
+            // onClick={() =>
+            //   canRouteToDetail &&
+            //   router.push({
+            //     pathname: '/app/detail',
+            //     query: { appId }
+            //   })
+            // }
           >
             <Avatar src={appAvatar} borderRadius={'md'} />
             <Box flex={'1 0 0'} w={0} ml={2} fontWeight={'bold'} className={'textEllipsis'}>
@@ -202,15 +202,15 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               bg={item.top ? '#E6F6F6 !important' : ''}
               {...(item.id === activeChatId
                 ? {
-                  backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
-                  color: '#F40F0F'
-                }
-                : {
-                  onClick: () => {
-                    onChangeChatId(item.id);
-                    setQuoteData(undefined);
+                    backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
+                    color: '#F40F0F'
                   }
-                })}
+                : {
+                    onClick: () => {
+                      onChangeChatId(item.id);
+                      setQuoteData(undefined);
+                    }
+                  })}
               {...(i !== concatHistory.length - 1 && {
                 mb: '8px'
               })}

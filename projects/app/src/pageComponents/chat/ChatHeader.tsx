@@ -145,9 +145,9 @@ const MobileDrawer = ({
             ...(isTeamChat
               ? [{ label: t('app:all_apps'), value: TabEnum.recently }]
               : [
-                { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
-                { label: t('app:all_apps'), value: TabEnum.app }
-              ])
+                  { label: t('common:core.chat.Recent use'), value: TabEnum.recently },
+                  { label: t('app:all_apps'), value: TabEnum.app }
+                ])
           ]}
           value={currentTab}
           onChange={setCurrentTab}
@@ -179,12 +179,12 @@ const MobileDrawer = ({
                     alignItems={'center'}
                     {...(item._id === appId
                       ? {
-                        backgroundColor: 'primary.50 !important',
-                        color: 'primary.600'
-                      }
+                          backgroundColor: 'primary.50 !important',
+                          color: 'primary.600'
+                        }
                       : {
-                        onClick: () => onclickApp(item._id)
-                      })}
+                          onClick: () => onclickApp(item._id)
+                        })}
                   >
                     <Avatar src={item.avatar} w={'24px'} borderRadius={'sm'} />
                     <Box ml={2} className={'textEllipsis'}>
