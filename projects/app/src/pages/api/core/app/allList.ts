@@ -5,7 +5,7 @@ import { MongoResourcePermission } from '@fastgpt/service/support/permission/sch
 import { PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
 import { ApiRequestProps } from '@fastgpt/service/type/next';
-import { AppFolderTypeList, AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
 import { AppDefaultPermissionVal } from '@fastgpt/global/support/permission/app/constant';
 import { concatPer } from '@fastgpt/service/support/permission/controller';
 import { getGroupsByTmbId } from '@fastgpt/service/support/permission/memberGroup/controllers';
@@ -13,13 +13,15 @@ import { getOrgIdSetWithParentByTmbId } from '@fastgpt/service/support/permissio
 import { addSourceMember } from '@fastgpt/service/support/user/utils';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
-import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
-import { parseParentIdInMongo } from '@fastgpt/global/common/parentFolder/utils';
+
+// export type ListAppBody = {
+//   parentId?: ParentIdType;
+//   type?: AppTypeEnum | AppTypeEnum[];
+//   getRecentlyChat?: boolean;
+//   searchKey?: string;
+// };
 
 export type ListAppBody = {
-  parentId?: ParentIdType;
-  type?: AppTypeEnum | AppTypeEnum[];
-  searchKey?: string;
   username: string;
 };
 /*
@@ -33,7 +35,8 @@ export type ListAppBody = {
 */
 
 async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemType[]> {
-  const { username, parentId, type, searchKey } = req.body;
+  // const { parentId, type, getRecentlyChat, searchKey } = req.body;
+  const { username } = req.body;
   const { tmbId, teamId } = await (async () => {
     const user = await MongoUser.findOne({ username });
     if (!user) return Promise.reject('user is not exist');
@@ -44,7 +47,7 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       teamId: String(tmb.teamId)
     };
   })();
-  console.log('tmbId, teamId>>>', tmbId, teamId);
+
   // Get team all app permissions
   const [perList, myGroupMap, myOrgSet] = await Promise.all([
     MongoResourcePermission.find({
@@ -69,7 +72,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       tmbId
     })
   ]);
-  console.log('perList, myGroupMap, myOrgSet>>>', perList, myGroupMap, myOrgSet);
   // Get my permissions
   const myPerList = perList.filter(
     (item) =>
@@ -77,13 +79,10 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       myGroupMap.has(String(item.groupId)) ||
       myOrgSet.has(String(item.orgId))
   );
-  console.log('myPerList>>>', myPerList);
+
   const myApps = await MongoApp.find(
     {
-      teamId,
-      ...(searchKey ? { name: new RegExp(searchKey) } : {}),
-      ...(type && (Array.isArray(type) ? { type: { $in: type } } : { type })),
-      ...parseParentIdInMongo(parentId)
+      teamId
     },
     '_id parentId avatar type name intro tmbId updateTime pluginData inheritPermission'
   )
@@ -91,7 +90,7 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       updateTime: -1
     })
     .lean();
-  console.log('myApps>>>', myApps);
+
   // Add app permission and filter apps by read permission
   const formatApps = myApps
     .map((app) => {
@@ -141,7 +140,7 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       };
     })
     .filter((app) => app.permission.hasReadPer);
-  console.log('formatApps>>>', formatApps);
+
   return addSourceMember({
     list: formatApps
   });

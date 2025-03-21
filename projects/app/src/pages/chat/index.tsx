@@ -239,13 +239,6 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
               >
                 返回
               </Button>
-              <Button
-                bgColor={'#D94848'}
-                onClick={workPlatformClick}
-                leftIcon={<Image alt="" src="/imgs/operatePlatformIcon.png" boxSize="15px" />}
-              >
-                工作台
-              </Button>
               {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
             </Flex>
           </Flex>
@@ -297,7 +290,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
           </Flex>
         </PageContainer>
       </Flex>
-    </Flex >
+    </Flex>
   );
 };
 
