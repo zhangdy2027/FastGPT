@@ -14,6 +14,7 @@ import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 interface Props {
   setPageType: Dispatch<`${LoginPageTypeEnum}`>;
   loginSuccess: (e: ResLogin) => void;
+  fromSignin?: Boolean;
 }
 
 interface LoginFormType {
@@ -21,7 +22,7 @@ interface LoginFormType {
   password: string;
 }
 
-const LoginForm = ({ setPageType, loginSuccess }: Props) => {
+const LoginForm = ({ setPageType, loginSuccess, fromSignin }: Props) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { feConfigs } = useSystemStore();
@@ -70,7 +71,11 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
   })();
 
   return (
-    <FormLayout setPageType={setPageType} pageType={LoginPageTypeEnum.passwordLogin}>
+    <FormLayout
+      setPageType={setPageType}
+      pageType={LoginPageTypeEnum.passwordLogin}
+      fromSignin={fromSignin}
+    >
       <Box
         mt={9}
         onKeyDown={(e) => {

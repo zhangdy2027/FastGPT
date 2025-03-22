@@ -27,6 +27,18 @@ import dynamic from 'next/dynamic';
 import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
 import { useContextSelector } from 'use-context-selector';
 import { debounce } from 'lodash';
+import localFont from 'next/font/local';
+
+const ysbthFont = localFont({
+  src: [
+    {
+      path: './优设标题黑.ttf',
+      weight: 'normal',
+      style: 'normal'
+    }
+  ],
+  variable: '--ysbthFont'
+});
 
 const SelectOneResource = dynamic(() => import('@/components/common/folder/SelectOneResource'));
 
@@ -82,7 +94,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
   }, 500);
 
   return (
-    <Flex flexDirection={'column'} h={'100%'} bgColor={'#ffffff'}>
+    <Flex flexDirection={'column'} h={'100%'} bgColor={'#ffffff'} className={ysbthFont.variable}>
       {showRouteToAppDetail && (
         <>
           <Box
@@ -112,12 +124,14 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
               <Flex flexDirection={'column'} gap={4}>
                 <Flex alignItems={'center'} justifyContent={'center'} gap={3}>
                   <Image
-                    src="https://bit.ly/dan-abramov"
+                    src="/icon/logo.svg"
                     borderRadius="full"
                     boxSize="32px"
                     alt="Dan Abramov"
                   />
-                  <Box fontSize={24}>{'朔风智语'}</Box>
+                  <Box fontSize={30} fontFamily={'var(--ysbthFont)'} color={'#C01920'}>
+                    {'朔风智语'}
+                  </Box>
                 </Flex>
                 <InputGroup size="sm">
                   <InputLeftElement pointerEvents="none">
@@ -126,7 +140,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                   <Input
                     type="tel"
                     placeholder="搜索智能体"
-                    backgroundColor={'#ffffff'}
+                    backgroundColor={'#F1F2F3'}
                     onChange={searchKeyChange}
                   />
                 </InputGroup>

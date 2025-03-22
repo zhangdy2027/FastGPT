@@ -131,7 +131,7 @@ const AccountContainer = ({
       if (tab === TabEnum.loginout) {
         openConfirm(() => {
           setUserInfo(null);
-          router.replace('/login');
+          router.replace('/signin');
         })();
       } else {
         router.replace('/account/' + tab);
