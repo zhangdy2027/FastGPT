@@ -129,8 +129,10 @@ const ChatInput = ({
         });
         replaceFiles([]);
       } else {
-        resetInputVal({ text });
         setWhisperStatus(0);
+        setTimeout(() => {
+          resetInputVal({ text });
+        }, 0);
       }
     };
     if (isSpeaking) {
@@ -456,7 +458,7 @@ const ChatInput = ({
             left={0}
             bg={'#ffffff'}
             zIndex={10}
-            visibility={isSpeaking ? 'visible' : 'hidden'}
+            visibility={isSpeaking && !isTransCription ? 'visible' : 'hidden'}
           >
             <Box
               pos={'absolute'}
