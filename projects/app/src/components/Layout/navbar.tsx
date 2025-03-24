@@ -42,8 +42,8 @@ const Navbar = ({ unread }: { unread: number }) => {
   const { gitStar, feConfigs } = useSystemStore();
   const { lastChatAppId } = useChatStore();
 
-  const navbarList = useMemo(
-    () => [
+  const navbarList = useMemo(() => {
+    const list = [
       // {
       //   label: t('common:navbar.Chat'),
       //   icon: 'core/chat/chatLight',
@@ -64,35 +64,40 @@ const Navbar = ({ unread }: { unread: number }) => {
         activeIcon: 'core/dataset/datasetFill',
         link: `/dataset/list`,
         activeLink: ['/dataset/list', '/dataset/detail']
-      },
-      {
-        label: t('common:navbar.Toolkit'),
-        icon: 'phoneTabbar/tool',
-        activeIcon: 'phoneTabbar/toolFill',
-        link: `/toolkit`,
-        activeLink: ['/toolkit']
-      },
-      {
-        label: t('common:navbar.Account'),
-        icon: 'support/user/userLight',
-        activeIcon: 'support/user/userFill',
-        link: '/account/info',
-        activeLink: [
-          '/account/bill',
-          '/account/info',
-          '/account/team',
-          '/account/usage',
-          '/account/thirdParty',
-          '/account/apikey',
-          '/account/setting',
-          '/account/inform',
-          '/account/promotion',
-          '/account/model'
-        ]
       }
-    ],
-    [lastChatAppId, t]
-  );
+    ];
+    const isRoot = userInfo?.username === 'root';
+    if (isRoot) {
+      list.push(
+        {
+          label: t('common:navbar.Toolkit'),
+          icon: 'phoneTabbar/tool',
+          activeIcon: 'phoneTabbar/toolFill',
+          link: `/toolkit`,
+          activeLink: ['/toolkit']
+        },
+        {
+          label: t('common:navbar.Account'),
+          icon: 'support/user/userLight',
+          activeIcon: 'support/user/userFill',
+          link: '/account/info',
+          activeLink: [
+            '/account/bill',
+            '/account/info',
+            '/account/team',
+            '/account/usage',
+            '/account/thirdParty',
+            '/account/apikey',
+            '/account/setting',
+            '/account/inform',
+            '/account/promotion',
+            '/account/model'
+          ]
+        }
+      );
+    }
+    return list;
+  }, [lastChatAppId, t]);
 
   const isSecondNavbarPage = useMemo(() => {
     return ['/toolkit'].includes(router.pathname);
