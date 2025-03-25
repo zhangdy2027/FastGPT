@@ -7,11 +7,11 @@ import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
 import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useTranslation } from 'next-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { OrgListItemType } from '@fastgpt/global/support/user/team/org/type';
 import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
+import { getOrgChildrenPath } from '@fastgpt/global/support/user/team/org/constant';
 import { getTeamMembers } from '@/web/support/user/team/api';
-import MemberItemCard from '@/components/support/permission/MemberManager/MemberItemCard';
 
 export type GroupFormType = {
   members: {
@@ -30,36 +30,39 @@ function OrgMemberManageModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const [searchKey, setSearchKey] = useState('');
 
-  const { data: allMembers, ScrollData: MemberScrollData } = useScrollPagination(getTeamMembers, {
+  const {
+    data: allMembers,
+    ScrollData: MemberScrollData,
+    isLoading: isLoadingMembers
+  } = useScrollPagination(getTeamMembers, {
     pageSize: 20,
     params: {
-      withOrgs: true,
-      withPermission: false,
-      status: 'active',
-      searchKey
-    },
-    throttleWait: 500,
-    debounceWait: 200,
-    refreshDeps: [searchKey]
+      withLeaved: false
+    }
   });
 
-  const { data: orgMembers, ScrollData: OrgMemberScrollData } = useScrollPagination(
-    getTeamMembers,
-    {
-      pageSize: 100000,
-      params: {
-        orgId: currentOrg._id,
-        withOrgs: false,
-        withPermission: false
-      }
+  const {
+    data: orgMembers,
+    ScrollData: OrgMemberScrollData,
+    isLoading: isLoadingOrgMembers
+  } = useScrollPagination(getOrgMembers, {
+    pageSize: 20,
+    params: {
+      orgPath: getOrgChildrenPath(currentOrg)
     }
-  );
+  });
 
   const [selected, setSelected] = useState<{ name: string; tmbId: string; avatar: string }[]>([]);
 
   useEffect(() => {
+    setSelected(
+      orgMembers.map((item) => ({
+        name: item.memberName,
+        tmbId: item.tmbId,
+        avatar: item.avatar
+      }))
+    );
     setSelected(
       orgMembers.map((item) => ({
         name: item.memberName,
@@ -75,132 +78,166 @@ function OrgMemberManageModal({
         orgId: currentOrg._id,
         members: selected.map((member) => ({
           tmbId: member.tmbId
-        }))
-      });
-    },
-    {
-      successToast: t('common:common.Update Success'),
-      onSuccess() {
-        refetchOrgs();
-        onClose();
-      }
-    }
-  );
-
-  const isSelected = (tmbId: string) => {
-    return selected.find((tmb) => tmb.tmbId === tmbId);
-  };
-
-  const handleToggleSelect = (tmbId: string) => {
-    if (isSelected(tmbId)) {
-      setSelected((state) => state.filter((tmb) => tmb.tmbId !== tmbId));
-      // setSelectedTmbIds((state) => state.filter((tmbId) => tmbId !== memberId));
-    } else {
-      // setSelectedTmbIds((state) => [...state, memberId]);
-      const member = allMembers.find((item) => item.tmbId === tmbId)!;
-      setSelected((state) => [
-        ...state,
+        members: selected.map((member) => ({
+            tmbId: member.tmbId
+          }))
+        });
+      },
         {
-          name: member.memberName,
-          tmbId,
-          avatar: member.avatar
+          successToast: t('common:common.Update Success'),
+          onSuccess() {
+            refetchOrgs();
+            onClose();
+          }
         }
-      ]);
-    }
-  };
+      );
 
-  const isLoading = isLoadingUpdate;
+      const isSelected = (tmbId: string) => {
+        return selected.find((tmb) => tmb.tmbId === tmbId);
+        const isSelected = (tmbId: string) => {
+          return selected.find((tmb) => tmb.tmbId === tmbId);
+        };
 
-  return (
-    <MyModal
-      isOpen
-      title={t('user:team.group.manage_member')}
-      iconSrc={currentOrg?.avatar}
-      minW="800px"
-      h={'100%'}
-      isCentered
-    >
-      <ModalBody flex={1}>
-        <Grid
-          border="1px solid"
-          borderColor="myGray.200"
-          borderRadius="0.5rem"
-          gridTemplateColumns="1fr 1fr"
-          h={'100%'}
-        >
-          <Flex
-            flexDirection="column"
-            p="4"
-            overflowY="auto"
-            overflowX="hidden"
-            borderRight={'1px solid'}
-            borderColor={'myGray.200'}
-          >
-            <SearchInput
-              placeholder={t('user:search_user')}
-              fontSize="sm"
-              bg={'myGray.50'}
-              onChange={(e) => {
-                setSearchKey(e.target.value);
-              }}
-            />
-            <MemberScrollData mt={3} flexGrow="1" overflow={'auto'}>
-              {allMembers.map((member) => {
-                return (
-                  <MemberItemCard
-                    avatar={member.avatar}
-                    key={member.tmbId}
-                    name={member.memberName}
-                    onChange={() => handleToggleSelect(member.tmbId)}
-                    isChecked={!!isSelected(member.tmbId)}
-                    orgs={member.orgs}
-                  />
-                );
-              })}
-            </MemberScrollData>
-          </Flex>
-          <Flex flexDirection="column" p="4" overflowY="auto" overflowX="hidden">
-            <OrgMemberScrollData mt={3} flexGrow="1" overflow={'auto'}>
-              <Box mt={2}>{`${t('common:chosen')}:${selected.length}`}</Box>
-              {selected.map((member) => {
-                return (
-                  <HStack
-                    justifyContent="space-between"
-                    py="2"
-                    px={3}
-                    borderRadius={'md'}
-                    key={member.tmbId}
-                    _hover={{ bg: 'myGray.50' }}
-                    _notLast={{ mb: 2 }}
+        const handleToggleSelect = (tmbId: string) => {
+          if (isSelected(tmbId)) {
+            setSelected((state) => state.filter((tmb) => tmb.tmbId !== tmbId));
+            // setSelectedTmbIds((state) => state.filter((tmbId) => tmbId !== memberId));
+            const handleToggleSelect = (tmbId: string) => {
+              if (isSelected(tmbId)) {
+                setSelected((state) => state.filter((tmb) => tmb.tmbId !== tmbId));
+                // setSelectedTmbIds((state) => state.filter((tmbId) => tmbId !== memberId));
+              } else {
+                // setSelectedTmbIds((state) => [...state, memberId]);
+                const member = allMembers.find((item) => item.tmbId === tmbId)!;
+                setSelected((state) => [
+                  ...state,
+                  {
+                    name: member.memberName,
+                    tmbId,
+                    avatar: member.avatar
+                  }
+                ]);
+                // setSelectedTmbIds((state) => [...state, memberId]);
+                const member = allMembers.find((item) => item.tmbId === tmbId)!;
+                setSelected((state) => [
+                  ...state,
+                  {
+                    name: member.memberName,
+                    tmbId,
+                    avatar: member.avatar
+                  }
+                ]);
+              }
+            };
+
+            const isLoading = isLoadingUpdate;
+
+            return (
+              <MyModal
+                isOpen
+                title={t('user:team.group.manage_member')}
+                iconSrc={currentOrg?.avatar}
+                minW="800px"
+                h={'100%'}
+                isCentered
+              >
+                <ModalBody flex={1}>
+                  <Grid
+                    border="1px solid"
+                    borderColor="myGray.200"
+                    borderRadius="0.5rem"
+                    gridTemplateColumns="1fr 1fr"
+                    h={'100%'}
                   >
-                    <HStack>
-                      <Avatar src={member?.avatar} w="1.5rem" borderRadius={'md'} />
-                      <Box>{member?.name}</Box>
-                    </HStack>
-                    <MyIcon
-                      name={'common/closeLight'}
-                      w={'1rem'}
-                      cursor={'pointer'}
-                      _hover={{ color: 'red.600' }}
-                      onClick={() => handleToggleSelect(member.tmbId)}
-                    />
-                  </HStack>
-                );
-              })}
-            </OrgMemberScrollData>
-          </Flex>
-        </Grid>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
-          {t('common:common.Close')}
-        </Button>
-        <Button isLoading={isLoading} onClick={onUpdate}>
-          {t('common:common.Save')}
-        </Button>
-      </ModalFooter>
-    </MyModal>
-  );
-}
+                    <Flex
+                      flexDirection="column"
+                      p="4"
+                      overflowY="auto"
+                      overflowX="hidden"
+                      borderRight={'1px solid'}
+                      borderColor={'myGray.200'}
+                    >
+                      <Flex
+                        flexDirection="column"
+                        p="4"
+                        overflowY="auto"
+                        overflowX="hidden"
+                        borderRight={'1px solid'}
+                        borderColor={'myGray.200'}
+                      >
+                        <SearchInput
+                          placeholder={t('user:search_user')}
+                          fontSize="sm"
+                          bg={'myGray.50'}
+                          onChange={(e) => {
+                            setSearchKey(e.target.value);
+                          }}
+                        />
+                        <MemberScrollData mt={3} flexGrow="1" overflow={'auto'} isLoading={isLoadingMembers}>
+                          {filterMembers.map((member) => {
+                            return (
+                              <MemberItemCard
+                                avatar={member.avatar}
+                                key={member.tmbId}
+                                name={member.memberName}
+                                onChange={() => handleToggleSelect(member.tmbId)}
+                                isChecked={!!isSelected(member.tmbId)}
+                                orgs={member.orgs}
+                              />
+                            );
+                          })}
+                        </MemberScrollData>
+                      </Flex>
+                      <Flex flexDirection="column" p="4" overflowY="auto" overflowX="hidden">
+                        <OrgMemberScrollData
+                          mt={3}
+                          flexGrow="1"
+                          overflow={'auto'}
+                          isLoading={isLoadingOrgMembers}
+                        >
+                          <Box mt={2}>{`${t('common:chosen')}:${selected.length}`}</Box>
+                          {selected.map((member) => {
+                            return (
+                              <HStack
+                                justifyContent="space-between"
+                                py="2"
+                                px={3}
+                                borderRadius={'md'}
+                                key={member.tmbId}
+                                key={member.tmbId}
+                                _hover={{ bg: 'myGray.50' }}
+                                _notLast={{ mb: 2 }}
+                              >
+                                <HStack>
+                                  <Avatar src={member?.avatar} w="1.5rem" borderRadius={'md'} />
+                                  <Box>{member?.name}</Box>
+                                  <Box>{member?.name}</Box>
+                                </HStack>
+                                <MyIcon
+                                  name={'common/closeLight'}
+                                  w={'1rem'}
+                                  cursor={'pointer'}
+                                  _hover={{ color: 'red.600' }}
+                                  onClick={() => handleToggleSelect(member.tmbId)}
+                                  onClick={() => handleToggleSelect(member.tmbId)}
+                                />
+                              </HStack>
+                            );
+                          })}
+                        </OrgMemberScrollData>
+                      </Flex>
+                  </Grid>
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant={'whiteBase'} mr={3} onClick={onClose}>
+                    {t('common:common.Close')}
+                  </Button>
+                  <Button isLoading={isLoading} onClick={onUpdate}>
+                    {t('common:common.Save')}
+                  </Button>
+                </ModalFooter>
+              </MyModal>
+            );
+          }
 
-export default OrgMemberManageModal;
+          export default OrgMemberManageModal;

@@ -1,12 +1,14 @@
 // orgId, pathid, path === null ===> root org
+// orgId, pathid, path === null ===> root org
 export type postCreateOrgData = {
   name: string;
   description?: string;
   avatar?: string;
-  orgId?: string;
+  path?: string;
 };
 
 export type putUpdateOrgMembersData = {
+  orgId?: string;
   orgId?: string;
   members: {
     tmbId: string;
@@ -16,6 +18,7 @@ export type putUpdateOrgMembersData = {
 
 export type putUpdateOrgData = {
   orgId: string; // can not be undefined because can not uppdate root org
+  orgId: string; // can not be undefined because can not uppdate root org
   name?: string;
   avatar?: string;
   description?: string;
@@ -23,6 +26,7 @@ export type putUpdateOrgData = {
 
 export type putMoveOrgType = {
   orgId: string;
+  targetOrgId?: string; // '' ===> move to root org
   targetOrgId?: string; // '' ===> move to root org
 };
 

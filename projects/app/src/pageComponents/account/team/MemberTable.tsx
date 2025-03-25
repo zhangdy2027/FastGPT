@@ -63,10 +63,9 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
   ];
   const { userInfo } = useUserStore();
   const { feConfigs } = useSystemStore();
-  const isSyncMember = feConfigs?.register_method?.includes('sync');
-  const isSyncMember = feConfigs?.register_method?.includes('sync');
 
-  const { myTeams, onSwitchTeam } = useContextSelector(TeamContext, (v) => v);
+  const { myTeams, refetchTeams, members, refetchMembers, onSwitchTeam, MemberScrollData } =
+    useContextSelector(TeamContext, (v) => v);
 
   const {
     isOpen: isOpenTeamTagsAsync,
@@ -88,7 +87,9 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
   });
 
   const [searchText, setSearchText] = useState<string>('');
-  const { data: searchMembersData, run: refreshSearchMembers } = useRequest2(
+  const isSyncMember = feConfigs.register_method?.includes('sync');
+
+  const { data: searchMembersData } = useRequest2(
     async () => {
       if (!searchText) return Promise.resolve();
       return GetSearchUserGroupOrg(searchText, { members: true, orgs: false, groups: false });
@@ -288,42 +289,29 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
                           member.role !== TeamMemberRoleEnum.owner &&
                           member.tmbId !== userInfo?.team.tmbId &&
                           (member.status === TeamMemberStatusEnum.active ? (
-                            <>
-                              <Icon
-                                mr={2}
-                                name={'edit'}
-                                cursor={'pointer'}
-                                w="1rem"
-                                p="1"
-                                borderRadius="sm"
-                                _hover={{
-                                  color: 'blue.600',
-                                  bgColor: 'myGray.100'
-                                }}
-                                onClick={() => handleEditMemberName(member.tmbId, member.memberName)}
-                              />
-                              <Icon
-                                name={'common/trash'}
-                                cursor={'pointer'}
-                                w="1rem"
-                                p="1"
-                                borderRadius="sm"
-                                _hover={{
-                                  color: 'red.600',
-                                  bgColor: 'myGray.100'
-                                }}
-                                onClick={() => {
-                                  openRemoveMember(
-                                    () => onRemoveMember(member.tmbId),
-                                    () => onRemoveMember(member.tmbId),
-                                    undefined,
-                                    t('account_team:remove_tip', {
-                                      username: member.memberName
-                                    })
-                                  )();
-                                }}
-                              />
-                            </>
+                            <Icon
+                              name={'common/trash'}
+                              cursor={'pointer'}
+                              w="1rem"
+                              p="1"
+                              borderRadius="sm"
+                              _hover={{
+                                color: 'red.600',
+                                bgColor: 'myGray.100'
+                              }}
+                              onClick={() => {
+                                openRemoveMember(
+                                  () =>
+                                    delRemoveMember(member.tmbId).then(() =>
+                                      Promise.all([refetchMembers()])
+                                    ),
+                                  undefined,
+                                  t('account_team:remove_tip', {
+                                    username: member.memberName
+                                  })
+                                )();
+                              }}
+                            />
                           ) : (
                             member.status === TeamMemberStatusEnum.forbidden && (
                               <Icon

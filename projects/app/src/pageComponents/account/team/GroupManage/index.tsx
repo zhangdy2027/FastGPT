@@ -19,8 +19,7 @@ import MyMenu, { MenuItemType } from '@fastgpt/web/components/common/MyMenu';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
-import { deleteGroup, getGroupList } from '@/web/support/user/team/group/api';
-import { deleteGroup, getGroupList } from '@/web/support/user/team/group/api';
+import { deleteGroup, getGroupList, getGroupMembers } from '@/web/support/user/team/group/api';
 import { DefaultGroupName } from '@fastgpt/global/support/user/team/group/constant';
 import MemberTag from '../../../../components/support/user/team/Info/MemberTag';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
@@ -38,18 +37,18 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
   const { t } = useTranslation();
   const { userInfo } = useUserStore();
 
+  const { members, teamSize } = useContextSelector(TeamContext, (v) => v);
+
   const {
     data: groups = [],
     loading: isLoadingGroups,
     refresh: refetchGroups
-  } = useRequest2(() => getGroupList<true>({ withMembers: true }), {
-  } = useRequest2(() => getGroupList<true>({ withMembers: true }), {
+  } = useRequest2(getGroupList, {
     manual: false,
     refreshDeps: [userInfo?.team?.teamId]
   });
 
-  const [editGroup, setEditGroup] = useState<MemberGroupListItemType<true>>();
-  const [editGroup, setEditGroup] = useState<MemberGroupListItemType<true>>();
+  const [editGroup, setEditGroup] = useState<MemberGroupType>();
 
   const {
     isOpen: isOpenGroupInfo,
@@ -131,14 +130,28 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
                     {groups?.map((group) => (
                       <Tr key={group._id} overflow={'unset'}>
                         <Td>
+                          <HStack>
+                            <MemberTag
+                              name={
+                                group.name === DefaultGroupName
+                                  ? userInfo?.team.teamName ?? ''
+                                  : group.name
+                              }
+                              avatar={group.avatar}
+                            />
+                            <Box>({group.name === DefaultGroupName ? teamSize : group.count})</Box>
+                          </HStack>
+                        </Td>
+                        <Td>
                           <MemberTag
                             name={
-                              group.name === DefaultGroupName ? userInfo?.team.teamName ?? '' : group.name
-                        group.name === DefaultGroupName ? userInfo?.team.teamName ?? '' : group.name
-                      }
-                          avatar={group.avatar}
-                          avatar={group.avatar}
-                    />
+                              group.name === DefaultGroupName
+                                ? members.find((item) => item.role === 'owner')?.memberName ?? ''
+                                : group.owner.name
+                            }
+                            avatar={group.avatar}
+                            avatar={group.avatar}
+                          />
                         </Td>
                         <Td>
                           <MemberTag name={group.owner?.name} avatar={group.owner?.avatar} />
@@ -221,46 +234,34 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
             </MyBox>
 
             <ConfirmDeleteGroupModal />
-
-
+            {isOpenChangeOwner && editGroup && (
+              <ChangeOwnerModal
+                groupId={editGroup._id}
+                onClose={onCloseChangeOwner}
+                groups={groups}
+                refetchGroups={refetchGroups}
+              />
+            )}
             {isOpenGroupInfo && (
               <GroupInfoModal
-                editGroup={editGroup}
-                onSuccess={refetchGroups}
-                editGroup={editGroup}
-                onSuccess={refetchGroups}
+                groups={groups}
+                refetchGroups={refetchGroups}
                 onClose={() => {
                   onCloseGroupInfo();
                   setEditGroup(undefined);
                 }}
+                editGroupId={editGroup?._id}
               />
             )}
-            {isOpenChangeOwner && editGroup && (
-              <ChangeOwnerModal
-                group={editGroup}
-                onClose={onCloseChangeOwner}
-                onSuccess={refetchGroups}
-              />
-            )}
-            {isOpenChangeOwner && editGroup && (
-              <ChangeOwnerModal
-                group={editGroup}
-                onClose={onCloseChangeOwner}
-                onSuccess={refetchGroups}
-              />
-            )}
-
-
             {isOpenManageGroupMember && editGroup && (
               <GroupManageMember
-                group={editGroup}
-                group={editGroup}
+                groups={groups}
+                refetchGroups={refetchGroups}
                 onClose={() => {
                   onCloseManageGroupMember();
                   setEditGroup(undefined);
                 }}
-                onSuccess={refetchGroups}
-                onSuccess={refetchGroups}
+                editGroupId={editGroup._id}
               />
             )}
           </>

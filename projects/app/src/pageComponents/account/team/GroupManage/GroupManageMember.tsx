@@ -15,7 +15,7 @@ import { DEFAULT_TEAM_AVATAR } from '@fastgpt/global/common/system/constants';
 import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
 import {
   GroupMemberItemType,
-  MemberGroupListItemType
+  MemberGroupListType
 } from '@fastgpt/global/support/permission/memberGroup/type';
 import { useMount } from 'ahooks';
 
@@ -32,17 +32,21 @@ export type GroupFormType = {
 function GroupEditModal({
   onClose,
   editGroupId,
-  group,
-  onSuccess
+  groups,
+  refetchGroups
 }: {
   onClose: () => void;
   editGroupId?: string;
-  group: MemberGroupListItemType<true>;
-  onSuccess: () => void;
+  groups: MemberGroupListType;
+  refetchGroups: () => void;
 }) {
   const { t } = useTranslation();
   const { userInfo } = useUserStore();
   const { toast } = useToast();
+
+  const group = useMemo(() => {
+    return groups.find((item) => item._id === editGroupId);
+  }, [editGroupId, groups]);
 
   const allMembers = useContextSelector(TeamContext, (v) => v.members);
   const MemberScrollData = useContextSelector(TeamContext, (v) => v.MemberScrollData);

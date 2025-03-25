@@ -25,6 +25,7 @@ import { useTranslation } from 'next-i18next';
 import { useMemo, useState } from 'react';
 import MemberTag from '@/components/support/user/team/Info/MemberTag';
 import { deleteOrg, deleteOrgMember } from '@/web/support/user/team/org/api';
+import { deleteOrg, deleteOrgMember } from '@/web/support/user/team/org/api';
 
 import IconButton from './IconButton';
 import { defaultOrgForm, type OrgFormType } from './OrgInfoModal';
@@ -35,6 +36,7 @@ import Path from '@/components/common/folder/Path';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { delRemoveMember } from '@/web/support/user/team/api';
 import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
+import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 
 const OrgInfoModal = dynamic(() => import('./OrgInfoModal'));
@@ -78,19 +80,20 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
   const [editOrg, setEditOrg] = useState<OrgFormType>();
   const [manageMemberOrg, setManageMemberOrg] = useState<OrgListItemType>();
   const [movingOrg, setMovingOrg] = useState<OrgListItemType>();
+
+  const [searchOrg, setSearchOrg] = useState('');
+
   const {
     currentOrg,
     orgs,
-    isLoading,
+    isLoadingOrgs,
     paths,
     onClickOrg,
     members,
     MemberScrollData,
     onPathClick,
     refresh,
-    updateCurrentOrg,
-    setSearchKey,
-    searchKey
+    updateCurrentOrg
   } = useOrg();
 
   // Delete org
@@ -100,6 +103,7 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
   });
   const deleteOrgHandler = (orgId: string) => openDeleteOrgModal(() => deleteOrgReq(orgId))();
   const { runAsync: deleteOrgReq } = useRequest2(deleteOrg, {
+    onSuccess: refresh
     onSuccess: refresh
   });
 
@@ -116,11 +120,18 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
 
   const { runAsync: deleteMemberReq } = useRequest2(deleteOrgMember, {
     onSuccess: refresh
+    onSuccess: refresh
   });
 
   const { runAsync: deleteMemberFromTeamReq } = useRequest2(delRemoveMember, {
     onSuccess: refresh
   });
+
+  const searchedOrgs = useMemo(() => {
+    if (!searchOrg) return [];
+
+    return orgs.filter((org) => org.name.includes(searchOrg));
+  }, [orgs, searchOrg]);
 
   return (
     <>
@@ -136,9 +147,7 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
       </Flex>
       <MyBox flex={'1 0 0'} h={0} display={'flex'} flexDirection={'column'}>
         <Box mb={3}>
-          {!searchKey && (
-            <Path paths={paths} rootName={userInfo?.team?.teamName} onClick={onPathClick} />
-          )}
+          <Path paths={paths} rootName={userInfo?.team?.teamName} onClick={onPathClick} />
         </Box>
         <Flex flex={'1 0 0'} h={0} w={'100%'} gap={'4'}>
           <MemberScrollData flex="1" isLoading={isLoading}>
@@ -285,21 +294,18 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
             <VStack w={'180px'} alignItems={'start'}>
               <HStack gap={'6px'}>
                 <Avatar src={currentOrg.avatar} w={'1rem'} h={'1rem'} rounded={'xs'} />
-                <Box
-                  title={currentOrg.name}
-                  fontWeight={500}
-                  color={'myGray.900'}
-                  className="textEllipsis3"
-                >
+                <Box fontWeight={500} color={'myGray.900'}>
                   {currentOrg.name}
                 </Box>
                 {currentOrg?.path !== '' && (
-                  <IconButton name="edit" onClick={() => setEditOrg(currentOrg)} />
-                )}
+                  { currentOrg?.path !== '' && (
+                    <IconButton name="edit" onClick={() => setEditOrg(currentOrg)} />
+                  )}
               </HStack>
               {currentOrg?.path !== '' && (
-                <Box fontSize={'xs'}>{currentOrg?.description || t('common:common.no_intro')}</Box>
-              )}
+                { currentOrg?.path !== '' && (
+                  <Box fontSize={'xs'}>{currentOrg?.description || t('common:common.no_intro')}</Box>
+                )}
 
               <Divider my={'20px'} />
 
@@ -315,6 +321,7 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
                       setEditOrg({
                         ...defaultOrgForm,
                         path: currentOrg.path
+                        path: currentOrg.path
                       });
                     }}
                   />
@@ -324,19 +331,20 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
                     onClick={() => setManageMemberOrg(currentOrg)}
                   />
                   {currentOrg?.path !== '' && (
-                    <>
-                      <ActionButton
-                        icon="common/file/move"
-                        text={t('account_team:move_org')}
-                        onClick={() => setMovingOrg(currentOrg)}
-                      />
-                      <ActionButton
-                        icon="delete"
-                        text={t('account_team:delete_org')}
-                        onClick={() => deleteOrgHandler(currentOrg._id)}
-                      />
-                    </>
-                  )}
+                    { currentOrg?.path !== '' && (
+                      <>
+                        <ActionButton
+                          icon="common/file/move"
+                          text={t('account_team:move_org')}
+                          onClick={() => setMovingOrg(currentOrg)}
+                        />
+                        <ActionButton
+                          icon="delete"
+                          text={t('account_team:delete_org')}
+                          onClick={() => deleteOrgHandler(currentOrg._id)}
+                        />
+                      </>
+                    )}
                 </VStack>
               )}
             </VStack>
@@ -350,7 +358,6 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
           onClose={() => setEditOrg(undefined)}
           onSuccess={refresh}
           updateCurrentOrg={updateCurrentOrg}
-          parentId={currentOrg._id}
         />
       )}
       {!!movingOrg && (
@@ -358,11 +365,13 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
           movingOrg={movingOrg}
           onClose={() => setMovingOrg(undefined)}
           onSuccess={refresh}
+          onSuccess={refresh}
         />
       )}
       {!!manageMemberOrg && (
         <OrgMemberManageModal
           currentOrg={manageMemberOrg}
+          refetchOrgs={refresh}
           refetchOrgs={refresh}
           onClose={() => setManageMemberOrg(undefined)}
         />

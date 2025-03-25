@@ -19,28 +19,22 @@ import { useTranslation } from 'next-i18next';
 import React, { useState } from 'react';
 import { TeamContext } from '../context';
 import { useContextSelector } from 'use-context-selector';
-import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
-import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
+import { MemberGroupListType } from '@fastgpt/global/support/permission/memberGroup/type';
 import { GetSearchUserGroupOrg } from '@/web/support/user/api';
 import { Omit } from '@fastgpt/web/components/common/DndDrag';
 
+export type ChangeOwnerModalProps = {
+  groupId: string;
+  groups: MemberGroupListType;
+  refetchGroups: () => void;
+};
+
 export function ChangeOwnerModal({
-  group,
-  onSuccess,
-  onClose
-}: {
-  group: MemberGroupListItemType<true>;
-  onSuccess: () => void;
-  onClose: () => void;
-}) {
-  group,
-    onSuccess,
-    onClose
-}: {
-  group: MemberGroupListItemType<true>;
-  onSuccess: () => void;
-  onClose: () => void;
-}) {
+  onClose,
+  groupId,
+  groups,
+  refetchGroups
+}: ChangeOwnerModalProps & { onClose: () => void }) {
   const { t } = useTranslation();
 
   const [inputValue, setInputValue] = React.useState('');
@@ -58,7 +52,13 @@ export function ChangeOwnerModal({
   );
 
   const { members: allMembers } = useContextSelector(TeamContext, (v) => v);
+  const group = useMemo(() => {
+    return groups.find((item) => item._id === groupId);
+  }, [groupId, groups]);
+
   const memberList = searchedData ? searchedData.members : allMembers;
+
+  const [keepAdmin, setKeepAdmin] = useState(true);
 
   const {
     isOpen: isOpenMemberListMenu,
@@ -71,14 +71,8 @@ export function ChangeOwnerModal({
     'permission' | 'teamId'
   > | null>(null);
 
-  const [keepAdmin, setKeepAdmin] = useState(true);
-
-  const { runAsync: onTransfer, loading } = useRequest2(
-    (tmbId: string) => putGroupChangeOwner(group._id, tmbId),
-  const [keepAdmin, setKeepAdmin] = useState(true);
-
-  const { runAsync: onTransfer, loading } = useRequest2(
-    (tmbId: string) => putGroupChangeOwner(group._id, tmbId),
+  const { runAsync, loading } = useRequest2(
+    (tmbId: string) => putGroupChangeOwner(groupId, tmbId),
     {
       onSuccess: () => Promise.all([onClose(), onSuccess()]),
       onSuccess: () => Promise.all([onClose(), onSuccess()]),

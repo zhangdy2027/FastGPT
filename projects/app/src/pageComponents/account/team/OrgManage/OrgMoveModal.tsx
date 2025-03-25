@@ -1,4 +1,5 @@
 import { getOrgList, putMoveOrg } from '@/web/support/user/team/org/api';
+import { getOrgList, putMoveOrg } from '@/web/support/user/team/org/api';
 import { Button, ModalBody, ModalFooter } from '@chakra-ui/react';
 import type { OrgListItemType, OrgType } from '@fastgpt/global/support/user/team/org/type';
 import MyModal from '@fastgpt/web/components/common/MyModal';
@@ -7,6 +8,7 @@ import { useTranslation } from 'next-i18next';
 import { useMemo, useState } from 'react';
 import OrgTree from './OrgTree';
 import { useUserStore } from '@/web/support/user/useUserStore';
+import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 
 function OrgMoveModal({
@@ -37,7 +39,7 @@ function OrgMoveModal({
       iconColor="primary.600"
     >
       <ModalBody>
-        <OrgTree selectedOrg={selectedOrg} setSelectedOrg={setSelectedOrg} movingOrg={movingOrg} />
+        <OrgTree selectedOrg={selectedOrg} setSelectedOrg={setSelectedOrg} />
       </ModalBody>
       <ModalFooter>
         <Button
