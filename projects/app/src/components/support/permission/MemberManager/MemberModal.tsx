@@ -28,8 +28,6 @@ import {
   DEFAULT_USER_AVATAR
 } from '@fastgpt/global/common/system/constants';
 import Path from '@/components/common/folder/Path';
-import { getOrgChildrenPath } from '@fastgpt/global/support/user/team/org/constant';
-import { ParentTreePathItemType } from '@fastgpt/global/common/parentFolder/type';
 import { OrgListItemType, OrgType } from '@fastgpt/global/support/user/team/org/type';
 import { useContextSelector } from 'use-context-selector';
 import { CollaboratorContext } from './context';
@@ -39,8 +37,8 @@ import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
 import MemberItemCard from './MemberItemCard';
 import { GetSearchUserGroupOrg } from '@/web/support/user/api';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
-import { MemberGroupListType } from '@fastgpt/global/support/permission/memberGroup/type';
 import { TeamMemberItemType } from '@fastgpt/global/support/user/team/type';
+import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
 
 const HoverBoxStyle = {
   bgColor: 'myGray.50',
@@ -123,7 +121,7 @@ function MemberModal({
     return members;
   }, [searchText, members, searchedData?.members]);
 
-  const [selectedGroupList, setSelectedGroupList] = useState<MemberGroupListType>([]);
+  const [selectedGroupList, setSelectedGroupList] = useState<MemberGroupListItemType<false>[]>([]);
   const filterGroups = useMemo(() => {
     if (searchText) {
       return searchedData?.groups.map((item) => ({

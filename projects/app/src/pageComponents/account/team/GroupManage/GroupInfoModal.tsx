@@ -9,7 +9,7 @@ import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useForm } from 'react-hook-form';
 import { postCreateGroup, putUpdateGroup } from '@/web/support/user/team/group/api';
 import { DEFAULT_TEAM_AVATAR } from '@fastgpt/global/common/system/constants';
-import { MemberGroupListType } from '@fastgpt/global/support/permission/memberGroup/type';
+import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
 
 export type GroupFormType = {
   avatar: string;
@@ -18,16 +18,13 @@ export type GroupFormType = {
 
 function GroupInfoModal({
   onClose,
-  editGroupId,
-  groups,
-  refetchGroups
+  editGroup,
+  onSuccess
 }: {
   onClose: () => void;
-  editGroupId?: string;
-  groups: MemberGroupListType;
-  refetchGroups: () => void;
+  editGroup?: MemberGroupListItemType<true>;
+  onSuccess: () => void;
 }) {
-  const { refetchMembers } = useContextSelector(TeamContext, (v) => v);
   const { t } = useTranslation();
 
   const {

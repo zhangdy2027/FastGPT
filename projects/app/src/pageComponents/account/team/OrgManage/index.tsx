@@ -36,7 +36,6 @@ import Path from '@/components/common/folder/Path';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { delRemoveMember } from '@/web/support/user/team/api';
 import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
-import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 
 const OrgInfoModal = dynamic(() => import('./OrgInfoModal'));
