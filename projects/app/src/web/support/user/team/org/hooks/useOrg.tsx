@@ -1,17 +1,14 @@
 import { getOrgChildrenPath } from '@fastgpt/global/support/user/team/org/constant';
 import { OrgListItemType } from '@fastgpt/global/support/user/team/org/type';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useUserStore } from '../../../useUserStore';
 import { ParentTreePathItemType } from '@fastgpt/global/common/parentFolder/type';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { getOrgList, getOrgMembers } from '../api';
 import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
-import { getTeamMembers } from '../../api';
-import _ from 'lodash';
 
-function useOrg({ withPermission = true }: { withPermission?: boolean } = {}) {
+function useOrg({ getPermission = true }: { getPermission?: boolean } = {}) {
   const [orgStack, setOrgStack] = useState<OrgListItemType[]>([]);
-  const [searchKey, setSearchKey] = useState('');
 
   const { userInfo } = useUserStore();
 
@@ -37,15 +34,10 @@ function useOrg({ withPermission = true }: { withPermission?: boolean } = {}) {
     data: orgs = [],
     loading: isLoadingOrgs,
     refresh: refetchOrgs
-  } = useRequest2(
-    () => getOrgList({ orgId: currentOrg._id, withPermission: withPermission, searchKey }),
-    {
-      manual: false,
-      refreshDeps: [userInfo?.team?.teamId, path, currentOrg._id, searchKey],
-      debounceWait: 200,
-      throttleWait: 500
-    }
-  );
+  } = useRequest2(() => getOrgList({ orgPath: path, getPermission }), {
+    manual: false,
+    refreshDeps: [userInfo?.team?.teamId, path]
+  });
 
   const paths = useMemo(() => {
     if (!currentOrg) return [];
@@ -60,26 +52,17 @@ function useOrg({ withPermission = true }: { withPermission?: boolean } = {}) {
   }, [currentOrg, orgStack]);
 
   const onClickOrg = (org: OrgListItemType) => {
-    if (searchKey) {
-      setOrgStack([org]);
-      setSearchKey('');
-    } else {
-      setOrgStack([...orgStack, org]);
-    }
+    setOrgStack([...orgStack, org]);
   };
 
   const {
     data: members = [],
     ScrollData: MemberScrollData,
-    refreshList: refetchMembers,
-    isLoading: isLoadingMembers
-  } = useScrollPagination(getTeamMembers, {
+    refreshList: refetchMembers
+  } = useScrollPagination(getOrgMembers, {
     pageSize: 20,
     params: {
-      orgId: currentOrg._id,
-      withOrgs: false,
-      withPermission: true,
-      status: 'active'
+      orgPath: path
     },
     refreshDeps: [path]
   });
@@ -87,7 +70,6 @@ function useOrg({ withPermission = true }: { withPermission?: boolean } = {}) {
   const onPathClick = (path: string) => {
     const pathIds = path.split('/');
     setOrgStack(orgStack.filter((org) => pathIds.includes(org.pathId)));
-    setSearchKey('');
   };
 
   const refresh = () => {
@@ -108,22 +90,18 @@ function useOrg({ withPermission = true }: { withPermission?: boolean } = {}) {
     ]);
   };
 
-  const isLoading = isLoadingOrgs || isLoadingMembers;
-
   return {
     orgStack,
     currentOrg,
     orgs,
-    isLoading,
+    isLoadingOrgs,
     paths,
     onClickOrg,
     members,
     MemberScrollData,
     onPathClick,
     refresh,
-    updateCurrentOrg,
-    searchKey,
-    setSearchKey
+    updateCurrentOrg
   };
 }
 

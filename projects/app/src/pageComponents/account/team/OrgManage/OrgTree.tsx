@@ -50,12 +50,12 @@ function OrgTreeNode({
         cursor={'pointer'}
         {...(selectedOrg?._id === org._id
           ? {
-              bg: 'primary.50 !important',
-              onClick: () => setSelectedOrg(undefined)
-            }
+            bg: 'primary.50 !important',
+            onClick: () => setSelectedOrg(undefined)
+          }
           : {
-              onClick: () => setSelectedOrg(org)
-            })}
+            onClick: () => setSelectedOrg(org)
+          })}
       >
         <IconButton
           name={isExpanded ? 'common/downArrowFill' : 'common/rightArrowFill'}

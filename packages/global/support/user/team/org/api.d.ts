@@ -1,3 +1,4 @@
+// orgId, pathid, path === null ===> root org
 export type postCreateOrgData = {
   name: string;
   description?: string;

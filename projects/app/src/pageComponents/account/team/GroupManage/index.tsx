@@ -141,9 +141,9 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
                       <Box
                         {...(group.permission?.hasManagePer
                           ? {
-                              cursor: 'pointer',
-                              onClick: () => onManageMember(group)
-                            }
+                            cursor: 'pointer',
+                            onClick: () => onManageMember(group)
+                          }
                           : {})}
                       >
                         <AvatarGroup
@@ -176,23 +176,23 @@ function MemberTable({ Tabs }: { Tabs: React.ReactNode }) {
                               },
                               ...(group.permission?.isOwner
                                 ? [
-                                    {
-                                      label: t('account_team:transfer_ownership'),
-                                      icon: 'modal/changePer',
-                                      onClick: () => {
-                                        onChangeOwner(group);
-                                      },
-                                      type: 'primary' as MenuItemType
+                                  {
+                                    label: t('account_team:transfer_ownership'),
+                                    icon: 'modal/changePer',
+                                    onClick: () => {
+                                      onChangeOwner(group);
                                     },
-                                    {
-                                      label: t('common:common.Delete'),
-                                      icon: 'delete',
-                                      onClick: () => {
-                                        openDeleteGroupModal(() => delDeleteGroup(group._id))();
-                                      },
-                                      type: 'danger' as MenuItemType
-                                    }
-                                  ]
+                                    type: 'primary' as MenuItemType
+                                  },
+                                  {
+                                    label: t('common:common.Delete'),
+                                    icon: 'delete',
+                                    onClick: () => {
+                                      openDeleteGroupModal(() => delDeleteGroup(group._id))();
+                                    },
+                                    type: 'danger' as MenuItemType
+                                  }
+                                ]
                                 : [])
                             ]
                           }

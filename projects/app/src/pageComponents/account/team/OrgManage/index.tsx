@@ -241,31 +241,31 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
                                       ...(isSyncMember
                                         ? []
                                         : [
-                                            {
-                                              menuItemStyles: {
-                                                _hover: {
-                                                  color: 'red.600',
-                                                  bgColor: 'red.50'
-                                                }
-                                              },
-                                              label: t('account_team:delete_from_org'),
-                                              onClick: () =>
-                                                openDeleteMemberFromOrgModal(
-                                                  () => {
-                                                    if (currentOrg) {
-                                                      return deleteMemberReq(
-                                                        currentOrg._id,
-                                                        member.tmbId
-                                                      );
-                                                    }
-                                                  },
-                                                  undefined,
-                                                  t('account_team:confirm_delete_from_org', {
-                                                    username: member.memberName
-                                                  })
-                                                )()
-                                            }
-                                          ])
+                                          {
+                                            menuItemStyles: {
+                                              _hover: {
+                                                color: 'red.600',
+                                                bgColor: 'red.50'
+                                              }
+                                            },
+                                            label: t('account_team:delete_from_org'),
+                                            onClick: () =>
+                                              openDeleteMemberFromOrgModal(
+                                                () => {
+                                                  if (currentOrg) {
+                                                    return deleteMemberReq(
+                                                      currentOrg._id,
+                                                      member.tmbId
+                                                    );
+                                                  }
+                                                },
+                                                undefined,
+                                                t('account_team:confirm_delete_from_org', {
+                                                  username: member.memberName
+                                                })
+                                              )()
+                                          }
+                                        ])
                                     ]
                                   }
                                 ]}
