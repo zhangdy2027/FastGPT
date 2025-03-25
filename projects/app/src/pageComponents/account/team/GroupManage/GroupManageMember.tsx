@@ -13,13 +13,11 @@ import { useUserStore } from '@/web/support/user/useUserStore';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { DEFAULT_TEAM_AVATAR } from '@fastgpt/global/common/system/constants';
 import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
-import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
-import { getTeamMembers } from '@/web/support/user/team/api';
-import { TeamMemberItemType } from '@fastgpt/global/support/user/team/type';
-import { PaginationResponse } from '@fastgpt/web/common/fetch/type';
-import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
-import _ from 'lodash';
-import MemberItemCard from '@/components/support/permission/MemberManager/MemberItemCard';
+import {
+  GroupMemberItemType,
+  MemberGroupListItemType
+} from '@fastgpt/global/support/permission/memberGroup/type';
+import { useMount } from 'ahooks';
 
 export type GroupFormType = {
   members: {
@@ -33,10 +31,12 @@ export type GroupFormType = {
 // 3. Owner can add/remove admins
 function GroupEditModal({
   onClose,
+  editGroupId,
   group,
   onSuccess
 }: {
   onClose: () => void;
+  editGroupId?: string;
   group: MemberGroupListItemType<true>;
   onSuccess: () => void;
 }) {
@@ -44,29 +44,9 @@ function GroupEditModal({
   const { userInfo } = useUserStore();
   const { toast } = useToast();
 
-  const [searchKey, setSearchKey] = useState('');
-  const [selected, setSelected] = useState<
-    { name: string; tmbId: string; avatar: string; role: `${GroupMemberRole}` }[]
-  >([]);
-
-  const {
-    data: allMembers = [],
-    ScrollData: MemberScrollData,
-    refreshList
-  } = useScrollPagination<
-    any,
-    PaginationResponse<TeamMemberItemType<{ withOrgs: true; withPermission: true }>>
-  >(getTeamMembers, {
-    pageSize: 20,
-    params: {
-      status: 'active',
-      withOrgs: true,
-      searchKey
-    },
-    throttleWait: 500,
-    debounceWait: 200,
-    refreshDeps: [searchKey]
-  });
+  const allMembers = useContextSelector(TeamContext, (v) => v.members);
+  const MemberScrollData = useContextSelector(TeamContext, (v) => v.MemberScrollData);
+  const [hoveredMemberId, setHoveredMemberId] = useState<string>();
 
   const groupId = useMemo(() => String(group._id), [group._id]);
 
@@ -106,6 +86,7 @@ function GroupEditModal({
       });
     },
     {
+      onSuccess: () => Promise.all([onClose(), onSuccess()])
       onSuccess: () => Promise.all([onClose(), onSuccess()])
     }
   );

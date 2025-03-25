@@ -39,7 +39,6 @@ import { GetSearchUserGroupOrg } from '@/web/support/user/api';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 import { TeamMemberItemType } from '@fastgpt/global/support/user/team/type';
 import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
-import _ from 'lodash';
 
 const HoverBoxStyle = {
   bgColor: 'myGray.50',
@@ -93,8 +92,7 @@ function MemberModal({
     async () => {
       if (!userInfo?.team?.teamId) return [];
       return getGroupList<false>({
-        withMembers: false,
-        searchKey
+        withMembers: false
       });
     },
     {
@@ -108,8 +106,28 @@ function MemberModal({
   const [selectedMemberList, setSelectedMemberList] = useState<
     Omit<TeamMemberItemType, 'permission' | 'teamId'>[]
   >([]);
+  const filterMembers = useMemo(() => {
+    if (searchText) {
+      return searchedData?.members || [];
+    }
+
+    return members;
+  }, [searchText, members, searchedData?.members]);
 
   const [selectedGroupList, setSelectedGroupList] = useState<MemberGroupListItemType<false>[]>([]);
+  const filterGroups = useMemo(() => {
+    if (searchText) {
+      return searchedData?.groups.map((item) => ({
+        groupName: item.name,
+        _id: item.id,
+        ...item
+      }));
+    }
+    if (!searchText && filterClass !== 'group') return [];
+
+    return groups;
+  }, [searchText, filterClass, groups, searchedData]);
+
   const permissionList = useContextSelector(CollaboratorContext, (v) => v.permissionList);
   const getPerLabelList = useContextSelector(CollaboratorContext, (v) => v.getPerLabelList);
   const [selectedPermission, setSelectedPermission] = useState<number | undefined>(
