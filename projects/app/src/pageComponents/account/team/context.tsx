@@ -20,7 +20,6 @@ const EditInfoModal = dynamic(() => import('./EditInfoModal'));
 
 type TeamModalContextType = {
   myTeams: TeamTmbItemType[];
-  members: TeamMemberItemType[];
   isLoading: boolean;
   onSwitchTeam: (teamId: string) => void;
   setEditTeamData: React.Dispatch<React.SetStateAction<EditTeamFormDataType | undefined>>;
@@ -32,7 +31,6 @@ type TeamModalContextType = {
 
 export const TeamContext = createContext<TeamModalContextType>({
   myTeams: [],
-  members: [],
   isLoading: false,
   onSwitchTeam: function (_teamId: string): void {
     throw new Error('Function not implemented.');
@@ -46,8 +44,7 @@ export const TeamContext = createContext<TeamModalContextType>({
   refetchTeamSize: function (): void {
     throw new Error('Function not implemented.');
   },
-  teamSize: 0,
-  MemberScrollData: () => <></>
+  teamSize: 0
 });
 
 export const TeamModalContextProvider = ({ children }: { children: ReactNode }) => {
@@ -84,7 +81,7 @@ export const TeamModalContextProvider = ({ children }: { children: ReactNode }) 
     }
   );
 
-  const isLoading = isLoadingTeams || isSwitchingTeam || loadingMembers;
+  const isLoading = isLoadingTeams || isSwitchingTeam;
 
   const contextValue = {
     myTeams,
@@ -94,8 +91,6 @@ export const TeamModalContextProvider = ({ children }: { children: ReactNode }) 
 
     // create | update team
     setEditTeamData,
-    members,
-    refetchMembers,
     teamSize: teamMemberCountData?.count || 0,
     refetchTeamSize
   };

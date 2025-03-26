@@ -20,6 +20,7 @@ import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import PermissionSelect from './PermissionSelect';
 import PermissionTags from './PermissionTags';
 import {
@@ -39,6 +40,7 @@ import { GetSearchUserGroupOrg } from '@/web/support/user/api';
 import useOrg from '@/web/support/user/team/org/hooks/useOrg';
 import { TeamMemberItemType } from '@fastgpt/global/support/user/team/type';
 import { MemberGroupListItemType } from '@fastgpt/global/support/permission/memberGroup/type';
+import _ from 'lodash';
 
 const HoverBoxStyle = {
   bgColor: 'myGray.50',
@@ -62,15 +64,30 @@ function MemberModal({
     members: orgMembers,
     MemberScrollData: OrgMemberScrollData,
     onPathClick,
-    refresh,
-    updateCurrentOrg,
-    orgs
-  } = useOrg({ getPermission: false });
+    orgs,
+    searchKey,
+    setSearchKey
+  } = useOrg({ withPermission: false });
 
-  const { data: members, ScrollData: TeamMemberScrollData } = useScrollPagination(getTeamMembers, {
-    pageSize: 15
+  const {
+    data: members,
+    ScrollData: TeamMemberScrollData,
+    refreshList
+  } = useScrollPagination(getTeamMembers, {
+    pageSize: 15,
+    params: {
+      withPermission: true,
+      withOrgs: true,
+      status: 'active',
+      searchKey
+    }
   });
 
+  const {
+    data: groups = [],
+    loading: loadingGroupsAndOrgs,
+    runAsync: refreshGroups
+  } = useRequest2(
   const {
     data: groups = [],
     loading: loadingGroupsAndOrgs,
@@ -79,7 +96,8 @@ function MemberModal({
     async () => {
       if (!userInfo?.team?.teamId) return [];
       return getGroupList<false>({
-        withMembers: false
+        withMembers: false,
+        searchKey
       });
     },
     {
@@ -88,53 +106,20 @@ function MemberModal({
     }
   );
 
-  const { data: searchedData } = useRequest2(() => GetSearchUserGroupOrg(searchText), {
-    manual: false,
-    throttleWait: 500,
-    debounceWait: 200,
-    refreshDeps: [searchText]
-  });
+  const search = _.debounce(() => {
+    refreshList();
+    refreshGroups();
+  }, 200);
+
+  useEffect(search, [searchKey]);
 
   const [selectedOrgList, setSelectedOrgIdList] = useState<OrgListItemType[]>([]);
-
-  const filterOrgs: (OrgListItemType & { count?: number })[] = useMemo(() => {
-    if (searchText && searchedData) {
-      const orgids = searchedData.orgs.map((item) => item._id);
-      return orgs.filter((org) => orgids.includes(String(org._id)));
-    }
-    return orgs
-      .filter((org) => org.path !== '')
-      .map((org) => ({
-        ...org,
-        count: org.total
-      }));
-  }, [searchText, orgs, searchedData]);
 
   const [selectedMemberList, setSelectedMemberList] = useState<
     Omit<TeamMemberItemType, 'permission' | 'teamId'>[]
   >([]);
-  const filterMembers = useMemo(() => {
-    if (searchText) {
-      return searchedData?.members || [];
-    }
-
-    return members;
-  }, [searchText, members, searchedData?.members]);
 
   const [selectedGroupList, setSelectedGroupList] = useState<MemberGroupListItemType<false>[]>([]);
-  const filterGroups = useMemo(() => {
-    if (searchText) {
-      return searchedData?.groups.map((item) => ({
-        groupName: item.name,
-        _id: item.id,
-        ...item
-      }));
-    }
-    if (!searchText && filterClass !== 'group') return [];
-
-    return groups;
-  }, [searchText, filterClass, groups, searchedData]);
-
   const permissionList = useContextSelector(CollaboratorContext, (v) => v.permissionList);
   const getPerLabelList = useContextSelector(CollaboratorContext, (v) => v.getPerLabelList);
   const [selectedPermission, setSelectedPermission] = useState<number | undefined>(
@@ -292,7 +277,6 @@ return (
                     if (parentId === '') {
                       setFilterClass(undefined);
                       onPathClick('');
-                      onPathClick('');
                     } else if (
                       parentId === 'member' ||
                       parentId === 'org' ||
@@ -300,9 +284,7 @@ return (
                     ) {
                       setFilterClass(parentId);
                       onPathClick('');
-                      onPathClick('');
                     } else {
-                      onPathClick(parentId);
                       onPathClick(parentId);
                     }
                   }}
@@ -310,62 +292,54 @@ return (
                 />
               </Box>
             )}
-            {(filterClass === 'member' || (searchText && filterMembers.length > 0)) &&
+            {(filterClass === 'member' || searchKey) &&
               (() => {
-                const members = filterMembers?.map((member) => {
+                const Members = members?.map((member) => {
                   const onChange = () => {
                     setSelectedMemberList((state) => {
                       if (state.find((v) => v.tmbId === member.tmbId)) {
                         return state.filter((v) => v.tmbId !== member.tmbId);
-                        setSelectedMemberList((state) => {
-                          if (state.find((v) => v.tmbId === member.tmbId)) {
-                            return state.filter((v) => v.tmbId !== member.tmbId);
-                          }
-                          return [...state, member];
-                          return [...state, member];
-                        });
-                      };
-                      const collaborator = collaboratorList?.find((v) => v.tmbId === member.tmbId);
-                      return (
-                        <MemberItemCard
-                          avatar={member.avatar}
-                          key={member.tmbId}
-                          name={member.memberName}
-                          permission={collaborator?.permission.value}
-                          onChange={onChange}
-                          isChecked={!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
-                          isChecked={!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
-                          orgs={member.orgs}
-                        />
-                      );
+                      }
+                      return [...state, member];
                     });
-                    return searchText ? (
-                      members
-                    ) : (
-                      <TeamMemberScrollData
-                        flexDirection={'column'}
-                        gap={1}
-                        userSelect={'none'}
-                        height={'fit-content'}
-                      >
-                        {members}
-                      </TeamMemberScrollData>
-                    );
-                  })()
-              }
-              {(filterClass === 'org' || searchText) &&
+                  };
+                  const collaborator = collaboratorList?.find((v) => v.tmbId === member.tmbId);
+                  return (
+                    <MemberItemCard
+                      avatar={member.avatar}
+                      key={member.tmbId}
+                      name={member.memberName}
+                      permission={collaborator?.permission.value}
+                      onChange={onChange}
+                      isChecked={!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
+                      orgs={member.orgs}
+                    />
+                  );
+                });
+                return searchKey ? (
+                  Members
+                ) : (
+                  <TeamMemberScrollData
+                    flexDirection={'column'}
+                    gap={1}
+                    userSelect={'none'}
+                    height={'fit-content'}
+                  >
+                    {Members}
+                  </TeamMemberScrollData>
+                );
+              })()}
+            {(filterClass === 'org' || searchKey) &&
               (() => {
                 const Orgs = orgs?.map((org) => {
                   const onChange = () => {
                     setSelectedOrgIdList((state) => {
                       if (state.find((v) => v._id === org._id)) {
                         return state.filter((v) => v._id !== org._id);
-                        if (state.find((v) => v._id === org._id)) {
-                          return state.filter((v) => v._id !== org._id);
-                        }
-                        return [...state, org];
-                        return [...state, org];
-                      });
+                      }
+                      return [...state, org];
+                      return [...state, org];
+                    });
                   };
                   const collaborator = collaboratorList?.find((v) => v.orgId === org._id);
                   return (
@@ -380,7 +354,6 @@ return (
                       onClick={onChange}
                     >
                       <Checkbox
-                        isChecked={!!selectedOrgList.find((v) => v._id === org._id)}
                         isChecked={!!selectedOrgList.find((v) => v._id === org._id)}
                         pointerEvents="none"
                       />
@@ -430,17 +403,11 @@ return (
                             setSelectedMemberList((state) => {
                               if (state.find((v) => v.tmbId === member.tmbId)) {
                                 return state.filter((v) => v.tmbId !== member.tmbId);
-                                setSelectedMemberList((state) => {
-                                  if (state.find((v) => v.tmbId === member.tmbId)) {
-                                    return state.filter((v) => v.tmbId !== member.tmbId);
-                                  }
-                                  return [...state, member];
-                                  return [...state, member];
-                                });
                               }
-                            }
-                            isChecked = {!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
-                            isChecked={!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
+                              return [...state, member];
+                            });
+                          }}
+                          isChecked={!!selectedMemberList.find((v) => v.tmbId === member.tmbId)}
                           orgs={member.orgs}
                         />
                       );
@@ -448,29 +415,30 @@ return (
                   </OrgMemberScrollData>
                 );
               })()}
-            {filterGroups?.map((group) => {
-              const onChange = () => {
-                setSelectedGroupList((state) => {
-                  if (state.find((v) => v._id === group._id)) {
-                    return state.filter((v) => v._id !== group._id);
-                  }
-                  return [...state, group];
-                });
-              };
-              const collaborator = collaboratorList?.find((v) => v.groupId === group._id);
-              return (
-                <MemberItemCard
-                  avatar={group.avatar}
-                  key={group._id}
-                  name={
-                    group.name === DefaultGroupName ? userInfo?.team.teamName ?? '' : group.name
-                  }
-                  permission={collaborator?.permission.value}
-                  onChange={onChange}
-                  isChecked={!!selectedGroupList.find((v) => v._id === group._id)}
-                />
-              );
-            })}
+            {(filterClass === 'group' || searchKey) &&
+              groups?.map((group) => {
+                const onChange = () => {
+                  setSelectedGroupList((state) => {
+                    if (state.find((v) => v._id === group._id)) {
+                      return state.filter((v) => v._id !== group._id);
+                    }
+                    return [...state, group];
+                  });
+                };
+                const collaborator = collaboratorList?.find((v) => v.groupId === group._id);
+                return (
+                  <MemberItemCard
+                    avatar={group.avatar}
+                    key={group._id}
+                    name={
+                      group.name === DefaultGroupName ? userInfo?.team.teamName ?? '' : group.name
+                    }
+                    permission={collaborator?.permission.value}
+                    onChange={onChange}
+                    isChecked={!!selectedGroupList.find((v) => v._id === group._id)}
+                  />
+                );
+              })}
           </Flex>
         </Flex>
 

@@ -39,7 +39,7 @@ function OrgMoveModal({
       iconColor="primary.600"
     >
       <ModalBody>
-        <OrgTree selectedOrg={selectedOrg} setSelectedOrg={setSelectedOrg} />
+        <OrgTree selectedOrg={selectedOrg} setSelectedOrg={setSelectedOrg} movingOrg={movingOrg} />
       </ModalBody>
       <ModalFooter>
         <Button

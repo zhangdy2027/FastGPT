@@ -79,9 +79,6 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
   const [editOrg, setEditOrg] = useState<OrgFormType>();
   const [manageMemberOrg, setManageMemberOrg] = useState<OrgListItemType>();
   const [movingOrg, setMovingOrg] = useState<OrgListItemType>();
-
-  const [searchOrg, setSearchOrg] = useState('');
-
   const {
     currentOrg,
     orgs,
@@ -92,7 +89,9 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
     MemberScrollData,
     onPathClick,
     refresh,
-    updateCurrentOrg
+    updateCurrentOrg,
+    setSearchKey,
+    searchKey
   } = useOrg();
 
   // Delete org
@@ -125,12 +124,6 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
   const { runAsync: deleteMemberFromTeamReq } = useRequest2(delRemoveMember, {
     onSuccess: refresh
   });
-
-  const searchedOrgs = useMemo(() => {
-    if (!searchOrg) return [];
-
-    return orgs.filter((org) => org.name.includes(searchOrg));
-  }, [orgs, searchOrg]);
 
   return (
     <>
@@ -357,6 +350,7 @@ function OrgTable({ Tabs }: { Tabs: React.ReactNode }) {
           onClose={() => setEditOrg(undefined)}
           onSuccess={refresh}
           updateCurrentOrg={updateCurrentOrg}
+          parentId={currentOrg._id}
         />
       )}
       {!!movingOrg && (
