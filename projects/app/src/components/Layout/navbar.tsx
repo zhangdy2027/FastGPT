@@ -44,13 +44,6 @@ const Navbar = ({ unread }: { unread: number }) => {
 
   const navbarList = useMemo(() => {
     const list = [
-      // {
-      //   label: t('common:navbar.Chat'),
-      //   icon: 'core/chat/chatLight',
-      //   activeIcon: 'core/chat/chatFill',
-      //   link: `/chat?appId=${lastChatAppId}`,
-      //   activeLink: ['/chat']
-      // },
       {
         label: t('common:navbar.Studio'),
         icon: 'core/app/aiLight',
@@ -68,6 +61,13 @@ const Navbar = ({ unread }: { unread: number }) => {
     ];
     const isRoot = userInfo?.username === 'root';
     if (isRoot) {
+      list.unshift({
+        label: t('common:navbar.Chat'),
+        icon: 'core/chat/chatLight',
+        activeIcon: 'core/chat/chatFill',
+        link: `/chat?appId=${lastChatAppId}`,
+        activeLink: ['/chat']
+      });
       list.push(
         {
           label: t('common:navbar.Toolkit'),
