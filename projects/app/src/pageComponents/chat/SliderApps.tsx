@@ -167,7 +167,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
     if (data.avatar.startsWith('core/')) {
       return `/imgs/${data.avatar}.svg`;
     } else if (data.avatar.startsWith('/api/')) {
-      return `${window.myConfig.gptUrl}${data.avatar}`;
+      return `${location.origin}${data.avatar}`;
     }
     return data.avatar;
   };
@@ -411,6 +411,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                         >
                           {/* <Avatar src={subItem.avatar} w={6} borderRadius={'md'} color='black' /> */}
                           <Image
+                            objectFit={'contain'}
                             boxSize={8}
                             borderRadius={'md'}
                             alt={''}
