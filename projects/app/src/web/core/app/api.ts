@@ -16,6 +16,14 @@ export const getMyApps = (data?: ListAppBody) =>
   });
 
 /**
+ * 获取应用列表
+ */
+export const getAllMyApps = (data?: any) =>
+  POST<any[]>('/core/app/allList', data, {
+    maxQuantity: 1
+  });
+
+/**
  * 创建一个应用
  */
 export const postCreateApp = (data: CreateAppBody) => POST<string>('/core/app/create', data);

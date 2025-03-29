@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Flex,
   Box,
@@ -7,7 +7,12 @@ import {
   Image,
   InputGroup,
   InputLeftElement,
-  Input
+  Input,
+  Accordion,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  AccordionItem
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
@@ -17,7 +22,7 @@ import Avatar from '@fastgpt/web/components/common/Avatar';
 import { AppListItemType } from '@fastgpt/global/core/app/type';
 import MyDivider from '@fastgpt/web/components/common/MyDivider';
 import MyPopover from '@fastgpt/web/components/common/MyPopover/index';
-import { getMyApps } from '@/web/core/app/api';
+import { getMyApps, getAllMyApps } from '@/web/core/app/api';
 import {
   GetResourceFolderListProps,
   GetResourceListItemResponse
@@ -51,7 +56,9 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
   const showRouteToAppDetail = useContextSelector(ChatItemContext, (v) => v.showRouteToAppDetail);
 
   const [searchFlag, setSearchFlag] = useState<boolean>(false);
-  const [searchApps, setSearchApps] = useState<any[]>([]);
+  const [allFolderList, setAllFolderList] = useState<any[]>([]);
+  const [searchKey, setSearchKey] = useState<any>(''); // 搜索关键字
+  const [allAppList, setAllAppList] = useState<any[]>([]); // 所有应用列表，包括文件夹和应用
 
   const getAppList = useCallback(async ({ parentId }: GetResourceFolderListProps) => {
     return getMyApps({
@@ -67,20 +74,82 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
     );
   }, []);
 
-  const getSearchApp = async (value: string) => {
-    const resp = await getMyApps({ searchKey: value });
-    setSearchApps(resp);
+  useEffect(() => {
+    initAllApps();
+  }, []);
+
+  const buildFilteredTree = (data: any, targetId?: string) => {
+    const map = new Map();
+    const tree: any = [];
+
+    // 先创建一个映射，方便快速查找节点
+    data.forEach((item: any) => {
+      map.set(item._id, { ...item, children: [] });
+    });
+
+    let targetItem: any = null; // 要置顶的第二层数据
+    let targetParent: any = null; // 目标第二层数据的父节点（第一层）
+
+    // 遍历数据，构造树结构
+    data.forEach((item: any) => {
+      if (item.parentId && map.has(item.parentId)) {
+        const parent = map.get(item.parentId);
+
+        // 仅允许第一层的 type === 'folder'
+        if (!parent.parentId && parent.type === 'folder' && item.type !== 'folder') {
+          parent.children.push(map.get(item._id));
+
+          if (item._id === targetId) {
+            targetItem = map.get(item._id);
+            targetParent = parent;
+          }
+        }
+      } else {
+        // 只有第一层 type === 'folder' 的数据才能作为根节点
+        if (item.type === 'folder') {
+          tree.push(map.get(item._id));
+        }
+      }
+    });
+
+    // 如果找到了目标项，则将目标项置顶
+    if (targetItem && targetParent) {
+      // 将目标父节点从第一层中移除并置顶
+      const parentIndex = tree.indexOf(targetParent);
+      if (parentIndex > -1) {
+        tree.splice(parentIndex, 1);
+      }
+      tree.unshift(targetParent); // 将父节点置顶
+
+      // 将目标项从目标父节点的 children 中移除并置顶
+      const childIndex = targetParent.children.indexOf(targetItem);
+      if (childIndex > -1) {
+        targetParent.children.splice(childIndex, 1);
+      }
+      targetParent.children.unshift(targetItem); // 将子节点置顶
+    }
+
+    return tree;
   };
 
-  const searchKeyChange = debounce((e: any) => {
-    if (e.target?.value) {
+  const initAllApps = async () => {
+    const resp = await getAllMyApps({
+      username: 'root'
+    });
+    setAllAppList(resp);
+    const tree = buildFilteredTree(resp, activeAppId);
+    setAllFolderList(tree);
+  };
+
+  const searchApps = useMemo(() => {
+    if (searchKey) {
       setSearchFlag(true);
-      getSearchApp(e.target?.value);
+      return allAppList.filter((item) => item.name.includes(searchKey));
     } else {
-      setSearchApps([]);
       setSearchFlag(false);
+      return [];
     }
-  }, 500);
+  }, [searchKey, allAppList]);
 
   const onChangeApp = useCallback(
     (appId: string) => {
@@ -146,7 +215,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                     type="tel"
                     placeholder="搜索智能体"
                     backgroundColor={'#F1F2F3'}
-                    onChange={searchKeyChange}
+                    onChange={(e) => setSearchKey(e.target?.value)}
                   />
                 </InputGroup>
               </Flex>
@@ -198,7 +267,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
         </Box>
       )}
 
-      {!isTeamChat && !searchFlag && (
+      {/* {!isTeamChat && !searchFlag && (
         <>
           <HStack
             px={4}
@@ -248,7 +317,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
             </MyPopover>
           </HStack>
         </>
-      )}
+      )} */}
 
       {/* <Box flex={'1 0 0'} px={4} h={0} overflow={'overlay'}>
         {apps.map((item) => (
@@ -283,8 +352,76 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
       </Box> */}
 
       {!searchFlag && (
-        <Box flex={'1 0 0'} px={4} h={0} overflow={'overlay'}>
-          {apps.map((item) => (
+        <Box flex={'1 0 0'} px={0} h={0} overflow={'overlay'}>
+          <Accordion defaultIndex={[0]} allowMultiple>
+            {allFolderList.map((item, index) => {
+              return (
+                <AccordionItem key={item['_id']} border={'none'}>
+                  <h2>
+                    <AccordionButton>
+                      <Box
+                        as="span"
+                        flex="1"
+                        textAlign="left"
+                        fontSize={16}
+                        fontWeight={'bold'}
+                        color={'#3D3D3D'}
+                      >
+                        {item.name}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    {item.children &&
+                      item.children.map((subItem: any) => (
+                        <Flex
+                          key={subItem._id}
+                          py={2}
+                          px={3}
+                          mb={3}
+                          cursor={'pointer'}
+                          borderRadius={'md'}
+                          alignItems={'center'}
+                          fontSize={'sm'}
+                          boxSizing={'border-box'}
+                          {...(subItem._id === activeAppId
+                            ? {
+                                bg: 'rgba(255, 0, 36, 0.04)',
+                                border: '1px solid rgba(255, 0, 0, 0.1)',
+                                boxShadow: 'md'
+                                // color: 'primary.600'
+                              }
+                            : {
+                                border: '1px solid #F1F2F3',
+                                _hover: {
+                                  bg: 'myGray.200'
+                                },
+                                onClick: () => onChangeApp(subItem._id)
+                              })}
+                        >
+                          <Avatar src={subItem.avatar} w={6} borderRadius={'md'} />
+                          <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
+                            <Box ml={2} className={'textEllipsis'} fontSize={'14px'}>
+                              {subItem.name}
+                            </Box>
+                            <Box
+                              ml={2}
+                              className={'textEllipsis'}
+                              fontSize={'12px'}
+                              color={'#4B5563'}
+                            >
+                              {subItem.intro ? subItem.intro : t('common.no_intro')}
+                            </Box>
+                          </Flex>
+                        </Flex>
+                      ))}
+                  </AccordionPanel>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+          {/* {apps.map((item) => (
             <Flex
               key={item._id}
               py={2}
@@ -297,18 +434,18 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
               boxSizing={'border-box'}
               {...(item._id === activeAppId
                 ? {
-                    bg: 'rgba(255, 0, 36, 0.04)',
-                    border: '1px solid rgba(255, 0, 0, 0.1)',
-                    boxShadow: 'md'
-                    // color: 'primary.600'
-                  }
+                  bg: 'rgba(255, 0, 36, 0.04)',
+                  border: '1px solid rgba(255, 0, 0, 0.1)',
+                  boxShadow: 'md'
+                  // color: 'primary.600'
+                }
                 : {
-                    border: '1px solid #F1F2F3',
-                    _hover: {
-                      bg: 'myGray.200'
-                    },
-                    onClick: () => onChangeApp(item._id)
-                  })}
+                  border: '1px solid #F1F2F3',
+                  _hover: {
+                    bg: 'myGray.200'
+                  },
+                  onClick: () => onChangeApp(item._id)
+                })}
             >
               <Avatar src={item.avatar} w={6} borderRadius={'md'} />
               <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
@@ -320,7 +457,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                 </Box>
               </Flex>
             </Flex>
-          ))}
+          ))} */}
         </Box>
       )}
     </Flex>

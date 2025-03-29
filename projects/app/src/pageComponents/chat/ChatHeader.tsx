@@ -234,7 +234,7 @@ const MobileHeader = ({
 
   return (
     <>
-      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => {}} />
+      <ChevronLeftIcon boxSize={6} onClick={backToSfzyClick}></ChevronLeftIcon>
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />
