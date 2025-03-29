@@ -19,6 +19,7 @@ interface Props {
   children: React.ReactNode;
   setPageType: Dispatch<`${LoginPageTypeEnum}`>;
   pageType: `${LoginPageTypeEnum}`;
+  fromSignin?: Boolean;
 }
 
 type OAuthItem = {
@@ -29,7 +30,7 @@ type OAuthItem = {
   redirectUrl?: string;
 };
 
-const FormLayout = ({ children, setPageType, pageType }: Props) => {
+const FormLayout = ({ children, setPageType, pageType, fromSignin }: Props) => {
   const { t } = useTranslation();
   const router = useRouter();
   const rootLogin = router.query.rootLogin === '1';
@@ -141,7 +142,7 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
 
   // Auto login
   useEffect(() => {
-    if (rootLogin) return;
+    if (rootLogin || fromSignin) return;
     const sso = oAuthList.find((item) => item.provider === OAuthEnum.sso);
     // sso auto login
     if (sso && (feConfigs?.sso?.autoLogin || isWecomWorkTerminal)) onClickOauth(sso);
@@ -170,7 +171,7 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
         {!isPc && <I18nLngSelector />}
       </Flex>
       {children}
-      {show_oauth && (
+      {/* {show_oauth && (
         <>
           <Box flex={1} />
           <Box position={'relative'}>
@@ -197,7 +198,7 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
             ))}
           </Box>
         </>
-      )}
+      )} */}
     </Flex>
   );
 };

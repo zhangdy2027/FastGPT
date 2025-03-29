@@ -1,7 +1,7 @@
 import { useSpeech } from '@/web/common/hooks/useSpeech';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { Box, Flex, Spinner, Textarea } from '@chakra-ui/react';
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import { Box, Flex, Spinner, Textarea, Button, IconButton, Text } from '@chakra-ui/react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import MyIcon from '@fastgpt/web/components/common/Icon';
@@ -108,6 +108,7 @@ const ChatInput = ({
 
   /* whisper init */
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const {
     isSpeaking,
     isTransCription,
@@ -128,7 +129,10 @@ const ChatInput = ({
         });
         replaceFiles([]);
       } else {
-        resetInputVal({ text });
+        setWhisperStatus(0);
+        setTimeout(() => {
+          resetInputVal({ text });
+        }, 0);
       }
     };
     if (isSpeaking) {
@@ -163,6 +167,15 @@ const ChatInput = ({
     };
     renderCurve();
   }, [renderAudioGraph, stream]);
+
+  const [whisperStatus, setWhisperStatus] = useState(0);
+  const whisperClick = () => {
+    if (isPc) {
+      onWhisperRecord();
+    } else {
+      setWhisperStatus(1);
+    }
+  };
 
   const RenderTranslateLoading = useMemo(
     () => (
@@ -340,7 +353,7 @@ const ChatInput = ({
                   borderRadius={'md'}
                   cursor={'pointer'}
                   _hover={{ bg: '#F5F5F8' }}
-                  onClick={onWhisperRecord}
+                  onClick={whisperClick}
                 >
                   <MyIcon
                     name={isSpeaking ? 'core/chat/finishSpeak' : 'core/chat/recordFill'}
@@ -370,7 +383,7 @@ const ChatInput = ({
                   ? ''
                   : !havInput || hasFileUploading
                     ? '#E5E5E5'
-                    : 'primary.500'
+                    : '#DB1010'
               }
               cursor={havInput ? 'pointer' : 'not-allowed'}
               lineHeight={1}
@@ -434,80 +447,177 @@ const ChatInput = ({
   );
 
   return (
-    <Box
-      m={['0 auto', '10px auto']}
-      w={'100%'}
-      maxW={['auto', 'min(800px, 100%)']}
-      px={[0, 5]}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
+    <>
+      {whisperStatus && !isPc ? (
+        <>
+          <Box
+            pos={'fixed'}
+            width={'100vw'}
+            height={'15vh'}
+            bottom={0}
+            left={0}
+            bg={'#ffffff'}
+            zIndex={10}
+            visibility={isSpeaking && !isTransCription ? 'visible' : 'hidden'}
+          >
+            <Box
+              pos={'absolute'}
+              bottom={'10px'}
+              left={'50%'}
+              transform={'translate(-50%, -50%)'}
+              p={4}
+              borderRadius={4}
+              textAlign={'center'}
+            >
+              <Text fontSize={'sm'} mb={2} color={'#999999'}>
+                {'向上滑动取消'}
+              </Text>
+            </Box>
+          </Box>
+          <Flex
+            m={'10px auto'}
+            w={'calc(100% - 20px)'}
+            maxW={['auto', 'min(800px, calc(100% - 20px))']}
+            px={[0, 5]}
+            alignItems={'center'}
+            gap={2}
+            zIndex={11}
+          >
+            <Button
+              ref={buttonRef}
+              size="lg"
+              colorScheme="red"
+              variant={isSpeaking ? 'solid' : 'outline'}
+              flex={'1 1 auto'}
+              isLoading={isSpeaking && isTransCription}
+              loadingText={t('common:core.chat.Converting to text')}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                onWhisperRecord();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                if (buttonRef.current) {
+                  const buttonRect = buttonRef.current.getBoundingClientRect();
+                  const touchEndX = e.changedTouches[0].clientX;
+                  const touchEndY = e.changedTouches[0].clientY;
 
-        if (!(showSelectFile || showSelectImg)) return;
-        const files = Array.from(e.dataTransfer.files);
+                  // 判断松开时是否在按钮上方
+                  if (
+                    touchEndX < buttonRect.left ||
+                    touchEndX > buttonRect.right ||
+                    touchEndY < buttonRect.top ||
+                    touchEndY > buttonRect.bottom
+                  ) {
+                    console.log('松开时不在按钮上方，执行其他操作');
+                    stopSpeak(true); // 执行其他操作（比如取消录音）
+                  } else {
+                    console.log('松开时在按钮上方，结束说话');
+                    onWhisperRecord(); // 结束说话
+                  }
+                }
+              }}
+              onTouchCancel={() => {
+                stopSpeak(true);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              {isSpeaking
+                ? isTransCription
+                  ? t('common:core.chat.Converting to text')
+                  : '松开发送'
+                : '按住说话'}
+            </Button>
+            <IconButton
+              mr={3}
+              onClick={() => setWhisperStatus(0)}
+              icon={<MyIcon name={'common/keyboard'} w={'1rem'} color={'primary.500'} />}
+              bg={'white'}
+              boxShadow={'1px 1px 9px rgba(0,0,0,0.15)'}
+              size={'lgSquare'}
+              borderRadius={'50%'}
+              aria-label={''}
+            />
+          </Flex>
+        </>
+      ) : (
+        <Box
+          m={'10px auto'}
+          w={'calc(100% - 20px)'}
+          maxW={['auto', 'min(800px, calc(100% - 20px))']}
+          px={[0, 5]}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
 
-        const droppedFiles = files.filter((file) => fileTypeFilter(file));
-        if (droppedFiles.length > 0) {
-          onSelectFile({ files: droppedFiles });
-        }
+            if (!(showSelectFile || showSelectImg)) return;
+            const files = Array.from(e.dataTransfer.files);
 
-        const invalidFileName = files
-          .filter((file) => !fileTypeFilter(file))
-          .map((file) => file.name)
-          .join(', ');
-        if (invalidFileName) {
-          toast({
-            status: 'warning',
-            title: t('chat:unsupported_file_type'),
-            description: invalidFileName
-          });
-        }
-      }}
-    >
-      <Box
-        pt={fileList.length > 0 ? '0' : ['14px', '18px']}
-        pb={['14px', '18px']}
-        position={'relative'}
-        boxShadow={isSpeaking ? `0 0 10px rgba(54,111,255,0.4)` : `0 0 10px rgba(0,0,0,0.2)`}
-        borderRadius={['none', 'md']}
-        bg={'white'}
-        overflow={'display'}
-        {...(isPc
-          ? {
-              border: '1px solid',
-              borderColor: 'rgba(0,0,0,0.12)'
+            const droppedFiles = files.filter((file) => fileTypeFilter(file));
+            if (droppedFiles.length > 0) {
+              onSelectFile({ files: droppedFiles });
             }
-          : {
-              borderTop: '1px solid',
-              borderTopColor: 'rgba(0,0,0,0.15)'
-            })}
-      >
-        {/* Chat input guide box */}
-        {chatInputGuide.open && (
-          <InputGuideBox
-            appId={appId}
-            text={inputValue}
-            onSelect={(e) => {
-              setValue('input', e);
-            }}
-            onSend={(e) => {
-              handleSend(e);
-            }}
-          />
-        )}
 
-        {/* translate loading */}
-        {RenderTranslateLoading}
+            const invalidFileName = files
+              .filter((file) => !fileTypeFilter(file))
+              .map((file) => file.name)
+              .join(', ');
+            if (invalidFileName) {
+              toast({
+                status: 'warning',
+                title: t('chat:unsupported_file_type'),
+                description: invalidFileName
+              });
+            }
+          }}
+        >
+          {' '}
+          <Box
+            pt={fileList.length > 0 ? '0' : ['14px', '18px']}
+            pb={['14px', '18px']}
+            position={'relative'}
+            boxShadow={isSpeaking ? `0 0 10px rgba(54,111,255,0.4)` : `0 0 10px rgba(0,0,0,0.2)`}
+            borderRadius={'md'}
+            bg={'white'}
+            overflow={'display'}
+            {...(isPc
+              ? {
+                  border: '1px solid',
+                  borderColor: 'rgba(0,0,0,0.12)'
+                }
+              : {
+                  borderTop: '1px solid',
+                  borderTopColor: 'rgba(0,0,0,0.15)'
+                })}
+          >
+            {/* Chat input guide box */}
+            {chatInputGuide.open && (
+              <InputGuideBox
+                appId={appId}
+                text={inputValue}
+                onSelect={(e) => {
+                  setValue('input', e);
+                }}
+                onSend={(e) => {
+                  handleSend(e);
+                }}
+              />
+            )}
 
-        {/* file preview */}
-        <Box px={[1, 3]}>
-          <FilePreview fileList={fileList} removeFiles={removeFiles} />
+            {/* translate loading */}
+            {RenderTranslateLoading}
+
+            {/* file preview */}
+            <Box px={[1, 3]}>
+              <FilePreview fileList={fileList} removeFiles={removeFiles} />
+            </Box>
+
+            {RenderTextarea}
+          </Box>
+          <ComplianceTip type={'chat'} />
         </Box>
-
-        {RenderTextarea}
-      </Box>
-      <ComplianceTip type={'chat'} />
-    </Box>
+      )}
+    </>
   );
 };
 

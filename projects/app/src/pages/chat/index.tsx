@@ -2,7 +2,17 @@ import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import NextHead from '@/components/common/NextHead';
 import { useRouter } from 'next/router';
 import { getInitChatInfo } from '@/web/core/chat/api';
-import { Box, Flex, Drawer, DrawerOverlay, DrawerContent, useTheme } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  useTheme,
+  Button,
+  IconButton,
+  Image
+} from '@chakra-ui/react';
 import { streamFetch } from '@/web/common/api/fetch';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
 import { useToast } from '@fastgpt/web/hooks/useToast';
@@ -64,6 +74,9 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const totalRecordsCount = useContextSelector(ChatRecordContext, (v) => v.totalRecordsCount);
+
+  const [hideSlider, setHideSlider] = useState(false);
+  const [sfzyUserInfo, setSfzyUserInfo] = useState<any>({});
 
   // Load chat init data
   const { loading } = useRequest2(
@@ -142,6 +155,15 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     [appId, chatId, onUpdateHistoryTitle, setChatBoxData, forbidLoadChat]
   );
 
+  const backToSfzyClick = () => {
+    const pamras = new URLSearchParams(location.search);
+    if (pamras.get('redir') === 'true') {
+      location.href = window.myConfig.sfzyUrl;
+    } else {
+      window.history.back();
+    }
+  };
+
   const RenderHistorySlider = useMemo(() => {
     const Children = (
       <ChatHistorySlider confirmClearText={t('common:core.chat.Confirm to clear history')} />
@@ -152,7 +174,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     ) : (
       <Drawer
         isOpen={isOpenSlider}
-        placement="left"
+        placement="right"
         autoFocus={false}
         size={'xs'}
         onClose={onCloseSlider}
@@ -168,19 +190,60 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       <NextHead title={chatBoxData.app.name} icon={chatBoxData.app.avatar}></NextHead>
       {/* pc show myself apps */}
       {isPc && (
-        <Box borderRight={theme.borders.base} flex={'0 0 220px'}>
+        <Box
+          borderRight={theme.borders.base}
+          w={'220px'}
+          flexShrink={0}
+          display={hideSlider ? 'none' : 'block'}
+        >
           <SliderApps apps={myApps} activeAppId={appId} />
         </Box>
       )}
 
-      {(!quoteData || isPc) && (
-        <PageContainer
-          isLoading={loading}
-          flex={'1 0 0'}
-          w={0}
-          p={[0, '16px']}
-          position={'relative'}
-        >
+      <Flex
+        flexDirection={'column'}
+        w={'100%'}
+        h={'100%'}
+        background={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}
+        p={isPc ? 4 : 0}
+        boxSizing={'border-box'}
+        gap={4}
+      >
+        {isPc && (
+          <Flex alignItems={'center'}>
+            <Flex
+              borderRadius={'full'}
+              boxShadow={'0px 0px 10px 0px rgba(75, 85, 99, 0.3);'}
+              w={8}
+              h={8}
+              bgColor={'#ffffff'}
+              alignItems={'center'}
+              justifyContent={'center'}
+              cursor={'pointer'}
+              onClick={() => {
+                setHideSlider(!hideSlider);
+              }}
+            >
+              <Image
+                src={hideSlider ? '/imgs/展开.png' : '/imgs/收起.png'}
+                borderRadius="full"
+                alt=""
+                boxSize="24px"
+              />
+            </Flex>
+            <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
+              <Button
+                bgColor={'#D94848'}
+                onClick={backToSfzyClick}
+                leftIcon={<Image alt="" src="/imgs/backIcon.png" boxSize="15px" />}
+              >
+                返回
+              </Button>
+              {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
+            </Flex>
+          </Flex>
+        )}
+        <PageContainer isLoading={loading} p={'0px !important'} w={'100%'} position={'relative'}>
           <Flex h={'100%'} flexDirection={['column', 'row']}>
             {/* pc always show history. */}
             {RenderHistorySlider}
@@ -226,17 +289,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
             </Flex>
           </Flex>
         </PageContainer>
-      )}
-
-      {quoteData && (
-        <PageContainer flex={'1 0 0'} w={0} maxW={'560px'}>
-          <ChatQuoteList
-            rawSearch={quoteData.rawSearch}
-            metadata={quoteData.metadata}
-            onClose={() => setQuoteData(undefined)}
-          />
-        </PageContainer>
-      )}
+      </Flex>
     </Flex>
   );
 };

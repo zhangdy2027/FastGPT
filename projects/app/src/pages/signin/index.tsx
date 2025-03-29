@@ -38,7 +38,7 @@ const CommunityModal = dynamic(() => import('@/components/CommunityModal'));
 
 const ipDetectURL = 'https://qifu-api.baidubce.com/ip/local/geo/v1/district';
 
-const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
+const Signin = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const { lastRoute = '' } = router.query as { lastRoute: string };
@@ -83,7 +83,7 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
     // @ts-ignore
     const Component = TypeMap[pageType];
 
-    return <Component setPageType={setPageType} loginSuccess={loginSuccess} />;
+    return <Component setPageType={setPageType} loginSuccess={loginSuccess} fromSignin={true} />;
   }, [pageType, loginSuccess]);
 
   /* default login type */
@@ -146,26 +146,11 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       <Flex
         alignItems={'center'}
         justifyContent={'center'}
-        bg={`url(${getWebReqUrl('/icon/login-bg.svg')}) no-repeat`}
         backgroundSize={'cover'}
+        bg={`linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)`}
         userSelect={'none'}
         h={'100%'}
-        pos={'relative'}
       >
-        <Box
-          pos={'absolute'}
-          top={0}
-          left={0}
-          w={'100%'}
-          h={'100%'}
-          bg={`linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)`}
-          zIndex={100}
-        ></Box>
-        {isPc && (
-          <Box position={'absolute'} top={'24px'} right={'50px'}>
-            <I18nLngSelector />
-          </Box>
-        )}
         <Flex
           flexDirection={'column'}
           w={['100%', '556px']}
@@ -205,24 +190,6 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
 
         {isOpen && <CommunityModal onClose={onClose} />}
       </Flex>
-
-      {showRedirect && (
-        <RedirectDrawer
-          isOpen={isOpenRedirect}
-          onClose={onCloseRedirect}
-          onRedirect={() => router.push(ChineseRedirectUrl)}
-          disableDrawer={() => setShowRedirect(false)}
-        />
-      )}
-      {isOpenCookiesDrawer && (
-        <CookiesDrawer
-          onAgree={() => {
-            setLocalCookieVersion(cookieVersion);
-            onCloseCookiesDrawer();
-          }}
-          onClose={onCloseCookiesDrawer}
-        />
-      )}
     </>
   );
 };
@@ -312,4 +279,4 @@ export async function getServerSideProps(context: any) {
   };
 }
 
-export default Login;
+export default Signin;

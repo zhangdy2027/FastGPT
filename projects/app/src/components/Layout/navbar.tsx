@@ -42,15 +42,8 @@ const Navbar = ({ unread }: { unread: number }) => {
   const { gitStar, feConfigs } = useSystemStore();
   const { lastChatAppId } = useChatStore();
 
-  const navbarList = useMemo(
-    () => [
-      {
-        label: t('common:navbar.Chat'),
-        icon: 'core/chat/chatLight',
-        activeIcon: 'core/chat/chatFill',
-        link: `/chat?appId=${lastChatAppId}`,
-        activeLink: ['/chat']
-      },
+  const navbarList = useMemo(() => {
+    const list = [
       {
         label: t('common:navbar.Studio'),
         icon: 'core/app/aiLight',
@@ -64,35 +57,47 @@ const Navbar = ({ unread }: { unread: number }) => {
         activeIcon: 'core/dataset/datasetFill',
         link: `/dataset/list`,
         activeLink: ['/dataset/list', '/dataset/detail']
-      },
-      {
-        label: t('common:navbar.Toolkit'),
-        icon: 'phoneTabbar/tool',
-        activeIcon: 'phoneTabbar/toolFill',
-        link: `/toolkit`,
-        activeLink: ['/toolkit']
-      },
-      {
-        label: t('common:navbar.Account'),
-        icon: 'support/user/userLight',
-        activeIcon: 'support/user/userFill',
-        link: '/account/info',
-        activeLink: [
-          '/account/bill',
-          '/account/info',
-          '/account/team',
-          '/account/usage',
-          '/account/thirdParty',
-          '/account/apikey',
-          '/account/setting',
-          '/account/inform',
-          '/account/promotion',
-          '/account/model'
-        ]
       }
-    ],
-    [lastChatAppId, t]
-  );
+    ];
+    const isRoot = userInfo?.username === 'root';
+    if (isRoot) {
+      list.unshift({
+        label: t('common:navbar.Chat'),
+        icon: 'core/chat/chatLight',
+        activeIcon: 'core/chat/chatFill',
+        link: `/chat?appId=${lastChatAppId}`,
+        activeLink: ['/chat']
+      });
+      list.push(
+        {
+          label: t('common:navbar.Toolkit'),
+          icon: 'phoneTabbar/tool',
+          activeIcon: 'phoneTabbar/toolFill',
+          link: `/toolkit`,
+          activeLink: ['/toolkit']
+        },
+        {
+          label: t('common:navbar.Account'),
+          icon: 'support/user/userLight',
+          activeIcon: 'support/user/userFill',
+          link: '/account/info',
+          activeLink: [
+            '/account/bill',
+            '/account/info',
+            '/account/team',
+            '/account/usage',
+            '/account/thirdParty',
+            '/account/apikey',
+            '/account/setting',
+            '/account/inform',
+            '/account/promotion',
+            '/account/model'
+          ]
+        }
+      );
+    }
+    return list;
+  }, [lastChatAppId, t]);
 
   const isSecondNavbarPage = useMemo(() => {
     return ['/toolkit'].includes(router.pathname);
@@ -107,7 +112,7 @@ const Navbar = ({ unread }: { unread: number }) => {
       w={'100%'}
       userSelect={'none'}
       pb={2}
-      bg={isSecondNavbarPage ? 'myGray.50' : 'transparent'}
+      bg={'transparent'}
     >
       {/* logo */}
       <Box
@@ -117,7 +122,7 @@ const Navbar = ({ unread }: { unread: number }) => {
         borderRadius={'50%'}
         overflow={'hidden'}
         cursor={'pointer'}
-        onClick={() => router.push('/account/info')}
+        // onClick={() => router.push('/account/info')}
       >
         <Avatar w={'2rem'} h={'2rem'} src={userInfo?.avatar} borderRadius={'50%'} />
       </Box>
@@ -212,7 +217,7 @@ const Navbar = ({ unread }: { unread: number }) => {
           </MyTooltip>
         ))}
 
-      {feConfigs?.show_git && (
+      {/* {feConfigs?.show_git && (
         <MyTooltip label={`Git Star: ${gitStar}`} placement={'right-end'}>
           <Link
             as={NextLink}
@@ -227,7 +232,7 @@ const Navbar = ({ unread }: { unread: number }) => {
             <MyIcon name={'common/gitInlight'} width={'26px'} height={'26px'} />
           </Link>
         </MyTooltip>
-      )}
+      )} */}
     </Flex>
   );
 };

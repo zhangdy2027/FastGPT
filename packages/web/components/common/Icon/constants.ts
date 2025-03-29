@@ -458,6 +458,7 @@ export const iconPaths = {
   'support/user/userLightSmall': () => import('./icons/support/user/userLightSmall.svg'),
   'support/user/usersFill': () => import('./icons/support/user/usersFill.svg'),
   'support/user/usersLight': () => import('./icons/support/user/usersLight.svg'),
+  'common/keyboard': () => import('./icons/common/keyboard.svg'),
   text: () => import('./icons/text.svg'),
   union: () => import('./icons/union.svg'),
   user: () => import('./icons/user.svg'),

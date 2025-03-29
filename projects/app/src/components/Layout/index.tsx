@@ -31,6 +31,7 @@ const pcUnShowLayoutRoute: Record<string, boolean> = {
   '/login': true,
   '/login/provider': true,
   '/login/fastlogin': true,
+  '/signin': true,
   '/chat/share': true,
   '/chat/team': true,
   '/app/edit': true,
@@ -43,6 +44,7 @@ const phoneUnShowLayoutRoute: Record<string, boolean> = {
   '/login': true,
   '/login/provider': true,
   '/login/fastlogin': true,
+  '/signin': true,
   '/chat/share': true,
   '/chat/team': true,
   '/tools/price': true,
@@ -115,7 +117,7 @@ const Layout = ({ children }: { children: JSX.Element }) => {
 
   return (
     <>
-      <Box h={'100%'} bg={'myGray.100'}>
+      <Box h={'100%'} bg={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}>
         {isPc === true && (
           <>
             {isHideNavbar ? (

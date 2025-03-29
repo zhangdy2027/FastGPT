@@ -86,7 +86,7 @@ const Toolkit = () => {
           position={'fixed'}
           left={isPc ? navbarWidth : 0}
           top={0}
-          bg={'myGray.25'}
+          bg={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}
           w={['60vw', '200px']}
           h={'full'}
           borderLeft={'1px solid'}
@@ -98,77 +98,86 @@ const Toolkit = () => {
           zIndex={100}
           userSelect={'none'}
         >
-          {pluginGroups.map((group) => {
-            const selected = group.groupId === selectedGroup;
-            return (
-              <Box key={group.groupId}>
-                <Flex
-                  p={2}
-                  mb={0.5}
-                  fontSize={'sm'}
-                  rounded={'md'}
-                  color={'myGray.900'}
-                  {...(!isOneGroup && {
-                    cursor: 'pointer',
-                    _hover: {
-                      bg: 'primary.50'
-                    },
-                    onClick: () => {
-                      router.push({
-                        query: { group: group.groupId, type: 'all' }
-                      });
-                      onClose();
-                    }
-                  })}
-                >
-                  <Avatar src={group.groupAvatar} w={'1rem'} mr={1.5} color={'primary.600'} />
-                  <Box>{t(group.groupName as any)}</Box>
-                  <Box flex={1} />
-                  {!isOneGroup && (
-                    <MyIcon
-                      color={'myGray.600'}
-                      name={selected ? 'core/chat/chevronDown' : 'core/chat/chevronUp'}
-                      w={'1rem'}
-                    />
-                  )}
-                </Flex>
-                {/* group types */}
-                {selected &&
-                  pluginGroupTypes.map((type) => {
-                    return (
-                      <Flex
-                        key={type.typeId}
-                        fontSize={'14px'}
-                        fontWeight={500}
-                        rounded={'md'}
-                        py={2}
-                        pl={'30px'}
-                        cursor={'pointer'}
-                        mb={0.5}
-                        _hover={{ bg: 'primary.50' }}
-                        {...(type.typeId === selectedType
-                          ? {
-                              bg: 'primary.50',
-                              color: 'primary.600'
-                            }
-                          : {
-                              bg: 'transparent',
-                              color: 'myGray.500'
-                            })}
-                        onClick={() => {
-                          router.push({
-                            query: { group: selectedGroup, type: type.typeId }
-                          });
-                          onClose();
-                        }}
-                      >
-                        {t(type.typeName as any)}
-                      </Flex>
-                    );
-                  })}
-              </Box>
-            );
-          })}
+          <Box
+            w={'100%'}
+            h={'100%'}
+            bg={'myGray.25'}
+            borderRadius={'md'}
+            boxShadow={2}
+            border={'base'}
+          >
+            {pluginGroups.map((group) => {
+              const selected = group.groupId === selectedGroup;
+              return (
+                <Box key={group.groupId}>
+                  <Flex
+                    p={2}
+                    mb={0.5}
+                    fontSize={'sm'}
+                    rounded={'md'}
+                    color={'myGray.900'}
+                    {...(!isOneGroup && {
+                      cursor: 'pointer',
+                      _hover: {
+                        bg: 'primary.50'
+                      },
+                      onClick: () => {
+                        router.push({
+                          query: { group: group.groupId, type: 'all' }
+                        });
+                        onClose();
+                      }
+                    })}
+                  >
+                    <Avatar src={group.groupAvatar} w={'1rem'} mr={1.5} color={'primary.600'} />
+                    <Box>{t(group.groupName as any)}</Box>
+                    <Box flex={1} />
+                    {!isOneGroup && (
+                      <MyIcon
+                        color={'myGray.600'}
+                        name={selected ? 'core/chat/chevronDown' : 'core/chat/chevronUp'}
+                        w={'1rem'}
+                      />
+                    )}
+                  </Flex>
+                  {/* group types */}
+                  {selected &&
+                    pluginGroupTypes.map((type) => {
+                      return (
+                        <Flex
+                          key={type.typeId}
+                          fontSize={'14px'}
+                          fontWeight={500}
+                          rounded={'md'}
+                          py={2}
+                          pl={'30px'}
+                          cursor={'pointer'}
+                          mb={0.5}
+                          _hover={{ bg: 'primary.50' }}
+                          {...(type.typeId === selectedType
+                            ? {
+                                bg: 'primary.50',
+                                color: 'primary.600'
+                              }
+                            : {
+                                bg: 'transparent',
+                                color: 'myGray.500'
+                              })}
+                          onClick={() => {
+                            router.push({
+                              query: { group: selectedGroup, type: type.typeId }
+                            });
+                            onClose();
+                          }}
+                        >
+                          {t(type.typeName as any)}
+                        </Flex>
+                      );
+                    })}
+                </Box>
+              );
+            })}
+          </Box>
         </Box>
       )}
       <Box ml={[0, '200px']} p={[5, 6]}>

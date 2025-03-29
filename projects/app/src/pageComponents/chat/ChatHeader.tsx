@@ -5,6 +5,7 @@ import Avatar from '@fastgpt/web/components/common/Avatar';
 import ToolMenu from './ToolMenu';
 import type { ChatItemType } from '@fastgpt/global/core/chat/type';
 import { useTranslation } from 'next-i18next';
+import { ChevronLeftIcon } from '@chakra-ui/icons';
 
 import MyTag from '@fastgpt/web/components/common/Tag/index';
 import { useContextSelector } from 'use-context-selector';
@@ -72,12 +73,8 @@ const ChatHeader = ({
         />
       )}
 
-      <Flex gap={2} alignItems={'center'}>
-        {!isVariableVisible && <VariablePopover showExternalVariables={isChat} />}
-
-        {/* control */}
-        {!isPlugin && <ToolMenu history={history} />}
-      </Flex>
+      {/* control */}
+      {/* {!isPlugin && <ToolMenu history={history} />} */}
     </Flex>
   );
 };
@@ -231,28 +228,33 @@ const MobileHeader = ({
   const { isOpen: isOpenDrawer, onToggle: toggleDrawer, onClose: onCloseDrawer } = useDisclosure();
   const isShareChat = router.pathname === '/chat/share';
 
+  const backToSfzyClick = () => {
+    window.history.back();
+  };
+
   return (
     <>
-      {showHistory && (
-        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
-      )}
+      <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={() => {}} />
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />
           <Box ml={1} className="textEllipsis">
             {name}
           </Box>
-          {isShareChat ? null : (
+          {/* {isShareChat ? null : (
             <MyIcon
               name={'core/chat/chevronSelector'}
               w={'1.25rem'}
               color={isOpenDrawer ? 'primary.600' : 'myGray.900'}
             />
-          )}
+          )} */}
         </Flex>
       </Flex>
-      {isOpenDrawer && !isShareChat && (
+      {/* {isOpenDrawer && !isShareChat && (
         <MobileDrawer apps={apps} appId={appId} onCloseDrawer={onCloseDrawer} />
+      )} */}
+      {showHistory && (
+        <MyIcon name={'menu'} w={'20px'} h={'20px'} color={'myGray.900'} onClick={onOpenSlider} />
       )}
     </>
   );

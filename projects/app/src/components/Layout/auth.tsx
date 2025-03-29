@@ -3,6 +3,7 @@ import { useUserStore } from '@/web/support/user/useUserStore';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'next-i18next';
 import { useToast } from '@fastgpt/web/hooks/useToast';
+import { clearToken } from '@/web/support/user/auth';
 
 const unAuthPage: { [key: string]: boolean } = {
   '/': true,
@@ -10,6 +11,7 @@ const unAuthPage: { [key: string]: boolean } = {
   '/login/provider': true,
   '/login/fastlogin': true,
   '/login/sso': true,
+  '/signin': true,
   '/appStore': true,
   '/chat/share': true,
   '/chat/team': true,
@@ -21,12 +23,16 @@ const Auth = ({ children }: { children: JSX.Element | React.ReactNode }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
-  const { userInfo, initUserInfo } = useUserStore();
+  const { userInfo, initUserInfo, setUserInfo } = useUserStore();
 
   useQuery(
     [router.pathname],
-    () => {
-      if (unAuthPage[router.pathname] === true || userInfo) {
+    async () => {
+      if (router.pathname === '/signin') {
+        await clearToken();
+        setUserInfo(null);
+        return null;
+      } else if (unAuthPage[router.pathname] === true || userInfo) {
         return null;
       } else {
         return initUserInfo();
