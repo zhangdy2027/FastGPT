@@ -163,6 +163,15 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
     [router]
   );
 
+  const getAppCardLogo = (data: any) => {
+    if (data.avatar.startsWith('core/')) {
+      return `/imgs/${data.avatar}.svg`;
+    } else if (data.avatar.startsWith('/api/')) {
+      return `${window.myConfig.gptUrl}${data.avatar}`;
+    }
+    return data.avatar;
+  };
+
   return (
     // <Flex flexDirection={'column'} h={'100%'}>
     <Flex flexDirection={'column'} h={'100%'} bgColor={'#ffffff'} className={ysbthFont.variable}>
@@ -400,7 +409,13 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                                 onClick: () => onChangeApp(subItem._id)
                               })}
                         >
-                          <Avatar src={subItem.avatar} w={6} borderRadius={'md'} />
+                          {/* <Avatar src={subItem.avatar} w={6} borderRadius={'md'} color='black' /> */}
+                          <Image
+                            boxSize={8}
+                            borderRadius={'md'}
+                            alt={''}
+                            src={getAppCardLogo(subItem)}
+                          />
                           <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
                             <Box ml={2} className={'textEllipsis'} fontSize={'14px'}>
                               {subItem.name}
