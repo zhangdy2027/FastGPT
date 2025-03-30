@@ -139,7 +139,8 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
       username: userInfo?.username
     });
     setAllAppList(resp);
-    const tree = buildFilteredTree(resp, activeAppId);
+    const aId: any = router.query?.appId || activeAppId;
+    const tree = buildFilteredTree(resp, aId);
     setAllFolderList(tree);
   };
 

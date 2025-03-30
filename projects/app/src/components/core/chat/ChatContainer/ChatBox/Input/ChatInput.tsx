@@ -205,6 +205,7 @@ const ChatInput = ({
         {/* file selector */}
         {(showSelectFile || showSelectImg) && (
           <Flex
+            pos={'absolute'}
             h={'22px'}
             alignItems={'center'}
             justifyContent={'center'}
@@ -226,8 +227,9 @@ const ChatInput = ({
         <Textarea
           ref={TextareaDom}
           py={0}
-          pl={2}
-          pr={['30px', '48px']}
+          pl={0}
+          mb={'30px'}
+          // pr={['30px', '48px']}
           border={'none'}
           _focusVisible={{
             border: 'none'
@@ -543,8 +545,8 @@ const ChatInput = ({
       ) : (
         <Box
           m={'10px auto'}
-          w={'calc(100% - 20px)'}
-          maxW={['auto', 'min(800px, calc(100% - 20px))']}
+          w={'min(1200px, calc(100% - 20px))'}
+          // maxW={['auto', 'min(800px, calc(100% - 20px))']}
           px={[0, 5]}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
