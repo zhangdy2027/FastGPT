@@ -12,7 +12,7 @@ const PageContainer = ({
   return (
     <MyBox h={'100%'} py={[0, '16px']} pr={[0, '16px']} {...props}>
       <MyBox
-        isLoading={isLoading}
+        // isLoading={isLoading}
         h={'100%'}
         borderColor={'borderColor.base'}
         borderWidth={[0, 1]}

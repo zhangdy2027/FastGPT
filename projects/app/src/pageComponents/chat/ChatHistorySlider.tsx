@@ -84,7 +84,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
 
   return (
     <MyBox
-      isLoading={isLoading}
+      // isLoading={isLoading}
       display={'flex'}
       flexDirection={'column'}
       w={'100%'}
