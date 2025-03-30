@@ -3,7 +3,7 @@ import { i18nT } from '../../../web/i18n/utils';
 export enum ChatRoleEnum {
   System = 'System',
   Human = 'Human',
-  AI = 'AI'
+  AI = ''
 }
 export const ChatRoleMap = {
   [ChatRoleEnum.System]: {
@@ -13,7 +13,7 @@ export const ChatRoleMap = {
     name: '用户'
   },
   [ChatRoleEnum.AI]: {
-    name: 'AI'
+    name: ''
   }
 };
 

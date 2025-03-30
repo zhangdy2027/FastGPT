@@ -8,7 +8,7 @@ import type {
 import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
 export const defaultApp: AppDetailType = {
   _id: '',
-  name: 'AI',
+  name: '',
   type: AppTypeEnum.simple,
   avatar: '/icon/logo.svg',
   intro: '',

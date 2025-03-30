@@ -12,7 +12,7 @@ const WelcomeBox = ({ welcomeText }: { welcomeText: string }) => {
   return (
     <Box py={3}>
       {/* avatar */}
-      <ChatAvatar src={appAvatar} type={'AI'} />
+      <ChatAvatar src={appAvatar} type={''} />
       {/* message */}
       <Box textAlign={'left'}>
         <Card
