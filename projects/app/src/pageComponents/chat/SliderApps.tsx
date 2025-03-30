@@ -31,6 +31,7 @@ import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import dynamic from 'next/dynamic';
 import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
 import { useContextSelector } from 'use-context-selector';
+import { useUserStore } from '@/web/support/user/useUserStore';
 import { debounce } from 'lodash';
 
 import localFont from 'next/font/local';
@@ -52,6 +53,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
   const { t } = useTranslation();
   const router = useRouter();
   const isTeamChat = router.pathname === '/chat/team';
+  const { userInfo } = useUserStore();
 
   const showRouteToAppDetail = useContextSelector(ChatItemContext, (v) => v.showRouteToAppDetail);
 
@@ -134,7 +136,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
 
   const initAllApps = async () => {
     const resp = await getAllMyApps({
-      username: 'root'
+      username: userInfo?.username
     });
     setAllAppList(resp);
     const tree = buildFilteredTree(resp, activeAppId);
