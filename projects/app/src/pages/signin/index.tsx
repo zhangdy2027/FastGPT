@@ -132,7 +132,7 @@ const Signin = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
     router.prefetch('/app/list');
 
     ChineseRedirectUrl && showRedirect && checkIpInChina();
-    localCookieVersion !== cookieVersion && onOpenCookiesDrawer();
+    // localCookieVersion !== cookieVersion && onOpenCookiesDrawer();
   });
 
   return (
