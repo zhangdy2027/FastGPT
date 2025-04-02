@@ -377,7 +377,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                         textAlign="left"
                         fontSize={16}
                         fontWeight={'bold'}
-                        color={'#3D3D3D'}
+                        color={'#555'}
                       >
                         {item.name}
                       </Box>
