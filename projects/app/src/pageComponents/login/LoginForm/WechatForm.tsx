@@ -40,7 +40,11 @@ const WechatForm = ({ setPageType, loginSuccess }: Props) => {
   });
 
   return (
-    <FormLayout setPageType={setPageType} pageType={LoginPageTypeEnum.wechat}>
+    <FormLayout
+      loginSuccess={loginSuccess}
+      setPageType={setPageType}
+      pageType={LoginPageTypeEnum.wechat}
+    >
       <Box>
         <Box w={'full'} textAlign={'center'} pt={6} fontWeight={'medium'}>
           {t('common:support.user.login.wx_qr_login')}

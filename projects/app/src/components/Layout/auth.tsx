@@ -44,10 +44,10 @@ const Auth = ({ children }: { children: JSX.Element | React.ReactNode }) => {
         router.replace(
           `/login?lastRoute=${encodeURIComponent(location.pathname + location.search)}`
         );
-        toast({
-          status: 'warning',
-          title: t('common:support.user.Need to login')
-        });
+        // toast({
+        //   status: 'warning',
+        //   title: t('common:support.user.Need to login')
+        // });
       }
     }
   );

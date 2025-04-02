@@ -14,12 +14,15 @@ import { getNanoid } from '@fastgpt/global/common/string/tools';
 import Avatar from '@fastgpt/web/components/common/Avatar';
 import dynamic from 'next/dynamic';
 import { GET, POST } from '@/web/common/api/request';
+import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
+import { postLoginByNoPc } from '@/web/support/user/api';
 
 interface Props {
   children: React.ReactNode;
   setPageType: Dispatch<`${LoginPageTypeEnum}`>;
   pageType: `${LoginPageTypeEnum}`;
   fromSignin?: Boolean;
+  loginSuccess: any;
 }
 
 type OAuthItem = {
@@ -30,7 +33,7 @@ type OAuthItem = {
   redirectUrl?: string;
 };
 
-const FormLayout = ({ children, setPageType, pageType, fromSignin }: Props) => {
+const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess }: Props) => {
   const { t } = useTranslation();
   const router = useRouter();
   const rootLogin = router.query.rootLogin === '1';
@@ -112,20 +115,40 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin }: Props) => {
     [feConfigs?.sso?.url, oAuthList.length]
   );
 
+  const { runAsync: onNoPcClickLogin, loading: requesting } = useRequest2(
+    async ({ username }: any) => {
+      loginSuccess(
+        await postLoginByNoPc({
+          username
+        })
+      );
+    },
+    {
+      refreshDeps: [loginSuccess]
+    }
+  );
+
   const onClickOauth = useCallback(
     async (item: OAuthItem) => {
       if (item.provider === OAuthEnum.sso) {
-        const redirectUrl = await POST<string>('/proApi/support/user/account/login/getAuthURL', {
-          redirectUri,
-          isWecomWorkTerminal
-        });
-        setLoginStore({
-          provider: item.provider as OAuthEnum,
-          lastRoute,
-          state: state.current
-        });
-        router.replace(redirectUrl, '_self');
-        return;
+        if (isPc) {
+          const redirectUrl = await POST<string>('/proApi/support/user/account/login/getAuthURL', {
+            redirectUri,
+            isWecomWorkTerminal
+          });
+          setLoginStore({
+            provider: item.provider as OAuthEnum,
+            lastRoute,
+            state: state.current
+          });
+          router.replace(redirectUrl, '_self');
+          return;
+        } else {
+          onNoPcClickLogin({
+            username: router.query.account
+          });
+          return;
+        }
       }
       if (item.redirectUrl) {
         setLoginStore({

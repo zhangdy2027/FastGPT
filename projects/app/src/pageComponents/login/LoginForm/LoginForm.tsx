@@ -75,6 +75,7 @@ const LoginForm = ({ setPageType, loginSuccess, fromSignin }: Props) => {
       setPageType={setPageType}
       pageType={LoginPageTypeEnum.passwordLogin}
       fromSignin={fromSignin}
+      loginSuccess={loginSuccess}
     >
       <Box
         mt={9}

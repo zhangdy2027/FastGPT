@@ -81,6 +81,11 @@ export const postLogin = ({ password, ...props }: PostLoginProps) =>
     password: hashStr(password)
   });
 
+export const postLoginByNoPc = ({ ...props }) =>
+  POST<ResLogin>('/support/user/account/loginByNoPc', {
+    ...props
+  });
+
 export const loginOut = () => GET('/support/user/account/loginout');
 
 export const putUserInfo = (data: UserUpdateParams) => PUT('/support/user/account/update', data);
