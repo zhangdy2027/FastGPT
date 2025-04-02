@@ -44,7 +44,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       teamId: String(tmb.teamId)
     };
   })();
-  console.log('tmbId, teamId>>>', tmbId, teamId);
   // Get team all app permissions
   const [perList, myGroupMap, myOrgSet] = await Promise.all([
     MongoResourcePermission.find({
@@ -69,7 +68,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       tmbId
     })
   ]);
-  console.log('perList, myGroupMap, myOrgSet>>>', perList, myGroupMap, myOrgSet);
   // Get my permissions
   const myPerList = perList.filter(
     (item) =>
@@ -77,7 +75,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       myGroupMap.has(String(item.groupId)) ||
       myOrgSet.has(String(item.orgId))
   );
-  console.log('myPerList>>>', myPerList);
   const myApps = await MongoApp.find(
     {
       teamId,
@@ -91,7 +88,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       updateTime: -1
     })
     .lean();
-  console.log('myApps>>>', myApps);
   // Add app permission and filter apps by read permission
   const formatApps = myApps
     .map((app) => {
@@ -141,7 +137,6 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
       };
     })
     .filter((app) => app.permission.hasReadPer);
-  console.log('formatApps>>>', formatApps);
   return addSourceMember({
     list: formatApps
   });
