@@ -144,10 +144,18 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
           router.replace(redirectUrl, '_self');
           return;
         } else {
-          onNoPcClickLogin({
-            username: router.query.account
-          });
-          return;
+          const lastRoute = router.query.lastRoute as string;
+          if (lastRoute) {
+            const params = lastRoute.split('&');
+            const aParam = params.find((item: string) => item.includes('account='));
+            if (aParam) {
+              const account = aParam.split('=')[1];
+              onNoPcClickLogin({
+                username: account
+              });
+              return;
+            }
+          }
         }
       }
       if (item.redirectUrl) {

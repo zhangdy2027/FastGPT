@@ -229,12 +229,7 @@ const MobileHeader = ({
   const isShareChat = router.pathname === '/chat/share';
 
   const backToSfzyClick = () => {
-    const pamras = new URLSearchParams(location.search);
-    if (pamras.get('redir') === 'true') {
-      location.href = window.myConfig.sfzyUrl;
-    } else {
-      window.history.back();
-    }
+    location.href = window.myConfig.sfzyUrl;
   };
 
   return (
