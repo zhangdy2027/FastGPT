@@ -241,7 +241,7 @@ const OutLink = (props: Props) => {
   return (
     <>
       <NextHead
-        title={props.appName || data?.app?.name}
+        title={props.appName || data?.app?.name || 'AI'}
         desc={props.appIntro || data?.app?.intro}
         icon={props.appAvatar || data?.app?.avatar}
       />
@@ -409,9 +409,9 @@ export async function getServerSideProps(context: any) {
   return {
     props: {
       appId: String(app?.appId) ?? '',
-      appName: app?.associatedApp?.name ?? '',
+      appName: app?.associatedApp?.name ?? 'AI',
       appAvatar: app?.associatedApp?.avatar ?? '',
-      appIntro: app?.associatedApp?.intro ?? '',
+      appIntro: app?.associatedApp?.intro ?? 'AI',
       showRawSource: app?.showRawSource ?? false,
       // showFullText: app?.showFullText ?? false,
       showNodeStatus: app?.showNodeStatus ?? false,

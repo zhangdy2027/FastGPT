@@ -19,7 +19,7 @@ export const useInitApp = () => {
   const { loadGitStar, setInitd, feConfigs } = useSystemStore();
   const { userInfo } = useUserStore();
   const [scripts, setScripts] = useState<FastGPTFeConfigsType['scripts']>([]);
-  const [title, setTitle] = useState(process.env.SYSTEM_NAME || '');
+  const [title, setTitle] = useState(process.env.SYSTEM_NAME || 'AI');
 
   const initFetch = useMemoizedFn(async () => {
     const {

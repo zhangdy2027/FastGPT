@@ -222,7 +222,7 @@ const VariableInput = ({
 
   return (
     <Box py={3}>
-      <ChatAvatar src={appAvatar} type={''} />
+      <ChatAvatar src={appAvatar} type={'AI'} />
       {externalVariableList.length > 0 && (
         <Box textAlign={'left'}>
           <Card
