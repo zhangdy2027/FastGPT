@@ -420,8 +420,13 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                             alt={''}
                             src={getAppCardLogo(subItem)}
                           />
-                          <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
-                            <Box ml={2} className={'textEllipsis'} fontSize={'14px'}>
+                          <Flex flexDir={'column'} gap={2} w={'150px'}>
+                            <Box
+                              ml={2}
+                              className={'textEllipsis'}
+                              fontSize={'14px'}
+                              w={'calc(100% - 1.5rem)'}
+                            >
                               {subItem.name}
                             </Box>
                             <Box
@@ -429,6 +434,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                               className={'textEllipsis'}
                               fontSize={'12px'}
                               color={'#4B5563'}
+                              w={'calc(100% - 1.5rem)'}
                             >
                               {subItem.intro ? subItem.intro : t('common.no_intro')}
                             </Box>
