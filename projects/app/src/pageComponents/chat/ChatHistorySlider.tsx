@@ -151,7 +151,10 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
             bg: 'rgba(244, 15, 15, 0.12)',
             color: '#F40F0F'
           }}
-          onClick={() => onChangeChatId()}
+          onClick={() => {
+            onChangeChatId();
+            setQuoteData(undefined);
+          }}
         >
           {t('common:core.chat.New Chat')}
         </Button>

@@ -9,9 +9,8 @@ import {
   DrawerOverlay,
   DrawerContent,
   useTheme,
-  Button,
-  IconButton,
-  Image
+  Image,
+  Button
 } from '@chakra-ui/react';
 import { streamFetch } from '@/web/common/api/fetch';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
@@ -74,10 +73,6 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const totalRecordsCount = useContextSelector(ChatRecordContext, (v) => v.totalRecordsCount);
-
-  const [hideSlider, setHideSlider] = useState(false);
-  const [sfzyUserInfo, setSfzyUserInfo] = useState<any>({});
-
   // Load chat init data
   const { loading } = useRequest2(
     async () => {
@@ -155,15 +150,6 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     [appId, chatId, onUpdateHistoryTitle, setChatBoxData, forbidLoadChat]
   );
 
-  const backToSfzyClick = () => {
-    const pamras = new URLSearchParams(location.search);
-    if (pamras.get('redir') === 'true') {
-      location.href = window.myConfig.sfzyUrl;
-    } else {
-      window.history.back();
-    }
-  };
-
   const RenderHistorySlider = useMemo(() => {
     const Children = (
       <ChatHistorySlider confirmClearText={t('common:core.chat.Confirm to clear history')} />
@@ -185,6 +171,17 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     );
   }, [t, isPc, appId, isOpenSlider, onCloseSlider, quoteData]);
 
+  const [hideSlider, setHideSlider] = useState(false);
+
+  const backToSfzyClick = () => {
+    const pamras = new URLSearchParams(location.search);
+    if (pamras.get('redir') === 'true') {
+      location.href = window.myConfig.sfzyUrl;
+    } else {
+      window.history.back();
+    }
+  };
+
   return (
     <Flex h={'100%'}>
       <NextHead title={chatBoxData.app.name} icon={chatBoxData.app.avatar}></NextHead>
@@ -192,58 +189,64 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       {isPc && (
         <Box
           borderRight={theme.borders.base}
-          w={'220px'}
-          flexShrink={0}
+          flex={'0 0 220px'}
           display={hideSlider ? 'none' : 'block'}
         >
           <SliderApps apps={myApps} activeAppId={appId} />
         </Box>
       )}
 
-      <Flex
-        flexDirection={'column'}
-        w={'100%'}
-        h={'100%'}
-        background={'linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)'}
-        p={isPc ? 4 : 0}
-        boxSizing={'border-box'}
-        gap={4}
-      >
-        {isPc && (
-          <Flex alignItems={'center'}>
-            <Flex
-              borderRadius={'full'}
-              boxShadow={'0px 0px 10px 0px rgba(75, 85, 99, 0.3);'}
-              w={8}
-              h={8}
-              bgColor={'#ffffff'}
-              alignItems={'center'}
-              justifyContent={'center'}
-              cursor={'pointer'}
-              onClick={() => {
-                setHideSlider(!hideSlider);
-              }}
-            >
-              <Image
-                src={hideSlider ? '/imgs/展开.png' : '/imgs/收起.png'}
-                borderRadius="full"
-                alt=""
-                boxSize="24px"
-              />
-            </Flex>
-            <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
-              <Button
-                bgColor={'#D94848'}
-                onClick={backToSfzyClick}
-                leftIcon={<Image alt="" src="/imgs/backIcon.png" boxSize="15px" />}
-              >
-                返回
-              </Button>
-              {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
-            </Flex>
+      {isPc && (
+        <Flex
+          alignItems={'center'}
+          justifyContent={'space-between'}
+          pos={'absolute'}
+          w={hideSlider ? 'calc(100% - 32px)' : 'calc(100% - 252px)'}
+          top={'16px'}
+          right={'16px'}
+          zIndex={999}
+        >
+          <Flex
+            borderRadius={'full'}
+            boxShadow={'0px 0px 10px 0px rgba(75, 85, 99, 0.3);'}
+            w={8}
+            h={8}
+            bgColor={'#ffffff'}
+            alignItems={'center'}
+            justifyContent={'center'}
+            cursor={'pointer'}
+            onClick={() => {
+              setHideSlider(!hideSlider);
+            }}
+          >
+            <Image
+              src={hideSlider ? '/imgs/展开.png' : '/imgs/收起.png'}
+              borderRadius="full"
+              alt=""
+              boxSize="24px"
+            />
           </Flex>
-        )}
-        <PageContainer isLoading={loading} p={'0px !important'} w={'100%'} position={'relative'}>
+          <Flex alignItems={'center'} gap={2} ml={'auto'} mr={0}>
+            <Button
+              bgColor={'#D94848'}
+              onClick={backToSfzyClick}
+              leftIcon={<Image alt="" src="/imgs/backIcon.png" boxSize="15px" />}
+            >
+              返回
+            </Button>
+            {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
+          </Flex>
+        </Flex>
+      )}
+
+      {(!quoteData || isPc) && (
+        <PageContainer
+          isLoading={loading}
+          flex={'1 0 0'}
+          w={0}
+          p={[0, '64px 16px 16px 16px']}
+          position={'relative'}
+        >
           <Flex h={'100%'} flexDirection={['column', 'row']}>
             {/* pc always show history. */}
             {RenderHistorySlider}
@@ -289,7 +292,22 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
             </Flex>
           </Flex>
         </PageContainer>
-      </Flex>
+      )}
+
+      {quoteData && (
+        <PageContainer
+          flex={'1 0 0'}
+          w={0}
+          maxW={'560px'}
+          p={isPc ? '64px 16px 16px 0px !important' : '0px'}
+        >
+          <ChatQuoteList
+            rawSearch={quoteData.rawSearch}
+            metadata={quoteData.metadata}
+            onClose={() => setQuoteData(undefined)}
+          />
+        </PageContainer>
+      )}
     </Flex>
   );
 };
