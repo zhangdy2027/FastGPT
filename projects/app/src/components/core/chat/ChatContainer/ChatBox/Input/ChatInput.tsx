@@ -524,11 +524,31 @@ const ChatInput = ({
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              {isSpeaking
-                ? isTransCription
-                  ? t('common:core.chat.Converting to text')
-                  : '松开发送'
-                : '按住说话'}
+              {isSpeaking ? (
+                isTransCription ? (
+                  t('common:core.chat.Converting to text')
+                ) : (
+                  <Flex alignItems={'flex-end'} gap={'6px'} className="visualizer">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </Flex>
+                )
+              ) : (
+                '按住说话'
+              )}
             </Button>
             <IconButton
               mr={3}

@@ -224,8 +224,8 @@ export function createJWT(user: {
       userId: String(user._id),
       teamId: String(user.team?.teamId),
       tmbId: String(user.team?.tmbId),
-      isRoot: user.isRoot,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
+      isRoot: user.isRoot
+      // exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
     },
     key
   );
