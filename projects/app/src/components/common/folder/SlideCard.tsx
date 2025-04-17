@@ -78,7 +78,7 @@ const FolderSlideCard = ({
           <Box>
             <FormLabel>{t('common:Operation')}</FormLabel>
 
-            <Button
+            {/* <Button
               variant={'transparentBase'}
               pl={1}
               leftIcon={<MyIcon name={'common/file/move'} w={'1rem'} />}
@@ -91,7 +91,7 @@ const FolderSlideCard = ({
               onClick={onMove}
             >
               {t('common:common.Move')}
-            </Button>
+            </Button> */}
             {managePer.permission.isOwner && (
               <Button
                 variant={'transparentDanger'}

@@ -16,38 +16,38 @@ export const useFolderDrag = ({
   const getBoxProps = useCallback(
     ({ dataId, isFolder }: { dataId: string; isFolder: boolean }) => {
       return {
-        draggable: true,
+        // draggable: true,
         userSelect: 'none' as any,
         'data-drag-id': isFolder ? dataId : undefined,
-        onDragStart: (e: DragEvent<HTMLDivElement>) => {
-          setDragId(dataId);
-        },
-        onDragOver: (e: DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          const targetId = e.currentTarget.getAttribute('data-drag-id');
-          if (!targetId) return;
-          setTargetId(targetId);
-        },
-        onDragLeave: (e: DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          setTargetId(undefined);
-        },
-        ...(isFolder && {
-          onDrop: async (e: DragEvent<HTMLDivElement>) => {
-            e.preventDefault();
-            setTrue();
+        // onDragStart: (e: DragEvent<HTMLDivElement>) => {
+        //   setDragId(dataId);
+        // },
+        // onDragOver: (e: DragEvent<HTMLDivElement>) => {
+        //   e.preventDefault();
+        //   const targetId = e.currentTarget.getAttribute('data-drag-id');
+        //   if (!targetId) return;
+        //   setTargetId(targetId);
+        // },
+        // onDragLeave: (e: DragEvent<HTMLDivElement>) => {
+        //   e.preventDefault();
+        //   setTargetId(undefined);
+        // },
+        // ...(isFolder && {
+        //   onDrop: async (e: DragEvent<HTMLDivElement>) => {
+        //     e.preventDefault();
+        //     setTrue();
 
-            try {
-              if (targetId && dragId && targetId !== dragId) {
-                await onDrop(dragId, targetId);
-              }
-            } catch (error) {}
+        //     try {
+        //       if (targetId && dragId && targetId !== dragId) {
+        //         await onDrop(dragId, targetId);
+        //       }
+        //     } catch (error) {}
 
-            setTargetId(undefined);
-            setDragId(undefined);
-            setFalse();
-          }
-        }),
+        //     setTargetId(undefined);
+        //     setDragId(undefined);
+        //     setFalse();
+        //   }
+        // }),
         ...(activeStyles &&
           targetId === dataId && {
             ...activeStyles
