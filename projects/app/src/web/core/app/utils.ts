@@ -590,6 +590,12 @@ export const workflowSystemVariables: EditorVariablePickerType[] = [
     valueType: WorkflowIOValueTypeEnum.string
   },
   {
+    key: 'username',
+    label: '账号',
+    required: true,
+    valueType: WorkflowIOValueTypeEnum.string
+  },
+  {
     key: 'appId',
     label: i18nT('common:core.module.http.AppId'),
     required: true,

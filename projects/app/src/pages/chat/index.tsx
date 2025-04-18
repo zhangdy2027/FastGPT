@@ -123,10 +123,14 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
     }: StartChatFnProps) => {
       // Just send a user prompt
       const histories = messages.slice(-1);
+      const username = userInfo?.username || '';
       const { responseText, responseData } = await streamFetch({
         data: {
           messages: histories,
-          variables,
+          variables: {
+            ...variables,
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+          },
           responseChatItemId,
           appId,
           chatId

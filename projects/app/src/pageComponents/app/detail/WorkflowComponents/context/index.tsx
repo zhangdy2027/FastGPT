@@ -37,6 +37,7 @@ import { getAppConfigByDiff } from '@/web/core/app/diff';
 import WorkflowStatusContextProvider from './workflowStatusContext';
 import { ChatItemType, UserChatItemValueItemType } from '@fastgpt/global/core/chat/type';
 import { WorkflowInteractiveResponseType } from '@fastgpt/global/core/workflow/template/system/interactive/type';
+import { useUserStore } from '@/web/support/user/useUserStore';
 
 /* 
   Context
@@ -334,6 +335,7 @@ const WorkflowContextProvider = ({
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { userInfo } = useUserStore();
 
   const appDetail = useContextSelector(AppContext, (v) => v.appDetail);
   const setAppDetail = useContextSelector(AppContext, (v) => v.setAppDetail);
@@ -622,6 +624,7 @@ const WorkflowContextProvider = ({
 
       try {
         // 4. Run one step
+        const username = userInfo?.username || '';
         const {
           finishedEdges,
           finishedNodes,
@@ -635,7 +638,8 @@ const WorkflowContextProvider = ({
           variables: {
             appId,
             cTime: formatTime2YMDHMW(),
-            ...debugData.variables
+            ...debugData.variables,
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
           },
           query: debugData.query, // 添加 query 参数
           history: debugData.history,

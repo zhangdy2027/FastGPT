@@ -48,6 +48,7 @@ export const useChatTest = ({
       const histories = messages.slice(-1);
 
       // 流请求，获取数据
+      const username = userInfo?.username || '';
       const { responseText, responseData } = await streamFetch({
         url: '/api/core/chat/chatTest',
         data: {
@@ -55,7 +56,10 @@ export const useChatTest = ({
           messages: histories,
           nodes,
           edges,
-          variables,
+          variables: {
+            ...variables,
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+          },
           responseChatItemId,
           appId,
           appName: t('chat:chat_test_app', { name: appDetail.name }),
