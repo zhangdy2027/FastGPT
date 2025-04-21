@@ -69,7 +69,7 @@ export const useSpeech = (props?: OutLinkChatAuthProps & { appId?: string }) => 
 
       bars.forEach((bar, index) => {
         bar.style.backgroundColor =
-          index < activeCount ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.3)';
+          index < activeCount ? 'rgb(3, 152, 85)' : 'rgba(255, 255, 255, 0.3)';
       });
 
       // analyser.getByteTimeDomainData(dataArray);

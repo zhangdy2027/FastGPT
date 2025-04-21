@@ -47,6 +47,7 @@ const ChatInput = ({
 
   const { setValue, watch, control } = chatForm;
   const inputValue = watch('input');
+  const timerRef = useRef<any>(null);
 
   const outLinkAuthData = useContextSelector(ChatBoxContext, (v) => v.outLinkAuthData);
   const appId = useContextSelector(ChatBoxContext, (v) => v.appId);
@@ -539,15 +540,25 @@ const ChatInput = ({
               ref={buttonRef}
               size="lg"
               colorScheme="red"
-              variant={isSpeaking ? 'solid' : 'outline'}
+              variant={'outline'}
               flex={'1 1 auto'}
               isLoading={isSpeaking && isTransCription}
               loadingText={t('common:core.chat.Converting to text')}
               onTouchStart={(e) => {
                 e.preventDefault();
-                onWhisperRecord();
+                timerRef.current = setTimeout(() => {
+                  if (timerRef.current) {
+                    clearTimeout(timerRef.current);
+                    timerRef.current = null;
+                  }
+                  onWhisperRecord();
+                }, 300);
               }}
               onTouchEnd={(e) => {
+                if (timerRef.current) {
+                  clearTimeout(timerRef.current);
+                  return;
+                }
                 e.preventDefault();
                 if (buttonRef.current) {
                   const buttonRect = buttonRef.current.getBoundingClientRect();
@@ -578,22 +589,8 @@ const ChatInput = ({
                 isTransCription ? (
                   t('common:core.chat.Converting to text')
                 ) : (
-                  <Flex alignItems={'flex-end'} gap={'6px'} className="visualizer">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                  <Flex alignItems={'flex-end'} gap={'6px'}>
+                    手指上滑，取消发送
                   </Flex>
                   // <canvas
                   //   ref={myCanvasRef}

@@ -348,7 +348,7 @@
   word-spacing: normal;
   width: 100%;
   font-size: var(--chakra-fontSizes-sm);
-  overflow-x: auto;
+  // overflow-x: auto;
 
   * {
     word-break: break-word;
@@ -379,7 +379,7 @@
     border-collapse: separate;
     border-spacing: 0px;
     color: var(--chakra-colors-gray-700);
-    white-space: nowrap;
+    // white-space: nowrap;
 
     thead tr:first-child th {
       border-bottom-width: 1px;
