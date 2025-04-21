@@ -43,6 +43,23 @@ span[tabindex='0'] {
   }
 }
 
+.voice-bars {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+  justify-content: center;
+}
+
+.voice-bars span {
+  width: 20px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  transition: background-color 0.1s;
+}
+
 .visualizer span {
   display: block;
   width: 6px;

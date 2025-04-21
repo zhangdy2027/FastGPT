@@ -1,6 +1,6 @@
 import { useSpeech } from '@/web/common/hooks/useSpeech';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { Box, Flex, Spinner, Textarea, Button, IconButton, Text } from '@chakra-ui/react';
+import { Box, Flex, Spinner, Textarea, Button, IconButton, Text, Image } from '@chakra-ui/react';
 import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
@@ -108,6 +108,7 @@ const ChatInput = ({
 
   /* whisper init */
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const myCanvasRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const {
     isSpeaking,
@@ -116,6 +117,7 @@ const ChatInput = ({
     startSpeak,
     speakingTimeString,
     renderAudioGraph,
+    renderMyAudioGraph,
     stream
   } = useSpeech({ appId, ...outLinkAuthData });
   const onWhisperRecord = useCallback(() => {
@@ -167,6 +169,26 @@ const ChatInput = ({
     };
     renderCurve();
   }, [renderAudioGraph, stream]);
+
+  useEffect(() => {
+    if (!stream) {
+      return;
+    }
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 1;
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    const bars = myCanvasRef.current?.querySelectorAll('span');
+    const renderCurve = () => {
+      if (!bars) return;
+      renderMyAudioGraph(analyser, bars);
+      window.requestAnimationFrame(renderCurve);
+    };
+    renderCurve();
+  }, [renderMyAudioGraph, stream]);
 
   const [whisperStatus, setWhisperStatus] = useState(0);
   const whisperClick = () => {
@@ -455,25 +477,53 @@ const ChatInput = ({
           <Box
             pos={'fixed'}
             width={'100vw'}
-            height={'15vh'}
+            height={'100vh'}
             bottom={0}
             left={0}
-            bg={'#ffffff'}
+            bg={'rgba(0,0,0,0)'}
             zIndex={10}
             visibility={isSpeaking && !isTransCription ? 'visible' : 'hidden'}
           >
             <Box
               pos={'absolute'}
-              bottom={'10px'}
+              top={'50%'}
               left={'50%'}
               transform={'translate(-50%, -50%)'}
               p={4}
               borderRadius={4}
               textAlign={'center'}
             >
-              <Text fontSize={'sm'} mb={2} color={'#999999'}>
+              {/* <Text fontSize={'sm'} mb={2} color={'#999999'}>
                 {'向上滑动取消'}
-              </Text>
+              </Text> */}
+              <Box w={'120px'} h={'120px'} borderRadius={'10px'} bg={'rgba(0,0,0,0.2)'}>
+                <Flex
+                  w={'100%'}
+                  h={'100%'}
+                  flexDir={'column'}
+                  alignItems={'center'}
+                  justifyContent={'space-evenly'}
+                >
+                  <Flex alignItems={'center'}>
+                    <Image boxSize="60px" src="icon/mic.svg" alt="Dan Abramov" />
+                    <Flex className="voice-bars" ref={myCanvasRef}>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </Flex>
+                  </Flex>
+                  <Box color={'#FFFFFF'} fontSize={'12px'}>
+                    手指上滑，取消发送
+                  </Box>
+                </Flex>
+              </Box>
             </Box>
           </Box>
           <Flex
@@ -545,6 +595,14 @@ const ChatInput = ({
                     <span></span>
                     <span></span>
                   </Flex>
+                  // <canvas
+                  //   ref={myCanvasRef}
+                  //   style={{
+                  //     height: '30px',
+                  //     width: isSpeaking && !isTransCription ? '100%' : 0,
+                  //     zIndex: 0
+                  //   }}
+                  // />
                 )
               ) : (
                 '按住说话'

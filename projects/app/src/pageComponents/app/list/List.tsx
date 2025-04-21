@@ -325,12 +325,12 @@ const ListItem = () => {
                                         .hasManagePer
                                         ? []
                                         : [
-                                            // {
-                                            //   icon: 'common/file/move',
-                                            //   type: 'grayBg' as MenuItemType,
-                                            //   label: t('common:common.folder.Move to'),
-                                            //   onClick: () => setMoveAppId(app._id)
-                                            // }
+                                            {
+                                              icon: 'common/file/move',
+                                              type: 'grayBg' as MenuItemType,
+                                              label: t('common:common.folder.Move to'),
+                                              onClick: () => setMoveAppId(app._id)
+                                            }
                                           ]),
                                       ...(app.permission.hasManagePer
                                         ? [

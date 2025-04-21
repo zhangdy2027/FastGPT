@@ -50,6 +50,48 @@ export const useSpeech = (props?: OutLinkChatAuthProps & { appId?: string }) => 
     }
   }, []);
 
+  const renderMyAudioGraph = useCallback(
+    (analyser: AnalyserNode, bars: NodeListOf<HTMLSpanElement>) => {
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      // console.log('asdasdasd', bars);
+      analyser.getByteTimeDomainData(dataArray);
+      // 计算 RMS（均方根）音量
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const normalized = (dataArray[i] - 128) / 128;
+        sum += normalized * normalized;
+      }
+      const rms = Math.sqrt(sum / dataArray.length); // 0 到 1 左右
+      const volume = Math.min(rms * 2, 1); // 调整音量范围，更灵敏一点
+
+      const activeCount = Math.round(volume * bars.length);
+
+      bars.forEach((bar, index) => {
+        bar.style.backgroundColor =
+          index < activeCount ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.3)';
+      });
+
+      // analyser.getByteTimeDomainData(dataArray);
+      // const canvasCtx = canvas?.getContext('2d');
+      // const width = canvas.width;
+      // const height = canvas.height;
+      // if (!canvasCtx) return;
+      // canvasCtx.clearRect(0, 0, width, height);
+      // const barWidth = (width / bufferLength) * 10;
+      // let x = 0;
+      // canvasCtx.moveTo(x, height / 2);
+      // for (let i = 0; i < bufferLength; i += 10) {
+      //   const barHeight = (dataArray[i] / 256) * height - height * 0.15;
+      //   canvasCtx.fillStyle = '#FFFFFF';
+      //   const adjustedBarHeight = Math.max(0, barHeight);
+      //   canvasCtx.fillRect(x, height - adjustedBarHeight, barWidth, adjustedBarHeight);
+      //   x += barWidth + 1;
+      // }
+    },
+    []
+  );
+
   const startSpeak = async (onFinish: (text: string) => void) => {
     if (!navigator?.mediaDevices?.getUserMedia) {
       return toast({
@@ -192,6 +234,7 @@ export const useSpeech = (props?: OutLinkChatAuthProps & { appId?: string }) => 
     isSpeaking,
     isTransCription,
     renderAudioGraph,
+    renderMyAudioGraph,
     stream: mediaStream,
     speakingTimeString
   };
