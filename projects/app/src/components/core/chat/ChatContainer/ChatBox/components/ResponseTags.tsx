@@ -96,7 +96,7 @@ const ResponseTags = ({
   return !showTags ? null : (
     <>
       {/* quote */}
-      {sourceList.length > 0 && (
+      {/* {sourceList.length > 0 && (
         <>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
             <Box width={'100%'}>
@@ -229,9 +229,9 @@ const ResponseTags = ({
             )}
           </Flex>
         </>
-      )}
+      )} */}
 
-      {notEmptyTags && (
+      {/* {notEmptyTags && (
         <Flex alignItems={'center'} mt={3} flexWrap={'wrap'} gap={2}>
           {quoteList.length > 0 && (
             <MyTooltip label={t('chat:view_citations')}>
@@ -305,7 +305,7 @@ const ResponseTags = ({
       {isOpenContextModal && <ContextModal dataId={dataId} onClose={onCloseContextModal} />}
       {isOpenWholeModal && (
         <WholeResponseModal dataId={dataId} chatTime={chatTime} onClose={onCloseWholeModal} />
-      )}
+      )} */}
     </>
   );
 };
