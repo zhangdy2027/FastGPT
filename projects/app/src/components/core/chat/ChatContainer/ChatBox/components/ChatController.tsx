@@ -1,4 +1,5 @@
 import { useCopyData } from '@fastgpt/web/hooks/useCopyData';
+import { useMakeDataWord } from '@fastgpt/web/hooks/useMakeDataWord';
 import { Flex, FlexProps, css, useTheme } from '@chakra-ui/react';
 import { ChatSiteItemType } from '@fastgpt/global/core/chat/type';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
@@ -51,7 +52,7 @@ const ChatController = ({
 }: ChatControllerProps & FlexProps) => {
   const { t } = useTranslation();
   const { copyData } = useCopyData();
-
+  const { transData } = useMakeDataWord();
   const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
 
   const isChatting = useContextSelector(ChatBoxContext, (v) => v.isChatting);
@@ -237,6 +238,12 @@ const ChatController = ({
           )}
         </>
       )}
+      {/* {chat.obj === ChatRoleEnum.AI && (
+        <MyTooltip label={'下载'}>
+          <MyIcon {...controlIconStyle} name={'common/download'} _hover={{ color: 'primary.600' }}
+            onClick={() => transData(chatText)} />
+        </MyTooltip>
+      )} */}
     </Flex>
   );
 };
