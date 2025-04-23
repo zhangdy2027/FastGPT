@@ -10,9 +10,9 @@ export const useMakeDataWord = () => {
     const html = marked(data);
 
     const docxBlob = await htmlToDocx(html, {
-      pageOrientation: 'portrait',
-      margins: { top: 720, right: 720, bottom: 720, left: 720 }, // 1 inch
-      footer: false
+      // pageOrientation: 'portrait',
+      // margins: { top: 720, right: 720, bottom: 720, left: 720 }, // 1 inch
+      // footer: false
     });
 
     saveAs(docxBlob, 'markdown.docx');
