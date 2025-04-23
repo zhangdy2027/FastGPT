@@ -320,9 +320,10 @@ const ListItem = () => {
                                           }
                                         }
                                       },
-                                      ...(folderDetail?.type === AppTypeEnum.httpPlugin &&
-                                      !(parentApp ? parentApp.permission : app.permission)
-                                        .hasManagePer
+                                      ...(app.type === AppTypeEnum.folder ||
+                                      (folderDetail?.type === AppTypeEnum.httpPlugin &&
+                                        !(parentApp ? parentApp.permission : app.permission)
+                                          .hasManagePer)
                                         ? []
                                         : [
                                             {

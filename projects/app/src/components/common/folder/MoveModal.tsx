@@ -47,19 +47,26 @@ const MoveModal = ({ moveResourceId, title, server, onConfirm, onClose, moveHint
   }, {});
 
   useMount(async () => {
+    // const data = await requestServer({ parentId: null });
+    // setFolderList([
+    //   {
+    //     id: rootId,
+    //     name: t('common:common.folder.Root Path'),
+    //     open: true,
+    //     children: data.map((item) => ({
+    //       id: item.id,
+    //       name: item.name,
+    //       open: false
+    //     }))
+    //   }
+    // ]);
     const data = await requestServer({ parentId: null });
-    setFolderList([
-      {
-        id: rootId,
-        name: t('common:common.folder.Root Path'),
-        open: true,
-        children: data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          open: false
-        }))
-      }
-    ]);
+    const list = data.map((item) => ({
+      id: item.id,
+      name: item.name,
+      open: false
+    }));
+    setFolderList(list);
   });
 
   const RenderList = useMemoizedFn(
