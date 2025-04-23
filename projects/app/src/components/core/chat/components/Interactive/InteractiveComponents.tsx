@@ -168,6 +168,7 @@ export const FormInputComponent = React.memo(function FormInputComponent({
                     value={value}
                     isDisabled={submitted}
                     onChange={(e) => setValue(label, e)}
+                    // isSearch={true}
                   />
                 );
               }}
