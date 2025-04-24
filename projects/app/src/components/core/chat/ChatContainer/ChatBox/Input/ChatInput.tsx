@@ -108,10 +108,11 @@ const ChatInput = ({
 
   const RenderTextarea = useMemo(
     () => (
-      <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]}>
+      <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]} pr={[2, 4]}>
         {/* file selector */}
         {(showSelectFile || showSelectImg) && (
           <Flex
+            pos={isPc ? 'absolute' : 'relative'}
             h={'22px'}
             alignItems={'center'}
             justifyContent={'center'}
@@ -131,8 +132,10 @@ const ChatInput = ({
         <Textarea
           ref={TextareaDom}
           py={0}
-          pl={2}
-          pr={['30px', '48px']}
+          pl={isPc ? 0 : 2}
+          pr={isPc ? 0 : 10}
+          mb={isPc ? '30px' : '0px'}
+          // pr={['30px', '48px']}
           border={'none'}
           _focusVisible={{
             border: 'none'
@@ -245,7 +248,7 @@ const ChatInput = ({
             h={['28px', '32px']}
             w={['28px', '32px']}
             borderRadius={'md'}
-            bg={isChatting ? '' : !havInput || hasFileUploading ? '#E5E5E5' : 'primary.500'}
+            bg={isChatting ? '' : !havInput || hasFileUploading ? '#E5E5E5' : '#DB1010'}
             cursor={havInput ? 'pointer' : 'not-allowed'}
             lineHeight={1}
             onClick={() => {
@@ -302,9 +305,9 @@ const ChatInput = ({
 
   return (
     <Box
-      m={['0 auto', '10px auto']}
-      w={'100%'}
-      maxW={['auto', 'min(800px, 100%)']}
+      m={'10px auto'}
+      w={'min(1200px, calc(100% - 20px))'}
+      // maxW={['auto', 'min(800px, 100%)']}
       px={[0, 5]}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -336,7 +339,7 @@ const ChatInput = ({
         pb={['14px', '18px']}
         position={'relative'}
         boxShadow={`0 0 10px rgba(0,0,0,0.2)`}
-        borderRadius={['none', 'md']}
+        borderRadius={'md'}
         bg={'white'}
         overflow={'display'}
         {...(isPc

@@ -158,6 +158,7 @@ const MobileVoiceInput = ({
             name={'core/chat/backText'}
             h={'22px'}
             w={'22px'}
+            color={'white'}
             onClick={onCloseSpeak}
           />
         </MyTooltip>
@@ -167,7 +168,7 @@ const MobileVoiceInput = ({
         justifyContent={'center'}
         h="100%"
         flex="1 0 0"
-        bg={isSpeaking ? (isCancel ? 'red.500' : 'primary.500') : 'white'}
+        bg={isSpeaking ? (isCancel ? 'red.500' : 'red.500') : 'red.500'}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchStart={handleTouchStart}
@@ -176,7 +177,9 @@ const MobileVoiceInput = ({
         }}
         zIndex={4}
       >
-        <Box visibility={isSpeaking ? 'hidden' : 'visible'}>{t('chat:press_to_speak')}</Box>
+        <Box visibility={isSpeaking ? 'hidden' : 'visible'} color={'white'}>
+          {t('chat:press_to_speak')}
+        </Box>
         <Box
           position="absolute"
           h={'100%'}
@@ -324,7 +327,7 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
         bottom={0}
         bg="white"
         zIndex={5}
-        borderRadius={isPc ? 'md' : ''}
+        borderRadius={'md'}
         onContextMenu={(e) => e.preventDefault()}
       >
         {isPc ? (
@@ -353,10 +356,10 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
             pl={5}
             alignItems={'center'}
             bg={'white'}
-            color={'primary.500'}
+            color={'red.500'}
             zIndex={6}
           >
-            <Spinner size={'sm'} mr={4} />
+            <Spinner size={'sm'} mr={4} color={'red.500'} />
             {t('common:core.chat.Converting to text')}
           </Flex>
         )}

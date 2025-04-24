@@ -95,6 +95,10 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
     errorToast: 'Error'
   });
 
+  const isFolderSence = useMemo(() => {
+    return Boolean(router.query.parentId);
+  }, [router.query]);
+
   const appTypeName = useMemo(() => {
     const map: Record<AppTypeEnum | 'all', string> = {
       all: t('common:core.module.template.Team app'),
@@ -185,61 +189,66 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
                     <Box>{t('common:new_create')}</Box>
                   </Button>
                 }
-                menuList={[
-                  {
-                    children: [
-                      {
-                        icon: 'core/app/simpleBot',
-                        label: t('app:type.Simple bot'),
-                        description: t('app:type.Create simple bot tip'),
-                        onClick: () => setCreateAppType(AppTypeEnum.simple)
-                      },
-                      {
-                        icon: 'core/app/type/workflowFill',
-                        label: t('app:type.Workflow bot'),
-                        description: t('app:type.Create workflow tip'),
-                        onClick: () => setCreateAppType(AppTypeEnum.workflow)
-                      },
-                      {
-                        icon: 'core/app/type/pluginFill',
-                        label: t('app:type.Plugin'),
-                        description: t('app:type.Create one plugin tip'),
-                        onClick: () => setCreateAppType(AppTypeEnum.plugin)
-                      },
-                      {
-                        icon: 'core/app/type/httpPluginFill',
-                        label: t('app:type.Http plugin'),
-                        description: t('app:type.Create http plugin tip'),
-                        onClick: onOpenCreateHttpPlugin
-                      },
-                      {
-                        icon: 'core/app/type/mcpToolsFill',
-                        label: t('app:type.MCP tools'),
-                        description: t('app:type.Create mcp tools tip'),
-                        onClick: onOpenCreateMCPTools
-                      }
-                    ]
-                  },
-                  {
-                    children: [
-                      {
-                        icon: 'core/app/type/jsonImport',
-                        label: t('app:type.Import from json'),
-                        description: t('app:type.Import from json tip'),
-                        onClick: onOpenJsonImportModal
-                      }
-                    ]
-                  },
-                  {
-                    children: [
-                      {
-                        icon: FolderIcon,
-                        label: t('common:Folder'),
-                        onClick: () => setEditFolder({})
-                      }
-                    ]
-                  }
-                ]}
+                menuList={
+                  isFolderSence
+                    ? [
+                        {
+                          children: [
+                            {
+                              icon: 'core/app/simpleBot',
+                              label: t('app:type.Simple bot'),
+                              description: t('app:type.Create simple bot tip'),
+                              onClick: () => setCreateAppType(AppTypeEnum.simple)
+                            },
+                            {
+                              icon: 'core/app/type/workflowFill',
+                              label: t('app:type.Workflow bot'),
+                              description: t('app:type.Create workflow tip'),
+                              onClick: () => setCreateAppType(AppTypeEnum.workflow)
+                            },
+                            {
+                              icon: 'core/app/type/pluginFill',
+                              label: t('app:type.Plugin'),
+                              description: t('app:type.Create one plugin tip'),
+                              onClick: () => setCreateAppType(AppTypeEnum.plugin)
+                            },
+                            {
+                              icon: 'core/app/type/httpPluginFill',
+                              label: t('app:type.Http plugin'),
+                              description: t('app:type.Create http plugin tip'),
+                              onClick: onOpenCreateHttpPlugin
+                            }
+                            // {
+                            //   icon: 'core/app/type/mcpToolsFill',
+                            //   label: t('app:type.MCP tools'),
+                            //   description: t('app:type.Create mcp tools tip'),
+                            //   onClick: onOpenCreateMCPTools
+                            // }
+                          ]
+                        },
+                        {
+                          children: [
+                            {
+                              icon: 'core/app/type/jsonImport',
+                              label: t('app:type.Import from json'),
+                              description: t('app:type.Import from json tip'),
+                              onClick: onOpenJsonImportModal
+                            }
+                          ]
+                        }
+                      ]
+                    : [
+                        {
+                          children: [
+                            {
+                              icon: FolderIcon,
+                              label: t('common:Folder'),
+                              onClick: () => setEditFolder({})
+                            }
+                          ]
+                        }
+                      ]
+                }
               />
             )}
           </Flex>
