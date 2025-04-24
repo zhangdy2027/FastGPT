@@ -234,7 +234,7 @@ export const useSpeech = (props?: OutLinkChatAuthProps & { appId?: string }) => 
       } catch (error) {
         toast({
           status: 'warning',
-          title: getErrText(error, 'Whisper error')
+          title: '请前往「设置」中开启麦克风权限'
         });
         console.log(error);
       }

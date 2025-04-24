@@ -238,12 +238,16 @@ const ChatController = ({
           )}
         </>
       )}
-      {/* {chat.obj === ChatRoleEnum.AI && (
+      {chat.obj === ChatRoleEnum.AI && (
         <MyTooltip label={'下载'}>
-          <MyIcon {...controlIconStyle} name={'common/download'} _hover={{ color: 'primary.600' }}
-            onClick={() => transData(chatText)} />
+          <MyIcon
+            {...controlIconStyle}
+            name={'common/download'}
+            _hover={{ color: 'primary.600' }}
+            onClick={() => transData(chatText)}
+          />
         </MyTooltip>
-      )} */}
+      )}
     </Flex>
   );
 };
