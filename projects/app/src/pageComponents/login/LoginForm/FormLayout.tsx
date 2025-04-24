@@ -41,7 +41,7 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
   const { setLoginStore, feConfigs } = useSystemStore();
   const { isPc } = useSystem();
 
-  const { lastRoute = '/app/list' } = router.query as { lastRoute: string };
+  const { lastRoute = '/dashboard/apps' } = router.query as { lastRoute: string };
   const state = useRef(getNanoid(8));
   const redirectUri = `${location.origin}/login/provider`;
 

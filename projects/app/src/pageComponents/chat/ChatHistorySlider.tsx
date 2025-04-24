@@ -84,7 +84,6 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
 
   return (
     <MyBox
-      // isLoading={isLoading}
       display={'flex'}
       flexDirection={'column'}
       w={'100%'}
@@ -308,7 +307,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
           alignItems={'center'}
           cursor={'pointer'}
           p={3}
-          onClick={() => router.push('/app/list')}
+          onClick={() => router.push('/dashboard/apps')}
         >
           <IconButton
             mr={3}

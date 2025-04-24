@@ -49,7 +49,7 @@ export const useChatTest = ({
 
       // 流请求，获取数据
       const username = userInfo?.username || '';
-      const { responseText, responseData } = await streamFetch({
+      const { responseText } = await streamFetch({
         url: '/api/core/chat/chatTest',
         data: {
           // Send histories and user messages
@@ -70,7 +70,7 @@ export const useChatTest = ({
         abortCtrl: controller
       });
 
-      return { responseText, responseData };
+      return { responseText };
     }
   );
 

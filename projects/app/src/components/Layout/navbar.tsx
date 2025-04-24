@@ -48,8 +48,14 @@ const Navbar = ({ unread }: { unread: number }) => {
         label: t('common:navbar.Studio'),
         icon: 'core/app/aiLight',
         activeIcon: 'core/app/aiFill',
-        link: `/app/list`,
-        activeLink: ['/app/list', '/app/detail']
+        link: `/dashboard/apps`,
+        activeLink: [
+          '/dashboard/apps',
+          '/app/detail',
+          '/dashboard/templateMarket',
+          '/dashboard/[pluginGroupId]',
+          '/dashboard/mcpServer'
+        ]
       },
       {
         label: t('common:navbar.Datasets'),
@@ -57,6 +63,24 @@ const Navbar = ({ unread }: { unread: number }) => {
         activeIcon: 'core/dataset/datasetFill',
         link: `/dataset/list`,
         activeLink: ['/dataset/list', '/dataset/detail']
+      },
+      {
+        label: t('common:navbar.Account'),
+        icon: 'support/user/userLight',
+        activeIcon: 'support/user/userFill',
+        link: '/account/info',
+        activeLink: [
+          '/account/bill',
+          '/account/info',
+          '/account/team',
+          '/account/usage',
+          '/account/thirdParty',
+          '/account/apikey',
+          '/account/setting',
+          '/account/inform',
+          '/account/promotion',
+          '/account/model'
+        ]
       }
     ];
     const isRoot = userInfo?.username === 'root';
@@ -130,6 +154,7 @@ const Navbar = ({ unread }: { unread: number }) => {
       <Box flex={1}>
         {navbarList.map((item) => {
           const isActive = item.activeLink.includes(router.pathname);
+
           return (
             <Box
               key={item.link}
