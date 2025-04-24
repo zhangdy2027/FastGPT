@@ -48,7 +48,6 @@ const ChatInput = ({
 
   const { setValue, watch, control } = chatForm;
   const inputValue = watch('input');
-  const timerRef = useRef<any>(null);
 
   const outLinkAuthData = useContextSelector(ChatBoxContext, (v) => v.outLinkAuthData);
   const appId = useContextSelector(ChatBoxContext, (v) => v.appId);
@@ -113,7 +112,6 @@ const ChatInput = ({
         {/* file selector */}
         {(showSelectFile || showSelectImg) && (
           <Flex
-            pos={'absolute'}
             h={'22px'}
             alignItems={'center'}
             justifyContent={'center'}
@@ -133,9 +131,8 @@ const ChatInput = ({
         <Textarea
           ref={TextareaDom}
           py={0}
-          pl={0}
-          mb={'30px'}
-          // pr={['30px', '48px']}
+          pl={2}
+          pr={['30px', '48px']}
           border={'none'}
           _focusVisible={{
             border: 'none'
@@ -304,233 +301,85 @@ const ChatInput = ({
   );
 
   return (
-    <>
-      {whisperStatus && !isPc ? (
-        <>
-          <Box
-            pos={'fixed'}
-            width={'100vw'}
-            height={'100vh'}
-            bottom={0}
-            left={0}
-            bg={'rgba(0,0,0,0)'}
-            zIndex={10}
-            visibility={isSpeaking && !isTransCription ? 'visible' : 'hidden'}
-          >
-            <Box
-              pos={'absolute'}
-              top={'50%'}
-              left={'50%'}
-              transform={'translate(-50%, -50%)'}
-              p={4}
-              borderRadius={4}
-              textAlign={'center'}
-            >
-              {/* <Text fontSize={'sm'} mb={2} color={'#999999'}>
-                {'向上滑动取消'}
-              </Text> */}
-              <Box w={'120px'} h={'120px'} borderRadius={'10px'} bg={'rgba(0,0,0,0.2)'}>
-                <Flex
-                  w={'100%'}
-                  h={'100%'}
-                  flexDir={'column'}
-                  alignItems={'center'}
-                  justifyContent={'space-evenly'}
-                >
-                  <Flex alignItems={'center'}>
-                    <Image boxSize="60px" src="icon/mic.svg" alt="Dan Abramov" />
-                    <Flex className="voice-bars" ref={myCanvasRef}>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </Flex>
-                  </Flex>
-                  <Box color={'#FFFFFF'} fontSize={'12px'}>
-                    手指上滑，取消发送
-                  </Box>
-                </Flex>
-              </Box>
-            </Box>
-          </Box>
-          <Flex
-            m={'10px auto'}
-            w={'calc(100% - 20px)'}
-            maxW={['auto', 'min(800px, calc(100% - 20px))']}
-            px={[0, 5]}
-            alignItems={'center'}
-            gap={2}
-            zIndex={11}
-          >
-            <Button
-              ref={buttonRef}
-              size="lg"
-              colorScheme="red"
-              variant={'outline'}
-              flex={'1 1 auto'}
-              isLoading={isSpeaking && isTransCription}
-              loadingText={t('common:core.chat.Converting to text')}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                timerRef.current = setTimeout(() => {
-                  if (timerRef.current) {
-                    clearTimeout(timerRef.current);
-                    timerRef.current = null;
-                  }
-                  onWhisperRecord();
-                }, 300);
-              }}
-              onTouchEnd={(e) => {
-                if (timerRef.current) {
-                  clearTimeout(timerRef.current);
-                  return;
-                }
-                e.preventDefault();
-                if (buttonRef.current) {
-                  const buttonRect = buttonRef.current.getBoundingClientRect();
-                  const touchEndX = e.changedTouches[0].clientX;
-                  const touchEndY = e.changedTouches[0].clientY;
+    <Box
+      m={['0 auto', '10px auto']}
+      w={'100%'}
+      maxW={['auto', 'min(800px, 100%)']}
+      px={[0, 5]}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
 
-                  // 判断松开时是否在按钮上方
-                  if (
-                    touchEndX < buttonRect.left ||
-                    touchEndX > buttonRect.right ||
-                    touchEndY < buttonRect.top ||
-                    touchEndY > buttonRect.bottom
-                  ) {
-                    console.log('松开时不在按钮上方，执行其他操作');
-                    stopSpeak(true); // 执行其他操作（比如取消录音）
-                  } else {
-                    console.log('松开时在按钮上方，结束说话');
-                    onWhisperRecord(); // 结束说话
-                  }
-                }
-              }}
-              onTouchCancel={() => {
-                stopSpeak(true);
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              {isSpeaking ? (
-                isTransCription ? (
-                  t('common:core.chat.Converting to text')
-                ) : (
-                  <Flex alignItems={'flex-end'} gap={'6px'}>
-                    手指上滑，取消发送
-                  </Flex>
-                  // <canvas
-                  //   ref={myCanvasRef}
-                  //   style={{
-                  //     height: '30px',
-                  //     width: isSpeaking && !isTransCription ? '100%' : 0,
-                  //     zIndex: 0
-                  //   }}
-                  // />
-                )
-              ) : (
-                '按住说话'
-              )}
-            </Button>
-            <IconButton
-              mr={3}
-              onClick={() => setWhisperStatus(0)}
-              icon={<MyIcon name={'common/keyboard'} w={'1rem'} color={'primary.500'} />}
-              bg={'white'}
-              boxShadow={'1px 1px 9px rgba(0,0,0,0.15)'}
-              size={'lgSquare'}
-              borderRadius={'50%'}
-              aria-label={''}
-            />
-          </Flex>
-        </>
-      ) : (
-        <Box
-          m={'10px auto'}
-          w={'min(1200px, calc(100% - 20px))'}
-          // maxW={['auto', 'min(800px, calc(100% - 20px))']}
-          px={[0, 5]}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
+        if (!(showSelectFile || showSelectImg)) return;
+        const files = Array.from(e.dataTransfer.files);
 
-            if (!(showSelectFile || showSelectImg)) return;
-            const files = Array.from(e.dataTransfer.files);
+        const droppedFiles = files.filter((file) => fileTypeFilter(file));
+        if (droppedFiles.length > 0) {
+          onSelectFile({ files: droppedFiles });
+        }
 
-            const droppedFiles = files.filter((file) => fileTypeFilter(file));
-            if (droppedFiles.length > 0) {
-              onSelectFile({ files: droppedFiles });
+        const invalidFileName = files
+          .filter((file) => !fileTypeFilter(file))
+          .map((file) => file.name)
+          .join(', ');
+        if (invalidFileName) {
+          toast({
+            status: 'warning',
+            title: t('chat:unsupported_file_type'),
+            description: invalidFileName
+          });
+        }
+      }}
+    >
+      <Box
+        pt={fileList.length > 0 ? '0' : ['14px', '18px']}
+        pb={['14px', '18px']}
+        position={'relative'}
+        boxShadow={`0 0 10px rgba(0,0,0,0.2)`}
+        borderRadius={['none', 'md']}
+        bg={'white'}
+        overflow={'display'}
+        {...(isPc
+          ? {
+              border: '1px solid',
+              borderColor: 'rgba(0,0,0,0.12)'
             }
-
-            const invalidFileName = files
-              .filter((file) => !fileTypeFilter(file))
-              .map((file) => file.name)
-              .join(', ');
-            if (invalidFileName) {
-              toast({
-                status: 'warning',
-                title: t('chat:unsupported_file_type'),
-                description: invalidFileName
-              });
-            }
-          }}
-        >
-          <Box
-            pt={fileList.length > 0 ? '0' : ['14px', '18px']}
-            pb={['14px', '18px']}
-            position={'relative'}
-            boxShadow={`0 0 10px rgba(0,0,0,0.2)`}
-            borderRadius={['none', 'md']}
-            bg={'white'}
-            overflow={'display'}
-            {...(isPc
-              ? {
-                  border: '1px solid',
-                  borderColor: 'rgba(0,0,0,0.12)'
-                }
-              : {
-                  borderTop: '1px solid',
-                  borderTopColor: 'rgba(0,0,0,0.15)'
-                })}
-          >
-            {/* Chat input guide box */}
-            {chatInputGuide.open && (
-              <InputGuideBox
-                appId={appId}
-                text={inputValue}
-                onSelect={(e) => {
-                  setValue('input', e);
-                }}
-                onSend={(e) => {
-                  handleSend(e);
-                }}
-              />
-            )}
-            {/* file preview */}
-            <Box px={[1, 3]}>
-              <FilePreview fileList={fileList} removeFiles={removeFiles} />
-            </Box>
-
-            {/* voice input and loading container */}
-            {!inputValue && (
-              <VoiceInput
-                ref={VoiceInputRef}
-                onSendMessage={onSendMessage}
-                resetInputVal={resetInputVal}
-              />
-            )}
-
-            {RenderTextarea}
-          </Box>
-          <ComplianceTip type={'chat'} />
+          : {
+              borderTop: '1px solid',
+              borderTopColor: 'rgba(0,0,0,0.15)'
+            })}
+      >
+        {/* Chat input guide box */}
+        {chatInputGuide.open && (
+          <InputGuideBox
+            appId={appId}
+            text={inputValue}
+            onSelect={(e) => {
+              setValue('input', e);
+            }}
+            onSend={(e) => {
+              handleSend(e);
+            }}
+          />
+        )}
+        {/* file preview */}
+        <Box px={[1, 3]}>
+          <FilePreview fileList={fileList} removeFiles={removeFiles} />
         </Box>
-      )}
-    </>
+
+        {/* voice input and loading container */}
+        {!inputValue && (
+          <VoiceInput
+            ref={VoiceInputRef}
+            onSendMessage={onSendMessage}
+            resetInputVal={resetInputVal}
+          />
+        )}
+
+        {RenderTextarea}
+      </Box>
+      <ComplianceTip type={'chat'} />
+    </Box>
   );
 };
 
