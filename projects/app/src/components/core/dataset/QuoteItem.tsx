@@ -193,7 +193,7 @@ const QuoteItem = ({
           <MyTooltip label={t('common:core.dataset.Quote Length')}>
             <Flex alignItems={'center'}>
               <MyIcon name="common/text/t" w={'14px'} mr={1} color={'myGray.500'} />
-              {quoteItem.q.length + (quoteItem.a?.length || 0)}
+              {quoteItem.q?.length + (quoteItem.a?.length || 0)}
             </Flex>
           </MyTooltip>
           <RawSourceBox
