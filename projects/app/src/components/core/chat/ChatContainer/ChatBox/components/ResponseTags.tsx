@@ -96,7 +96,7 @@ const ResponseTags = ({
   return !showTags ? null : (
     <>
       {/* quote */}
-      {/* {sourceList.length > 0 && (
+      {sourceList.length > 0 && (
         <>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
             <Box width={'100%'}>
@@ -127,16 +127,16 @@ const ResponseTags = ({
             _after={
               quoteFolded && quoteIsOverflow
                 ? {
-                  content: '""',
-                  position: 'absolute',
-                  zIndex: 2,
-                  bottom: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '50%',
-                  background:
-                    'linear-gradient(to bottom, rgba(247,247,247,0), rgba(247, 247, 247, 0.91))'
-                }
+                    content: '""',
+                    position: 'absolute',
+                    zIndex: 2,
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '50%',
+                    background:
+                      'linear-gradient(to bottom, rgba(247,247,247,0), rgba(247, 247, 247, 0.91))'
+                  }
                 : {}
             }
           >
@@ -229,11 +229,11 @@ const ResponseTags = ({
             )}
           </Flex>
         </>
-      )} */}
+      )}
 
       {notEmptyTags && (
         <Flex alignItems={'center'} mt={3} flexWrap={'wrap'} gap={2}>
-          {/* {quoteList.length > 0 && (
+          {quoteList.length > 0 && (
             <MyTooltip label={t('chat:view_citations')}>
               <MyTag
                 colorSchema="blue"
@@ -257,7 +257,7 @@ const ResponseTags = ({
                 {t('chat:citations', { num: quoteList.length })}
               </MyTag>
             </MyTooltip>
-          )} */}
+          )}
           {llmModuleAccount === 1 && notSharePage && (
             <>
               {historyPreviewLength > 0 && (
