@@ -16,6 +16,7 @@ import dynamic from 'next/dynamic';
 import { GET, POST } from '@/web/common/api/request';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { postLoginByNoPc } from '@/web/support/user/api';
+import { getBdVId } from '@/web/support/marketing/utils';
 
 interface Props {
   children: React.ReactNode;
@@ -111,7 +112,7 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
   ];
 
   const show_oauth = useMemo(
-    () => !sessionStorage.getItem('bd_vid') && !!(feConfigs?.sso?.url || oAuthList.length > 0),
+    () => !getBdVId() && !!(feConfigs?.sso?.url || oAuthList.length > 0),
     [feConfigs?.sso?.url, oAuthList.length]
   );
 
