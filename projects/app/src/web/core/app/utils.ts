@@ -625,6 +625,12 @@ export const workflowSystemVariables: EditorVariablePickerType[] = [
     label: i18nT('common:core.module.http.Current time'),
     required: true,
     valueType: WorkflowIOValueTypeEnum.string
+  },
+  {
+    key: 'networkSearch',
+    label: '联网搜索',
+    required: true,
+    valueType: WorkflowIOValueTypeEnum.boolean
   }
 ];
 

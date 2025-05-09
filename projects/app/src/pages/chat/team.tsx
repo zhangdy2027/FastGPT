@@ -115,13 +115,15 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       const histories = messages.slice(-1);
 
       const username = userInfo?.username || '';
+      const { getNetworkSearch } = useChatStore();
       const { responseText } = await streamFetch({
         data: {
           messages: histories,
           variables: {
             ...variables,
             ...customVariables,
-            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
           },
           responseChatItemId,
           appId,

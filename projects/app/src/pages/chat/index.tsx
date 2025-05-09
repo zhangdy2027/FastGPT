@@ -56,7 +56,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
   const { isPc } = useSystem();
 
   const { userInfo } = useUserStore();
-  const { setLastChatAppId, chatId, appId, outLinkAuthData } = useChatStore();
+  const { setLastChatAppId, chatId, appId, outLinkAuthData, getNetworkSearch } = useChatStore();
 
   const isOpenSlider = useContextSelector(ChatContext, (v) => v.isOpenSlider);
   const onCloseSlider = useContextSelector(ChatContext, (v) => v.onCloseSlider);
@@ -129,7 +129,8 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
           messages: histories,
           variables: {
             ...variables,
-            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
           },
           responseChatItemId,
           appId,

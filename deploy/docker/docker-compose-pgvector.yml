@@ -85,8 +85,11 @@ services:
   # fastgpt
   sandbox:
     container_name: sandbox
-    image: ghcr.io/labring/fastgpt-sandbox:v4.9.7-fix # git
+    # image: ghcr.io/labring/fastgpt-sandbox:v4.9.7-fix # git
     # image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-sandbox:v4.9.7-fix # 阿里云
+    build:
+      context: ../../
+      dockerfile: ./projects/sandbox/Dockerfile
     networks:
       - fastgpt
     restart: always

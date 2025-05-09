@@ -14,6 +14,9 @@ type State = {
 
   lastChatId: string;
   chatId: string;
+  networkSearchMap: Record<string, boolean>;
+  setNetworkSearch: (appId: string, value: boolean) => void;
+  getNetworkSearch: (appId: string) => boolean;
   setChatId: (e?: string) => any;
 
   outLinkAuthData: OutLinkChatAuthProps;
@@ -109,6 +112,15 @@ export const useChatStore = create<State>()(
           set((state) => {
             state.outLinkAuthData = e;
           });
+        },
+        networkSearchMap: {},
+        setNetworkSearch(appId, value) {
+          set((state) => {
+            state.networkSearchMap[appId] = value;
+          });
+        },
+        getNetworkSearch(appId) {
+          return get().networkSearchMap[appId] ?? false;
         }
       })),
       {

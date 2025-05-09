@@ -34,7 +34,7 @@ export const useChatTest = ({
 }) => {
   const { t } = useTranslation();
   const { userInfo } = useUserStore();
-  const { setChatId, chatId, appId } = useChatStore();
+  const { setChatId, chatId, appId, getNetworkSearch } = useChatStore();
   const appDetail = useContextSelector(AppContext, (v) => v.appDetail);
 
   const startChat = useMemoizedFn(
@@ -58,7 +58,8 @@ export const useChatTest = ({
           edges,
           variables: {
             ...variables,
-            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
           },
           responseChatItemId,
           appId,

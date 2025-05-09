@@ -38,6 +38,7 @@ import WorkflowStatusContextProvider from './workflowStatusContext';
 import { ChatItemType, UserChatItemValueItemType } from '@fastgpt/global/core/chat/type';
 import { WorkflowInteractiveResponseType } from '@fastgpt/global/core/workflow/template/system/interactive/type';
 import { useUserStore } from '@/web/support/user/useUserStore';
+import { useChatStore } from '@/web/core/chat/context/useChatStore';
 
 /* 
   Context
@@ -625,6 +626,7 @@ const WorkflowContextProvider = ({
       try {
         // 4. Run one step
         const username = userInfo?.username || '';
+        const { getNetworkSearch } = useChatStore();
         const {
           finishedEdges,
           finishedNodes,
@@ -639,7 +641,8 @@ const WorkflowContextProvider = ({
             appId,
             cTime: formatTime2YMDHMW(),
             ...debugData.variables,
-            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
           },
           query: debugData.query, // 添加 query 参数
           history: debugData.history,

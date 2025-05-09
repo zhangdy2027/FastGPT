@@ -1,6 +1,7 @@
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { Box, Flex, Spinner, Textarea } from '@chakra-ui/react';
+import { Box, Flex, Spinner, Textarea, Button, IconButton } from '@chakra-ui/react';
 import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
+import { AtSignIcon } from '@chakra-ui/icons';
 import { useTranslation } from 'next-i18next';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import MyIcon from '@fastgpt/web/components/common/Icon';
@@ -18,6 +19,7 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import ComplianceTip from '@/components/common/ComplianceTip/index';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import VoiceInput, { type VoiceInputComponentRef } from './VoiceInput';
+import { useChatStore } from '@/web/core/chat/context/useChatStore';
 
 const InputGuideBox = dynamic(() => import('./InputGuideBox'));
 
@@ -45,6 +47,7 @@ const ChatInput = ({
   const { toast } = useToast();
   const { isPc } = useSystem();
   const VoiceInputRef = useRef<VoiceInputComponentRef>(null);
+  const { setNetworkSearch, getNetworkSearch } = useChatStore();
 
   const { setValue, watch, control } = chatForm;
   const inputValue = watch('input');
@@ -127,6 +130,69 @@ const ChatInput = ({
             </MyTooltip>
             <File onSelect={(files) => onSelectFile({ files })} />
           </Flex>
+        )}
+        {getNetworkSearch(appId) ? (
+          isPc ? (
+            <Button
+              pos={isPc ? 'absolute' : 'relative'}
+              left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+              bottom={isPc ? '16px' : 0}
+              leftIcon={<AtSignIcon />}
+              colorScheme="teal"
+              variant="solid"
+              size="xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                setNetworkSearch(appId, false);
+              }}
+            >
+              {isPc ? '联网搜索' : ''}
+            </Button>
+          ) : (
+            <IconButton
+              isRound={true}
+              ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+              variant="solid"
+              size="xs"
+              aria-label=""
+              colorScheme="teal"
+              onClick={(e) => {
+                e.stopPropagation();
+                setNetworkSearch(appId, false);
+              }}
+              icon={<AtSignIcon />}
+            />
+          )
+        ) : isPc ? (
+          <Button
+            pos={isPc ? 'absolute' : 'relative'}
+            leftIcon={<AtSignIcon />}
+            left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+            bottom={isPc ? '16px' : 0}
+            colorScheme="teal"
+            variant="outline"
+            size="xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              setNetworkSearch(appId, true);
+            }}
+          >
+            {isPc ? '联网搜索' : ''}
+          </Button>
+        ) : (
+          <IconButton
+            variant="outline"
+            isRound={true}
+            ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+            size="xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              setNetworkSearch(appId, true);
+            }}
+            aria-label=""
+            colorScheme="teal"
+            icon={<AtSignIcon />}
+          />
         )}
         {/* input area */}
         <Textarea
@@ -282,24 +348,28 @@ const ChatInput = ({
       </Flex>
     ),
     [
-      File,
-      TextareaDom,
-      fileList,
-      handleSend,
-      hasFileUploading,
-      havInput,
-      inputValue,
-      isChatting,
-      isPc,
-      onOpenSelectFile,
-      onSelectFile,
-      onStop,
-      selectFileIcon,
-      selectFileLabel,
-      setValue,
+      fileList.length,
       showSelectFile,
       showSelectImg,
-      t
+      isPc,
+      selectFileLabel,
+      selectFileIcon,
+      File,
+      getNetworkSearch,
+      appId,
+      TextareaDom,
+      t,
+      inputValue,
+      whisperConfig?.open,
+      isChatting,
+      havInput,
+      hasFileUploading,
+      onOpenSelectFile,
+      onSelectFile,
+      setNetworkSearch,
+      setValue,
+      handleSend,
+      onStop
     ]
   );
 
