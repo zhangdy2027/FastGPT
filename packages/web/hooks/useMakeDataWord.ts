@@ -5,17 +5,21 @@ import htmlToDocx from 'html-to-docx';
 
 export const useMakeDataWord = () => {
   const transData = useCallback(async (data: string) => {
-    data = data.trim();
+    try {
+      data = data.trim();
 
-    const html = marked(data);
+      const html = marked(data);
 
-    const docxBlob = await htmlToDocx(html, {
-      // pageOrientation: 'portrait',
-      // margins: { top: 720, right: 720, bottom: 720, left: 720 }, // 1 inch
-      // footer: false
-    });
+      const docxBlob = await htmlToDocx(html, {
+        // pageOrientation: 'portrait',
+        // margins: { top: 720, right: 720, bottom: 720, left: 720 }, // 1 inch
+        // footer: false
+      });
 
-    saveAs(docxBlob, `回复内容${Date.now()}.docx`);
+      saveAs(docxBlob, `回复内容${Date.now()}.docx`);
+    } catch (error) {
+      return new Error('error');
+    }
   }, []);
 
   return {

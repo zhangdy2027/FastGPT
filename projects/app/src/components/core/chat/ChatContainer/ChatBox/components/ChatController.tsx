@@ -12,6 +12,7 @@ import { ChatBoxContext } from '../Provider';
 import { useContextSelector } from 'use-context-selector';
 import MyImage from '@fastgpt/web/components/common/Image/MyImage';
 import { ChatRecordContext } from '@/web/core/chat/context/chatRecordContext';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 
 export type ChatControllerProps = {
   isLastChild: boolean;
@@ -51,6 +52,7 @@ const ChatController = ({
   onAddUserLike
 }: ChatControllerProps & FlexProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { copyData } = useCopyData();
   const { transData } = useMakeDataWord();
   const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
@@ -66,6 +68,16 @@ const ChatController = ({
   const chatType = useContextSelector(ChatBoxContext, (v) => v.chatType);
 
   const chatText = useMemo(() => formatChatValue2InputType(chat.value).text || '', [chat.value]);
+
+  const onChatDownload = async () => {
+    const err = await transData(chatText);
+    if (err) {
+      toast({
+        status: 'warning',
+        title: '该回复不支持下载'
+      });
+    }
+  };
 
   return (
     <Flex
@@ -244,7 +256,7 @@ const ChatController = ({
             {...controlIconStyle}
             name={'common/download'}
             _hover={{ color: 'primary.600' }}
-            onClick={() => transData(chatText)}
+            onClick={onChatDownload}
           />
         </MyTooltip>
       )}
