@@ -128,6 +128,7 @@ export type AppChatConfigType = {
   scheduledTriggerConfig?: AppScheduledTriggerConfigType;
   chatInputGuide?: ChatInputGuideConfigType;
   fileSelectConfig?: AppFileSelectConfigType;
+  networkSearchConfig?: AppNetworkSearchConfigType;
 
   // plugin
   instruction?: string;
@@ -177,6 +178,10 @@ export type AppWhisperConfigType = {
   open: boolean;
   autoSend: boolean;
   autoTTSResponse: boolean;
+};
+
+export type AppNetworkSearchConfigType = {
+  open: boolean;
 };
 
 // question guide

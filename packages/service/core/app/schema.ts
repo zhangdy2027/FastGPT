@@ -14,6 +14,7 @@ export const chatConfigType = {
   questionGuide: Object,
   ttsConfig: Object,
   whisperConfig: Object,
+  networkSearchConfig: Object,
   scheduledTriggerConfig: Object,
   chatInputGuide: Object,
   fileSelectConfig: Object,
@@ -80,7 +81,8 @@ const AppSchema = new Schema({
     default: []
   },
   chatConfig: {
-    type: chatConfigType
+    type: chatConfigType,
+    strict: false
   },
   // plugin config
   pluginData: {

@@ -23,6 +23,7 @@ import type {
   VariableItemType,
   AppTTSConfigType,
   AppWhisperConfigType,
+  AppNetworkSearchConfigType,
   AppScheduledTriggerConfigType,
   ChatInputGuideConfigType,
   AppChatConfigType,
@@ -35,7 +36,8 @@ import {
   defaultChatInputGuideConfig,
   defaultQGConfig,
   defaultTTSConfig,
-  defaultWhisperConfig
+  defaultWhisperConfig,
+  defaultNetworkSearchConfig
 } from '../app/constants';
 import { IfElseResultEnum } from './template/system/ifElse/constant';
 import { RuntimeNodeItemType } from './runtime/type';
@@ -95,6 +97,10 @@ export const splitGuideModule = (guideModules?: StoreNodeItemType) => {
     guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.whisper)?.value ??
     defaultWhisperConfig;
 
+  const networkSearchConfig: AppNetworkSearchConfigType =
+    guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.networkSearch)?.value ??
+    defaultNetworkSearchConfig;
+
   const scheduledTriggerConfig: AppScheduledTriggerConfigType =
     guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.scheduleTrigger)?.value ??
     undefined;
@@ -116,6 +122,7 @@ export const splitGuideModule = (guideModules?: StoreNodeItemType) => {
     questionGuide,
     ttsConfig,
     whisperConfig,
+    networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,
     instruction,
@@ -143,6 +150,7 @@ export const getAppChatConfig = ({
     questionGuide,
     ttsConfig,
     whisperConfig,
+    networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,
     instruction,
@@ -153,6 +161,7 @@ export const getAppChatConfig = ({
     questionGuide,
     ttsConfig,
     whisperConfig,
+    networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,
     instruction,

@@ -6,6 +6,7 @@ import {
   AppQGConfigType,
   AppTTSConfigType,
   AppWhisperConfigType,
+  AppNetworkSearchConfigType,
   ChatInputGuideConfigType,
   VariableItemType
 } from '@fastgpt/global/core/app/type';
@@ -15,7 +16,8 @@ import {
   defaultChatInputGuideConfig,
   defaultQGConfig,
   defaultTTSConfig,
-  defaultWhisperConfig
+  defaultWhisperConfig,
+  defaultNetworkSearchConfig
 } from '@fastgpt/global/core/app/constants';
 import { createContext, useContextSelector } from 'use-context-selector';
 import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
@@ -38,6 +40,7 @@ type useChatStoreType = ChatProviderProps & {
   questionGuide: AppQGConfigType;
   ttsConfig: AppTTSConfigType;
   whisperConfig: AppWhisperConfigType;
+  networkSearchConfig: AppNetworkSearchConfigType;
   autoTTSResponse: boolean;
   startSegmentedAudio: () => Promise<any>;
   splitText2Audio: (text: string, done?: boolean | undefined) => void;
@@ -85,6 +88,9 @@ export const ChatBoxContext = createContext<useChatStoreType>({
     open: false,
     autoSend: false,
     autoTTSResponse: false
+  },
+  networkSearchConfig: {
+    open: false
   },
   autoTTSResponse: false,
   startSegmentedAudio: function (): Promise<any> {
@@ -161,6 +167,10 @@ const Provider = ({
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.whisperConfig ?? defaultWhisperConfig
   );
+  const networkSearchConfig = useContextSelector(
+    ChatItemContext,
+    (v) => v.chatBoxData?.app?.chatConfig?.networkSearchConfig ?? defaultNetworkSearchConfig
+  );
   const chatInputGuide = useContextSelector(
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.chatInputGuide ?? defaultChatInputGuideConfig
@@ -228,6 +238,7 @@ const Provider = ({
     ttsConfig,
     fileSelectConfig,
     whisperConfig,
+    networkSearchConfig,
     autoTTSResponse,
     startSegmentedAudio,
     finishSegmentedAudio,

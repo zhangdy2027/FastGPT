@@ -3,7 +3,8 @@ import {
   AppFileSelectConfigType,
   AppWhisperConfigType,
   AppAutoExecuteConfigType,
-  AppQGConfigType
+  AppQGConfigType,
+  AppNetworkSearchConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -29,6 +30,10 @@ export const defaultWhisperConfig: AppWhisperConfigType = {
   open: false,
   autoSend: false,
   autoTTSResponse: false
+};
+
+export const defaultNetworkSearchConfig: AppNetworkSearchConfigType = {
+  open: false
 };
 
 export const defaultQGConfig: AppQGConfigType = {

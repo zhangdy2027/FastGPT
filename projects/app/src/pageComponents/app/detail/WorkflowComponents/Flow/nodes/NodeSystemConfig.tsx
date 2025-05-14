@@ -23,6 +23,7 @@ import { FlowNodeTypeEnum } from '@fastgpt/global/core/workflow/node/constant';
 import { userFilesInput } from '@fastgpt/global/core/workflow/template/system/workflowStart';
 import Container from '../components/Container';
 import AutoExecConfig from '@/components/core/app/AutoExecConfig';
+import NetworkSearchConfig from '@/components/core/app/NetworkSearchConfig';
 
 type ComponentProps = {
   chatConfig: AppChatConfigType;
@@ -71,6 +72,9 @@ const NodeUserGuide = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
             </Box>
             <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
               <TTSGuide {...componentsProps} />
+            </Box>
+            <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
+              <NetworkSearchGuide {...componentsProps} />
             </Box>
             <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
               <WhisperGuide {...componentsProps} />
@@ -195,6 +199,24 @@ function WhisperGuide({ chatConfig: { whisperConfig, ttsConfig }, setAppDetail }
           chatConfig: {
             ...state.chatConfig,
             whisperConfig: e
+          }
+        }));
+      }}
+    />
+  );
+}
+
+function NetworkSearchGuide({ chatConfig: { networkSearchConfig }, setAppDetail }: ComponentProps) {
+  return (
+    <NetworkSearchConfig
+      isOpenNetworkSearch={true}
+      value={networkSearchConfig}
+      onChange={(e) => {
+        setAppDetail((state) => ({
+          ...state,
+          chatConfig: {
+            ...state.chatConfig,
+            networkSearchConfig: e
           }
         }));
       }}

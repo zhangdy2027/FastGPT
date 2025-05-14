@@ -40,6 +40,7 @@ const WhisperConfig = dynamic(() => import('@/components/core/app/WhisperConfig'
 const InputGuideConfig = dynamic(() => import('@/components/core/app/InputGuideConfig'));
 const WelcomeTextConfig = dynamic(() => import('@/components/core/app/WelcomeTextConfig'));
 const FileSelectConfig = dynamic(() => import('@/components/core/app/FileSelect'));
+const NetworkSearchConfig = dynamic(() => import('@/components/core/app/NetworkSearchConfig'));
 
 const BoxStyles: BoxProps = {
   px: [4, 6],
@@ -327,6 +328,22 @@ const EditForm = ({
                 chatConfig: {
                   ...state.chatConfig,
                   welcomeText: e.target.value
+                }
+              }));
+            }}
+          />
+        </Box>
+
+        <Box {...BoxStyles}>
+          <NetworkSearchConfig
+            isOpenNetworkSearch={true}
+            value={appForm.chatConfig.networkSearchConfig}
+            onChange={(e) => {
+              setAppForm((state) => ({
+                ...state,
+                chatConfig: {
+                  ...state.chatConfig,
+                  networkSearchConfig: e
                 }
               }));
             }}

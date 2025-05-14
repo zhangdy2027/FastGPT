@@ -59,6 +59,7 @@ const ChatInput = ({
   const whisperConfig = useContextSelector(ChatBoxContext, (v) => v.whisperConfig);
   const chatInputGuide = useContextSelector(ChatBoxContext, (v) => v.chatInputGuide);
   const fileSelectConfig = useContextSelector(ChatBoxContext, (v) => v.fileSelectConfig);
+  const networkSearchConfig = useContextSelector(ChatBoxContext, (v) => v.networkSearchConfig);
 
   const fileCtrl = useFieldArray({
     control,
@@ -135,120 +136,124 @@ const ChatInput = ({
             <File onSelect={(files) => onSelectFile({ files })} />
           </Flex>
         )}
-        {getNetworkSearch(appId) ? (
-          isPc ? (
-            <MyTooltip
-              label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
-              left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
-              bottom={isPc ? '16px' : 0}
-            >
-              <Button
-                pos={isPc ? 'absolute' : 'relative'}
+        {networkSearchConfig.open && (
+          <>
+            {getNetworkSearch(appId) ? (
+              isPc ? (
+                <MyTooltip
+                  label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
+                  left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+                  bottom={isPc ? '16px' : 0}
+                >
+                  <Button
+                    pos={isPc ? 'absolute' : 'relative'}
+                    left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+                    bottom={isPc ? '16px' : 0}
+                    leftIcon={
+                      <MyIcon
+                        name={'core/chat/networkIcon'}
+                        width={['18px', '18px']}
+                        height={['18px', '18px']}
+                        color={'#fff'}
+                      />
+                    }
+                    bg="#485264"
+                    color="#fff"
+                    // colorScheme="#485264"
+                    variant="solid"
+                    size="xs"
+                    _hover={{
+                      bg: '#485264',
+                      color: '#fff'
+                    }}
+                    isDisabled={fileList.length > 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setNetworkSearch(appId, false);
+                    }}
+                  >
+                    {isPc ? '联网搜索' : ''}
+                  </Button>
+                </MyTooltip>
+              ) : (
+                <IconButton
+                  isRound={true}
+                  ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+                  mb={'-2px'}
+                  variant="solid"
+                  size="xs"
+                  aria-label=""
+                  bg="#485264 !important"
+                  isDisabled={fileList.length > 0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setNetworkSearch(appId, false);
+                  }}
+                  icon={
+                    <MyIcon
+                      name={'core/chat/networkIcon'}
+                      width={['18px', '18px']}
+                      height={['18px', '18px']}
+                      color={'#fff'}
+                    />
+                  }
+                />
+              )
+            ) : isPc ? (
+              <MyTooltip
+                label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
                 left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
                 bottom={isPc ? '16px' : 0}
-                leftIcon={
+              >
+                <Button
+                  pos={isPc ? 'absolute' : 'relative'}
+                  leftIcon={
+                    <MyIcon
+                      name={'core/chat/networkIcon'}
+                      width={['18px', '18px']}
+                      height={['18px', '18px']}
+                      color={'#485264'}
+                    />
+                  }
+                  left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+                  bottom={isPc ? '16px' : 0}
+                  colorScheme="#485264"
+                  variant="outline"
+                  size="xs"
+                  isDisabled={fileList.length > 0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setNetworkSearch(appId, true);
+                  }}
+                >
+                  {isPc ? '联网搜索' : ''}
+                </Button>
+              </MyTooltip>
+            ) : (
+              <IconButton
+                variant="outline"
+                isRound={true}
+                ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+                mb={'-2px'}
+                size="xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNetworkSearch(appId, true);
+                }}
+                isDisabled={fileList.length > 0}
+                aria-label=""
+                colorScheme="#485264"
+                icon={
                   <MyIcon
                     name={'core/chat/networkIcon'}
                     width={['18px', '18px']}
                     height={['18px', '18px']}
-                    color={'#fff'}
+                    color={'#485264'}
                   />
                 }
-                bg="#485264"
-                color="#fff"
-                // colorScheme="#485264"
-                variant="solid"
-                size="xs"
-                _hover={{
-                  bg: '#485264',
-                  color: '#fff'
-                }}
-                isDisabled={fileList.length > 0}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setNetworkSearch(appId, false);
-                }}
-              >
-                {isPc ? '联网搜索' : ''}
-              </Button>
-            </MyTooltip>
-          ) : (
-            <IconButton
-              isRound={true}
-              ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
-              mb={'-2px'}
-              variant="solid"
-              size="xs"
-              aria-label=""
-              bg="#485264 !important"
-              isDisabled={fileList.length > 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                setNetworkSearch(appId, false);
-              }}
-              icon={
-                <MyIcon
-                  name={'core/chat/networkIcon'}
-                  width={['18px', '18px']}
-                  height={['18px', '18px']}
-                  color={'#fff'}
-                />
-              }
-            />
-          )
-        ) : isPc ? (
-          <MyTooltip
-            label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
-            left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
-            bottom={isPc ? '16px' : 0}
-          >
-            <Button
-              pos={isPc ? 'absolute' : 'relative'}
-              leftIcon={
-                <MyIcon
-                  name={'core/chat/networkIcon'}
-                  width={['18px', '18px']}
-                  height={['18px', '18px']}
-                  color={'#485264'}
-                />
-              }
-              left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
-              bottom={isPc ? '16px' : 0}
-              colorScheme="#485264"
-              variant="outline"
-              size="xs"
-              isDisabled={fileList.length > 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                setNetworkSearch(appId, true);
-              }}
-            >
-              {isPc ? '联网搜索' : ''}
-            </Button>
-          </MyTooltip>
-        ) : (
-          <IconButton
-            variant="outline"
-            isRound={true}
-            ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
-            mb={'-2px'}
-            size="xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              setNetworkSearch(appId, true);
-            }}
-            isDisabled={fileList.length > 0}
-            aria-label=""
-            colorScheme="#485264"
-            icon={
-              <MyIcon
-                name={'core/chat/networkIcon'}
-                width={['18px', '18px']}
-                height={['18px', '18px']}
-                color={'#485264'}
               />
-            }
-          />
+            )}
+          </>
         )}
         {/* input area */}
         <Textarea
@@ -408,11 +413,12 @@ const ChatInput = ({
       showSelectFile,
       showSelectImg,
       isPc,
-      selectFileLabel,
-      selectFileIcon,
-      File,
       getNetworkSearch,
       appId,
+      selectFileIcon,
+      File,
+      networkSearchConfig?.open,
+      getNetworkSearch(appId),
       TextareaDom,
       t,
       inputValue,
