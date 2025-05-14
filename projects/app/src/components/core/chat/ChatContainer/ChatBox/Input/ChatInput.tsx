@@ -119,13 +119,17 @@ const ChatInput = ({
             h={'22px'}
             alignItems={'center'}
             justifyContent={'center'}
-            cursor={'pointer'}
+            cursor={getNetworkSearch(appId) ? 'not-allowed' : 'pointer'}
             transform={'translateY(1px)'}
             onClick={() => {
+              if (getNetworkSearch(appId)) {
+                return;
+              }
               onOpenSelectFile();
             }}
+            opacity={getNetworkSearch(appId) ? 0.4 : 1}
           >
-            <MyTooltip label={selectFileLabel}>
+            <MyTooltip label={getNetworkSearch(appId) ? '联网搜索不支持上传文件' : '上传文件'}>
               <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
             </MyTooltip>
             <File onSelect={(files) => onSelectFile({ files })} />
@@ -133,21 +137,28 @@ const ChatInput = ({
         )}
         {getNetworkSearch(appId) ? (
           isPc ? (
-            <Button
-              pos={isPc ? 'absolute' : 'relative'}
+            <MyTooltip
+              label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
               left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
               bottom={isPc ? '16px' : 0}
-              leftIcon={<AtSignIcon />}
-              colorScheme="teal"
-              variant="solid"
-              size="xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                setNetworkSearch(appId, false);
-              }}
             >
-              {isPc ? '联网搜索' : ''}
-            </Button>
+              <Button
+                pos={isPc ? 'absolute' : 'relative'}
+                left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+                bottom={isPc ? '16px' : 0}
+                leftIcon={<AtSignIcon />}
+                colorScheme="teal"
+                variant="solid"
+                size="xs"
+                isDisabled={fileList.length > 0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNetworkSearch(appId, false);
+                }}
+              >
+                {isPc ? '联网搜索' : ''}
+              </Button>
+            </MyTooltip>
           ) : (
             <IconButton
               isRound={true}
@@ -156,6 +167,7 @@ const ChatInput = ({
               size="xs"
               aria-label=""
               colorScheme="teal"
+              isDisabled={fileList.length > 0}
               onClick={(e) => {
                 e.stopPropagation();
                 setNetworkSearch(appId, false);
@@ -164,21 +176,28 @@ const ChatInput = ({
             />
           )
         ) : isPc ? (
-          <Button
-            pos={isPc ? 'absolute' : 'relative'}
-            leftIcon={<AtSignIcon />}
+          <MyTooltip
+            label={fileList.length > 0 ? '请先删除文件再开启联网搜索' : ''}
             left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
             bottom={isPc ? '16px' : 0}
-            colorScheme="teal"
-            variant="outline"
-            size="xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              setNetworkSearch(appId, true);
-            }}
           >
-            {isPc ? '联网搜索' : ''}
-          </Button>
+            <Button
+              pos={isPc ? 'absolute' : 'relative'}
+              leftIcon={<AtSignIcon />}
+              left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
+              bottom={isPc ? '16px' : 0}
+              colorScheme="teal"
+              variant="outline"
+              size="xs"
+              isDisabled={fileList.length > 0}
+              onClick={(e) => {
+                e.stopPropagation();
+                setNetworkSearch(appId, true);
+              }}
+            >
+              {isPc ? '联网搜索' : ''}
+            </Button>
+          </MyTooltip>
         ) : (
           <IconButton
             variant="outline"
@@ -189,6 +208,7 @@ const ChatInput = ({
               e.stopPropagation();
               setNetworkSearch(appId, true);
             }}
+            isDisabled={fileList.length > 0}
             aria-label=""
             colorScheme="teal"
             icon={<AtSignIcon />}
