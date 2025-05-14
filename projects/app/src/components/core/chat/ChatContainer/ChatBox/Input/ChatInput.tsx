@@ -146,10 +146,23 @@ const ChatInput = ({
                 pos={isPc ? 'absolute' : 'relative'}
                 left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
                 bottom={isPc ? '16px' : 0}
-                leftIcon={<AtSignIcon />}
-                colorScheme="teal"
+                leftIcon={
+                  <MyIcon
+                    name={'core/chat/networkIcon'}
+                    width={['18px', '18px']}
+                    height={['18px', '18px']}
+                    color={'#fff'}
+                  />
+                }
+                bg="#485264"
+                color="#fff"
+                // colorScheme="#485264"
                 variant="solid"
                 size="xs"
+                _hover={{
+                  bg: '#485264',
+                  color: '#fff'
+                }}
                 isDisabled={fileList.length > 0}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -163,16 +176,24 @@ const ChatInput = ({
             <IconButton
               isRound={true}
               ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+              mb={'-2px'}
               variant="solid"
               size="xs"
               aria-label=""
-              colorScheme="teal"
+              bg="#485264 !important"
               isDisabled={fileList.length > 0}
               onClick={(e) => {
                 e.stopPropagation();
                 setNetworkSearch(appId, false);
               }}
-              icon={<AtSignIcon />}
+              icon={
+                <MyIcon
+                  name={'core/chat/networkIcon'}
+                  width={['18px', '18px']}
+                  height={['18px', '18px']}
+                  color={'#fff'}
+                />
+              }
             />
           )
         ) : isPc ? (
@@ -183,10 +204,17 @@ const ChatInput = ({
           >
             <Button
               pos={isPc ? 'absolute' : 'relative'}
-              leftIcon={<AtSignIcon />}
+              leftIcon={
+                <MyIcon
+                  name={'core/chat/networkIcon'}
+                  width={['18px', '18px']}
+                  height={['18px', '18px']}
+                  color={'#485264'}
+                />
+              }
               left={showSelectFile || showSelectImg ? (isPc ? '50px' : '5px') : [2, 4]}
               bottom={isPc ? '16px' : 0}
-              colorScheme="teal"
+              colorScheme="#485264"
               variant="outline"
               size="xs"
               isDisabled={fileList.length > 0}
@@ -203,6 +231,7 @@ const ChatInput = ({
             variant="outline"
             isRound={true}
             ml={showSelectFile || showSelectImg ? (isPc ? '10px' : '5px') : 0}
+            mb={'-2px'}
             size="xs"
             onClick={(e) => {
               e.stopPropagation();
@@ -210,8 +239,15 @@ const ChatInput = ({
             }}
             isDisabled={fileList.length > 0}
             aria-label=""
-            colorScheme="teal"
-            icon={<AtSignIcon />}
+            colorScheme="#485264"
+            icon={
+              <MyIcon
+                name={'core/chat/networkIcon'}
+                width={['18px', '18px']}
+                height={['18px', '18px']}
+                color={'#485264'}
+              />
+            }
           />
         )}
         {/* input area */}

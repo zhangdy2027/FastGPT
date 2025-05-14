@@ -195,6 +195,7 @@ export const iconPaths = {
   'core/chat/quoteFill': () => import('./icons/core/chat/quoteFill.svg'),
   'core/chat/quoteSign': () => import('./icons/core/chat/quoteSign.svg'),
   'core/chat/recordFill': () => import('./icons/core/chat/recordFill.svg'),
+  'core/chat/networkIcon': () => import('./icons/core/chat/networkIcon.svg'),
   'core/chat/sendFill': () => import('./icons/core/chat/sendFill.svg'),
   'core/chat/sendLight': () => import('./icons/core/chat/sendLight.svg'),
   'core/chat/setTopLight': () => import('./icons/core/chat/setTopLight.svg'),
