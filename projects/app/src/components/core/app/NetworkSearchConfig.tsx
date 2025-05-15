@@ -29,7 +29,7 @@ const NetworkSearchConfig = ({
 
   return (
     <Flex alignItems={'center'}>
-      <MyIcon name={'core/chat/networkIcon'} mr={2} w={'20px'} />
+      <MyIcon name={'core/chat/networkIcon'} mr={2} w={'20px'} color={'#DB1010'} />
       <FormLabel color={'myGray.600'}>{'联网搜索'}</FormLabel>
       <Box flex={1} />
       <MyTooltip label={'配置联网搜索'}>
@@ -47,6 +47,7 @@ const NetworkSearchConfig = ({
       <MyModal
         title={'联网搜索配置'}
         iconSrc="core/chat/networkIcon"
+        iconColor="#DB1010"
         isOpen={isOpen}
         onClose={onClose}
       >
