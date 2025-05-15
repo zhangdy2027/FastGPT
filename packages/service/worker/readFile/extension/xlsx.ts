@@ -36,7 +36,7 @@ const removeEmptyColumns = (rows: any[][]): any[][] => {
 const sheetToCsvText = (sheet: XLSX.WorkSheet): string => {
   fillMergedCells(sheet);
   const json = XLSX.utils.sheet_to_json(sheet, {
-    // header: 1,
+    header: 1,
     defval: '',
     raw: false
   });
