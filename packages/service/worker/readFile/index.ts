@@ -23,6 +23,7 @@ parentPort?.on('message', async (props: ReadRawTextProps<Uint8Array>) => {
       case 'pptx':
         return readPptxRawText(params);
       case 'xlsx':
+      case 'xls':
         return readXlsxRawText(params);
       case 'csv':
         return readCsvRawText(params);
