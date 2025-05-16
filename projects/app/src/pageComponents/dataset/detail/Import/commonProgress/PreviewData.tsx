@@ -129,7 +129,7 @@ const PreviewData = () => {
             ))}
           </Box>
         </Flex>
-        <Flex flexDirection={'column'} flex={'1 0 0'}>
+        <Flex flexDirection={'column'} flex={'1 0 0'} overflow={'auto'}>
           <Flex py={4} px={5} borderBottom={'base'} justifyContent={'space-between'}>
             <FormLabel fontSize={'md'}>{t('dataset:preview_chunk')}</FormLabel>
             <Box fontSize={'xs'} color={'myGray.500'}>
