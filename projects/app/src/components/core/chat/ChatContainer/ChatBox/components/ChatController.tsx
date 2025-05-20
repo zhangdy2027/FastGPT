@@ -70,8 +70,8 @@ const ChatController = ({
   const chatText = useMemo(() => formatChatValue2InputType(chat.value).text || '', [chat.value]);
 
   const onChatDownload = async () => {
-    const err = await transData(chatText);
-    if (err) {
+    const d = await transData(chatText);
+    if (!d) {
       toast({
         status: 'warning',
         title: '该回复不支持下载'

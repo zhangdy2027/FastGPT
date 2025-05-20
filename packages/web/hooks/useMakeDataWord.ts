@@ -23,7 +23,7 @@ export const useMakeDataWord = () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const body = doc.body;
-      const children: Paragraph[] = [];
+      const children: any[] = [];
 
       for (const el of Array.from(body.children)) {
         switch (el.tagName.toLowerCase()) {
@@ -207,8 +207,10 @@ export const useMakeDataWord = () => {
 
       const blob = await Packer.toBlob(docx);
       saveAs(blob, `回复内容-${Date.now()}.docx`);
+      return true;
     } catch (e) {
       console.error('转换失败:', e);
+      return true;
     }
   }, []);
 
