@@ -176,7 +176,7 @@ export const readRawContentByFileBuffer = async ({
     });
   }
 
-  if (['csv', 'xlsx'].includes(extension)) {
+  if (['csv', 'xlsx', 'xls'].includes(extension)) {
     // qa data
     if (isQAImport) {
       rawText = rawText || '';
