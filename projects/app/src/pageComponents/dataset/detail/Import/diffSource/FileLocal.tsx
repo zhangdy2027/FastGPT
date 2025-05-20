@@ -14,7 +14,7 @@ const DataProcess = dynamic(() => import('../commonProgress/DataProcess'));
 const PreviewData = dynamic(() => import('../commonProgress/PreviewData'));
 const Upload = dynamic(() => import('../commonProgress/Upload'));
 
-const fileType = '.txt, .docx, .csv, .xlsx, .xls, .pdf, .md, .html, .pptx';
+const fileType = '.txt, .docx, .doc, .csv, .xlsx, .xls, .pdf, .md, .html, .pptx';
 
 const FileLocal = () => {
   const activeStep = useContextSelector(DatasetImportContext, (v) => v.activeStep);

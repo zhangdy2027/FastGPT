@@ -2,11 +2,11 @@ import { ReadFileByBufferParams } from '../../common/file/read/type';
 
 export type ReadRawTextProps<T> = {
   extension: string;
-  buffer: T;
+  buffer: Buffer;
   encoding: string;
 };
 
-export type ReadRawTextByBuffer = ReadRawTextProps<Buffer>;
+export type ReadRawTextByBuffer = ReadRawTextProps;
 
 export type ImageType = {
   uuid: string;
