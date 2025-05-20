@@ -20,8 +20,8 @@ parentPort?.on('message', async (props: ReadRawTextProps<Uint8Array>) => {
         return readPdfFile(params);
       case 'docx':
         return readDocsFile(params);
-      case 'doc':
-        return readDocFile(params);
+      // case 'doc':
+      //   return readDocFile(params);
       case 'pptx':
         return readPptxRawText(params);
       case 'xlsx':
@@ -31,7 +31,7 @@ parentPort?.on('message', async (props: ReadRawTextProps<Uint8Array>) => {
         return readCsvRawText(params);
       default:
         return Promise.reject(
-          `Only support .txt, .md, .html, .pdf, .docx, .doc, .pptx, .csv, .xlsx, .xls. "${params.extension}" is not supported.`
+          `Only support .txt, .md, .html, .pdf, .docx, .pptx, .csv, .xlsx, .xls. "${params.extension}" is not supported.`
         );
     }
   };

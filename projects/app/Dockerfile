@@ -55,33 +55,32 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 RUN [ -z "$proxy" ] || sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
+# 添加 edge/testing 源并安装 LibreOffice 和字体依赖
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+  && apk add --no-cache libreoffice libreoffice-writer libreoffice-calc libreoffice-impress \
+    fontconfig ttf-dejavu \
+  && update-ca-certificates
+
+# 你原来的依赖包
 RUN apk add --no-cache curl ca-certificates \
   && update-ca-certificates
 
-# copy running files
+# 复制项目文件
 COPY --from=builder /app/projects/app/public /app/projects/app/public
 COPY --from=builder /app/projects/app/next.config.js /app/projects/app/next.config.js
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/standalone /app/
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/static /app/projects/app/.next/static
-# copy server chunks
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/server/chunks /app/projects/app/.next/server/chunks
-# copy worker
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/server/worker /app/projects/app/.next/server/worker
 
-# copy standload packages
 COPY --from=maindeps /app/node_modules/tiktoken ./node_modules/tiktoken
 RUN rm -rf ./node_modules/tiktoken/encoders
 COPY --from=maindeps /app/node_modules/@zilliz/milvus2-sdk-node ./node_modules/@zilliz/milvus2-sdk-node
 
-
-# copy package.json to version file
 COPY --from=builder /app/projects/app/package.json ./package.json 
-
-# copy config
 COPY ./projects/app/data /app/data
 RUN chown -R nextjs:nodejs /app/data
-
-# Add tmp directory permission control
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
