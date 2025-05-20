@@ -73,6 +73,7 @@ export const readRawContentByFileBuffer = async ({
 
     const start = Date.now();
     addLog.info('Parsing files from an external service');
+    addLog.info(`url: ${url}`);
 
     const data = new FormData();
     data.append('file', buffer, {

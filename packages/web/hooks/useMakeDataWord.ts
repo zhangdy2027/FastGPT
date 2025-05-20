@@ -57,7 +57,7 @@ export const useMakeDataWord = () => {
                     size: 32 // 三号 16pt
                   })
                 ],
-                indent: { firstLine: 420 },
+                indent: { firstLine: 640 },
                 spacing: { line: 560, lineRule: 'exact' }
               })
             );
@@ -189,7 +189,7 @@ export const useMakeDataWord = () => {
                     size: 32
                   })
                 ],
-                indent: { firstLine: 420 },
+                indent: { firstLine: 640 },
                 spacing: { line: 560, lineRule: 'exact' }
               })
             );

@@ -337,6 +337,7 @@ const WorkflowContextProvider = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const { userInfo } = useUserStore();
+  const { getNetworkSearch } = useChatStore();
 
   const appDetail = useContextSelector(AppContext, (v) => v.appDetail);
   const setAppDetail = useContextSelector(AppContext, (v) => v.setAppDetail);
@@ -626,7 +627,6 @@ const WorkflowContextProvider = ({
       try {
         // 4. Run one step
         const username = userInfo?.username || '';
-        const { getNetworkSearch } = useChatStore();
         const {
           finishedEdges,
           finishedNodes,
