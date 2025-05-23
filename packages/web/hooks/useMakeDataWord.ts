@@ -12,7 +12,125 @@ import {
   WidthType,
   ImageRun
 } from 'docx';
+import * as echarts from 'echarts';
 import { saveAs } from 'file-saver';
+
+const renderEchartsToImage = async (options: any, width = 600, height = 400) => {
+  try {
+    const container = document.createElement('div');
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+    document.body.appendChild(container);
+
+    const chart = echarts.init(container);
+    chart.setOption(options);
+
+    // 等待渲染完成
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const dataURL = chart.getDataURL({
+      type: 'png',
+      pixelRatio: 2,
+      backgroundColor: '#fff'
+    });
+
+    chart.dispose();
+    document.body.removeChild(container);
+
+    // 将 dataURL 转换为 ArrayBuffer
+    const response = await fetch(dataURL);
+    return await response.arrayBuffer();
+  } catch (error) {
+    console.error('ECharts 渲染失败:', error);
+    return null;
+  }
+};
+
+// 添加处理节点的辅助函数
+const processNode = async (node: Node): Promise<any[]> => {
+  const runs = [];
+
+  // 处理文本节点
+  if (node.nodeType === Node.TEXT_NODE) {
+    if (node.textContent?.trim()) {
+      runs.push(
+        new TextRun({
+          text: node.textContent,
+          font: '仿宋',
+          size: 32
+        })
+      );
+    }
+    return runs;
+  }
+
+  // 处理元素节点
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    const el = node as Element;
+
+    switch (el.tagName.toLowerCase()) {
+      case 'strong':
+      case 'b':
+        for (const child of Array.from(el.childNodes)) {
+          const childRuns = await processNode(child);
+          runs.push(
+            ...childRuns.map((run) => {
+              if (run instanceof TextRun) {
+                return new TextRun({ ...run.options, bold: true });
+              }
+              return run;
+            })
+          );
+        }
+        break;
+
+      case 'em':
+      case 'i':
+        for (const child of Array.from(el.childNodes)) {
+          const childRuns = await processNode(child);
+          runs.push(
+            ...childRuns.map((run) => {
+              if (run instanceof TextRun) {
+                return new TextRun({ ...run.options, italics: true });
+              }
+              return run;
+            })
+          );
+        }
+        break;
+
+      case 'img':
+        const src = el.getAttribute('src');
+        console.log('imgimgimgimgimgimg', src);
+        if (src) {
+          try {
+            const imageBuffer = await fetch(src).then((res) => res.arrayBuffer());
+            runs.push(
+              new ImageRun({
+                data: imageBuffer,
+                transformation: {
+                  width: 480,
+                  height: 320
+                }
+              })
+            );
+          } catch (e) {
+            console.warn('图片加载失败:', src);
+          }
+        }
+        break;
+
+      default:
+        // 递归处理子节点
+        for (const child of Array.from(el.childNodes)) {
+          const childRuns = await processNode(child);
+          runs.push(...childRuns);
+        }
+    }
+  }
+
+  return runs;
+};
 
 export const useMakeDataWord = () => {
   const transData = useCallback(async (md: string) => {
@@ -46,63 +164,91 @@ export const useMakeDataWord = () => {
             );
             break;
           }
-
           case 'p': {
+            const runs = await processNode(el);
             children.push(
               new Paragraph({
-                children: [
-                  new TextRun({
-                    text: el.textContent || '',
-                    font: '仿宋',
-                    size: 32 // 三号 16pt
-                  })
-                ],
+                children: runs,
                 indent: { firstLine: 640 },
-                spacing: { line: 560, lineRule: 'exact' }
+                spacing: { line: 560, lineRule: 'atLeast' }
               })
             );
             break;
           }
-
           case 'ul':
           case 'ol': {
             for (const li of Array.from(el.children)) {
+              // 使用 processNode 处理 li 中的富文本内容
+              const runs = await processNode(li);
               children.push(
                 new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: li.textContent || '',
-                      font: '仿宋',
-                      size: 32
-                    })
-                  ],
+                  children: runs,
                   bullet: el.tagName === 'ul' ? { level: 0 } : undefined,
                   numbering: el.tagName === 'ol' ? { reference: 'num', level: 0 } : undefined,
                   indent: { left: 420 },
-                  spacing: { line: 560, lineRule: 'exact' }
+                  spacing: { line: 560, lineRule: 'atLeast' }
                 })
               );
             }
             break;
           }
-
           case 'pre': {
             const code = el.textContent || '';
+
+            // 检查是否是 echarts 代码块
+            const codeElement = el.querySelector('code');
+            if (
+              codeElement &&
+              (codeElement.classList.contains('language-echarts') ||
+                codeElement.classList.contains('echarts'))
+            ) {
+              try {
+                // const newCode = `(${code})`;
+                const parseObj = new Function(`return ${code}`);
+                const option = parseObj();
+                const imageBuffer = await renderEchartsToImage(option);
+
+                if (imageBuffer) {
+                  children.push(
+                    new Paragraph({
+                      children: [
+                        new ImageRun({
+                          data: imageBuffer,
+                          transformation: {
+                            width: 480,
+                            height: 320
+                          }
+                        })
+                      ],
+                      spacing: { line: 560, lineRule: 'atLeast' }
+                      // alignment: AlignmentType.CENTER,
+                      // spacing: {
+                      //   line: 1440, // 增加行高到原来的2.5倍左右
+                      //   lineRule: 'atLeast'
+                      // }
+                    })
+                  );
+                  break;
+                }
+              } catch (e) {
+                console.warn('ECharts 解析失败，回退到文本显示:', e);
+              }
+            }
+
             children.push(
               new Paragraph({
                 children: [
                   new TextRun({
                     text: code,
-                    font: 'Courier New',
+                    // font: 'Courier New',
                     size: 20
                   })
                 ],
-                spacing: { line: 560, lineRule: 'exact' }
+                spacing: { line: 560, lineRule: 'atLeast' }
               })
             );
             break;
           }
-
           case 'hr': {
             children.push(
               new Paragraph({
@@ -118,39 +264,34 @@ export const useMakeDataWord = () => {
             );
             break;
           }
-
           case 'table': {
-            const rows = Array.from(el.querySelectorAll('tr')).map((tr) => {
-              const cells = Array.from(tr.children).map((td) => {
-                return new TableCell({
-                  children: [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: td.textContent?.trim() || '',
-                          font: '仿宋',
-                          size: 32
-                        })
-                      ],
-                      spacing: { line: 560, lineRule: 'exact' }
-                    })
-                  ],
-                  width: { size: 5000, type: WidthType.AUTO }
-                });
-              });
+            const rows = Array.from(el.querySelectorAll('tr')).map(async (tr) => {
+              const cells = await Promise.all(
+                Array.from(tr.children).map(async (td) => {
+                  const runs = await processNode(td);
+                  return new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: runs,
+                        spacing: { line: 560, lineRule: 'atLeast' }
+                      })
+                    ],
+                    width: { size: 5000, type: WidthType.AUTO }
+                  });
+                })
+              );
 
               return new TableRow({ children: cells });
             });
 
             children.push(
               new Table({
-                rows,
+                rows: await Promise.all(rows),
                 width: { size: 100, type: WidthType.PERCENTAGE }
               })
             );
             break;
           }
-
           case 'img': {
             const src = el.getAttribute('src');
             if (src) {
@@ -168,8 +309,12 @@ export const useMakeDataWord = () => {
                         }
                       })
                     ],
-                    alignment: AlignmentType.CENTER,
-                    spacing: { line: 560, lineRule: 'exact' }
+                    spacing: { line: 560, lineRule: 'atLeast' }
+                    // alignment: AlignmentType.CENTER,
+                    // spacing: {
+                    //   line: 1440, // 增加行高到原来的2.5倍左右
+                    //   lineRule: 'atLeast'
+                    // }
                   })
                 );
               } catch (e) {
@@ -178,7 +323,6 @@ export const useMakeDataWord = () => {
             }
             break;
           }
-
           default: {
             children.push(
               new Paragraph({
@@ -190,7 +334,7 @@ export const useMakeDataWord = () => {
                   })
                 ],
                 indent: { firstLine: 640 },
-                spacing: { line: 560, lineRule: 'exact' }
+                spacing: { line: 560, lineRule: 'atLeast' }
               })
             );
           }
