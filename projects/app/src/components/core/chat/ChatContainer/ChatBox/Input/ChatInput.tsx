@@ -60,6 +60,7 @@ const ChatInput = ({
   const chatInputGuide = useContextSelector(ChatBoxContext, (v) => v.chatInputGuide);
   const fileSelectConfig = useContextSelector(ChatBoxContext, (v) => v.fileSelectConfig);
   const networkSearchConfig = useContextSelector(ChatBoxContext, (v) => v.networkSearchConfig);
+  const [mobilePreSpeak, setMobilePreSpeak] = useState(false);
 
   const fileCtrl = useFieldArray({
     control,
@@ -115,7 +116,7 @@ const ChatInput = ({
       <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]} pr={[2, 4]}>
         {/* file selector */}
         <Flex
-          pos={isPc ? 'absolute' : 'relative'}
+          pos={'absolute'}
           h={'22px'}
           alignItems={'center'}
           justifyContent={'center'}
@@ -154,7 +155,24 @@ const ChatInput = ({
                     }}
                     opacity={fileList.length === 0 ? 1 : 0.4}
                   >
-                    <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#DB1010'} />
+                    {/* <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#DB1010'} /> */}
+                    <Button
+                      leftIcon={
+                        <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#FFFFFF'} />
+                      }
+                      border="1px"
+                      bgColor={'#DB1010'}
+                      borderColor="#DB1010"
+                      variant="solid"
+                      size="xs"
+                      color={'#FFFFFF'}
+                      _hover={{
+                        bgColor: '#DB1010'
+                      }}
+                      borderRadius={'12px'}
+                    >
+                      联网搜索
+                    </Button>
                   </Box>
                 ) : (
                   <Box
@@ -168,7 +186,18 @@ const ChatInput = ({
                     }}
                     opacity={fileList.length === 0 ? 1 : 0.4}
                   >
-                    <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#485264'} />
+                    {/* <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#485264'} /> */}
+                    <Button
+                      leftIcon={
+                        <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#485264'} />
+                      }
+                      borderColor="#485264"
+                      variant="outline"
+                      size="xs"
+                      borderRadius={'12px'}
+                    >
+                      联网搜索
+                    </Button>
                   </Box>
                 )}
               </MyTooltip>
@@ -180,8 +209,8 @@ const ChatInput = ({
           ref={TextareaDom}
           py={0}
           pl={isPc ? 0 : 2}
-          pr={isPc ? 0 : 10}
-          mb={isPc ? '30px' : '0px'}
+          pr={isPc ? 0 : 2}
+          mb={mobilePreSpeak ? '0px' : '30px'}
           // pr={['30px', '48px']}
           border={'none'}
           _focusVisible={{
@@ -340,6 +369,7 @@ const ChatInput = ({
       networkSearchConfig?.open,
       getNetworkSearch(appId),
       TextareaDom,
+      mobilePreSpeak,
       t,
       inputValue,
       whisperConfig?.open,
@@ -428,6 +458,9 @@ const ChatInput = ({
             ref={VoiceInputRef}
             onSendMessage={onSendMessage}
             resetInputVal={resetInputVal}
+            onMobilePreSpeak={(val) => {
+              setMobilePreSpeak(val);
+            }}
           />
         )}
 

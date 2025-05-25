@@ -24,6 +24,7 @@ export interface VoiceInputComponentRef {
 type VoiceInputProps = {
   onSendMessage: (params: { text: string; files?: any[]; autoTTSResponse?: boolean }) => void;
   resetInputVal: (val: { text: string }) => void;
+  onMobilePreSpeak: (val: boolean) => void;
 };
 
 // PC voice input
@@ -214,7 +215,7 @@ const MobileVoiceInput = ({
 };
 
 const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
-  ({ onSendMessage, resetInputVal }, ref) => {
+  ({ onSendMessage, resetInputVal, onMobilePreSpeak }, ref) => {
     const { t } = useTranslation();
     const { isPc } = useSystem();
 
@@ -307,8 +308,9 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
         onStartSpeak();
       } else {
         setMobilePreSpeak(true);
+        onMobilePreSpeak(true);
       }
-    }, [isPc, onStartSpeak]);
+    }, [isPc, onMobilePreSpeak, onStartSpeak]);
     useImperativeHandle(ref, () => ({
       onSpeak: onSpeach
     }));
@@ -340,7 +342,10 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
           <MobileVoiceInput
             isSpeaking={isSpeaking}
             onStartSpeak={onStartSpeak}
-            onCloseSpeak={() => setMobilePreSpeak(false)}
+            onCloseSpeak={() => {
+              setMobilePreSpeak(false);
+              onMobilePreSpeak(false);
+            }}
             stopSpeak={stopSpeak}
             canvasRef={canvasRef}
           />
