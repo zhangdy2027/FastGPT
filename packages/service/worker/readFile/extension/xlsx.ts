@@ -1,6 +1,7 @@
 import { type ReadRawTextByBuffer, type ReadFileResponse } from '../type';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
+import dayjs from 'dayjs';
 
 const fillMergedCells = (sheet: XLSX.WorkSheet) => {
   const merges = sheet['!merges'] || [];
@@ -38,7 +39,7 @@ const sheetToCsvText = (sheet: XLSX.WorkSheet): string => {
   const json = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     defval: '',
-    raw: false
+    raw: true
   });
 
   const cleaned = removeEmptyColumns(json as any[][]);
@@ -47,6 +48,9 @@ const sheetToCsvText = (sheet: XLSX.WorkSheet): string => {
     .map((row) =>
       row
         .map((cell) => {
+          if (cell instanceof Date) {
+            return dayjs(cell).format('YYYY-MM-DD HH:mm:ss'); // 转换为 YYYY-MM-DD
+          }
           if (typeof cell === 'string') {
             return cell.replace(/,/g, '，').replace(/\r?\n/g, ' ');
           }
