@@ -195,45 +195,45 @@ export const useMakeDataWord = () => {
           case 'pre': {
             const code = el.textContent || '';
 
-            // 检查是否是 echarts 代码块
-            const codeElement = el.querySelector('code');
-            if (
-              codeElement &&
-              (codeElement.classList.contains('language-echarts') ||
-                codeElement.classList.contains('echarts'))
-            ) {
-              try {
-                // const newCode = `(${code})`;
-                const parseObj = new Function(`return ${code}`);
-                const option = parseObj();
-                const imageBuffer = await renderEchartsToImage(option);
+            // // 检查是否是 echarts 代码块
+            // const codeElement = el.querySelector('code');
+            // if (
+            //   codeElement &&
+            //   (codeElement.classList.contains('language-echarts') ||
+            //     codeElement.classList.contains('echarts'))
+            // ) {
+            //   try {
+            //     // const newCode = `(${code})`;
+            //     const parseObj = new Function(`return ${code}`);
+            //     const option = parseObj();
+            //     const imageBuffer = await renderEchartsToImage(option);
 
-                if (imageBuffer) {
-                  children.push(
-                    new Paragraph({
-                      children: [
-                        new ImageRun({
-                          data: imageBuffer,
-                          transformation: {
-                            width: 480,
-                            height: 320
-                          }
-                        })
-                      ],
-                      spacing: { line: 560, lineRule: 'atLeast' }
-                      // alignment: AlignmentType.CENTER,
-                      // spacing: {
-                      //   line: 1440, // 增加行高到原来的2.5倍左右
-                      //   lineRule: 'atLeast'
-                      // }
-                    })
-                  );
-                  break;
-                }
-              } catch (e) {
-                console.warn('ECharts 解析失败，回退到文本显示:', e);
-              }
-            }
+            //     if (imageBuffer) {
+            //       children.push(
+            //         new Paragraph({
+            //           children: [
+            //             new ImageRun({
+            //               data: imageBuffer,
+            //               transformation: {
+            //                 width: 480,
+            //                 height: 320
+            //               }
+            //             })
+            //           ],
+            //           spacing: { line: 560, lineRule: 'atLeast' }
+            //           // alignment: AlignmentType.CENTER,
+            //           // spacing: {
+            //           //   line: 1440, // 增加行高到原来的2.5倍左右
+            //           //   lineRule: 'atLeast'
+            //           // }
+            //         })
+            //       );
+            //       break;
+            //     }
+            //   } catch (e) {
+            //     console.warn('ECharts 解析失败，回退到文本显示:', e);
+            //   }
+            // }
 
             children.push(
               new Paragraph({

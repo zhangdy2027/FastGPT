@@ -9,6 +9,7 @@ import { batchRun } from '@fastgpt/global/common/system/utils';
 import { matchMdImg } from '@fastgpt/global/common/string/markdown';
 import { createPdfParseUsage } from '../../../support/wallet/usage/controller';
 import { useDoc2xServer } from '../../../thirdProvider/doc2x';
+import * as cheerio from 'cheerio';
 
 export type readRawTextByLocalFileParams = {
   teamId: string;
@@ -66,6 +67,42 @@ export const readRawContentByFileBuffer = async ({
       buffer,
       teamId
     });
+
+  const htmlTableToMarkdown = (html: string): string => {
+    const $ = cheerio.load(html);
+    const mdTables: string[] = [];
+
+    $('table').each((_, table) => {
+      const rows: string[][] = [];
+
+      $(table)
+        .find('tr')
+        .each((_, row) => {
+          const rowData: string[] = [];
+          $(row)
+            .find('td, th')
+            .each((_, cell) => {
+              rowData.push($(cell).text().trim());
+            });
+          rows.push(rowData);
+        });
+
+      if (rows.length === 0) return;
+
+      const header = rows[0];
+      const separator = header.map(() => '---');
+      const body = rows.slice(1);
+
+      const formatRow = (cols: string[]) => `| ${cols.join(' | ')} |`;
+
+      const tableMd = [formatRow(header), formatRow(separator), ...body.map(formatRow)].join('\n');
+
+      mdTables.push(tableMd);
+    });
+
+    return mdTables.join('\n\n');
+  };
+
   const parsePdfFromCustomService = async (): Promise<ReadFileResponse> => {
     const url = global.systemEnv.customPdfParse?.url;
     const token = global.systemEnv.customPdfParse?.key;
@@ -97,7 +134,13 @@ export const readRawContentByFileBuffer = async ({
 
     addLog.info(`Custom file parsing is complete, time: ${Date.now() - start}ms`);
 
-    const rawText = response.markdown;
+    let rawText = response.markdown;
+
+    if (rawText.includes('<table')) {
+      const markdownTable = htmlTableToMarkdown(rawText);
+      rawText = rawText.replace(/<html>.*<\/html>/s, markdownTable);
+    }
+
     const { text, imageList } = matchMdImg(rawText);
 
     createPdfParseUsage({
