@@ -10,6 +10,7 @@ import {
   SseResponseEventEnum
 } from '@fastgpt/global/core/workflow/runtime/constants';
 import axios from 'axios';
+import https from 'https';
 import { formatHttpError } from '../utils';
 import { valueTypeFormat } from '@fastgpt/global/core/workflow/runtime/utils';
 import { SERVICE_LOCAL_HOST } from '../../../../common/system/tools';
@@ -518,7 +519,10 @@ async function fetchData({
     },
     timeout: timeout * 1000,
     params: params,
-    data: ['POST', 'PUT', 'PATCH'].includes(method) ? body : undefined
+    data: ['POST', 'PUT', 'PATCH'].includes(method) ? body : undefined,
+    httpsAgent: new https.Agent({
+      rejectUnauthorized: false // 忽略自签名证书
+    })
   });
 
   return {
