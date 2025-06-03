@@ -76,7 +76,13 @@ const processNode = async (node: Node): Promise<any[]> => {
           runs.push(
             ...childRuns.map((run) => {
               if (run instanceof TextRun) {
-                return new TextRun({ ...run.options, bold: true });
+                return new TextRun({
+                  text: el.textContent || '',
+                  font: '仿宋',
+                  size: 32,
+                  ...run.options,
+                  bold: true
+                });
               }
               return run;
             })

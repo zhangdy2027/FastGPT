@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import type { ECharts } from 'echarts';
+// import type { ECharts } from 'echarts';
 import { Box, Skeleton } from '@chakra-ui/react';
 import json5 from 'json5';
 import { useMount } from 'ahooks';
@@ -9,7 +9,7 @@ import { useScreen } from '@fastgpt/web/hooks/useScreen';
 
 const EChartsCodeBlock = ({ code }: { code: string }) => {
   const chartRef = useRef<HTMLDivElement>(null);
-  const eChart = useRef<ECharts>();
+  const eChart = useRef<any>();
   const { isPc } = useSystem();
   const [option, setOption] = useState<any>();
   const [width, setWidth] = useState(400);
