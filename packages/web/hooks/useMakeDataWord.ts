@@ -89,7 +89,21 @@ const processNode = async (node: Node): Promise<any[]> => {
           );
         }
         break;
+      case 'a':
+        const href = el.getAttribute('href')?.trim();
+        const text = el.textContent?.trim();
 
+        // 如果是 [xxx](QUOTE) 格式，直接忽略
+        if (href === 'QUOTE' && /^[0-9a-f]{24}$/i.test(text || '')) {
+          return []; // 忽略
+        }
+
+        // 否则正常递归处理子节点
+        for (const child of Array.from(el.childNodes)) {
+          const childRuns = await processNode(child);
+          runs.push(...childRuns);
+        }
+        break;
       case 'em':
       case 'i':
         for (const child of Array.from(el.childNodes)) {
@@ -142,6 +156,11 @@ export const useMakeDataWord = () => {
   const transData = useCallback(async (md: string) => {
     try {
       md = md.trim();
+
+      let listCounter = 0;
+      // const numberingMap = new Map<string, string>();
+      const numberingConfig: any[] = [];
+
       const html = marked(md);
 
       const parser = new DOMParser();
@@ -183,14 +202,35 @@ export const useMakeDataWord = () => {
           }
           case 'ul':
           case 'ol': {
+            const ref = `num-${listCounter++}`;
+            // numberingMap.set(el, ref);
+
+            numberingConfig.push({
+              reference: ref,
+              levels: [
+                {
+                  level: 0,
+                  format: 'decimal',
+                  text: '%1.',
+                  alignment: AlignmentType.START,
+                  style: {
+                    paragraph: {
+                      indent: { left: 420 }
+                    }
+                  }
+                }
+              ]
+            });
+
             for (const li of Array.from(el.children)) {
               // 使用 processNode 处理 li 中的富文本内容
               const runs = await processNode(li);
               children.push(
                 new Paragraph({
                   children: runs,
-                  bullet: el.tagName === 'ul' ? { level: 0 } : undefined,
-                  numbering: el.tagName === 'ol' ? { reference: 'num', level: 0 } : undefined,
+                  bullet: el.tagName.toLowerCase() === 'ul' ? { level: 0 } : undefined,
+                  numbering:
+                    el.tagName.toLowerCase() === 'ol' ? { reference: ref, level: 0 } : undefined,
                   indent: { left: 420 },
                   spacing: { line: 560, lineRule: 'atLeast' }
                 })
@@ -348,6 +388,9 @@ export const useMakeDataWord = () => {
       }
 
       const docx = new Document({
+        numbering: {
+          config: numberingConfig
+        },
         sections: [
           {
             children
