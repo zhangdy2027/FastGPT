@@ -15,6 +15,7 @@ import { useSize } from 'ahooks';
 import { useContextSelector } from 'use-context-selector';
 import { ChatBoxContext } from '../Provider';
 import { eventBus, EventNameEnum } from '@/web/common/utils/eventbus';
+import { getAllCollectionSourceAndOpen } from '@/web/core/dataset/hooks/readCollectionSource';
 
 const ContextModal = dynamic(() => import('./ContextModal'));
 const WholeResponseModal = dynamic(() => import('../../../components/WholeResponseModal'));
@@ -79,6 +80,10 @@ const ResponseTags = ({
         datasetId: item.datasetId
       }));
   }, [quoteList]);
+
+  const dowloadAllQuote = getAllCollectionSourceAndOpen({
+    collectionList: sourceList
+  });
 
   const openQuoteReader = (item?: {
     collectionId?: string;
@@ -261,6 +266,22 @@ const ResponseTags = ({
                 onClick={onOpenWholeModal}
               >
                 {t('common:core.chat.response.Read complete response')}
+              </MyTag>
+            </MyTooltip>
+          )}
+
+          {quoteList.length > 0 && (
+            <MyTooltip label={'下载所有引用文件'}>
+              <MyTag
+                colorSchema="blue"
+                type="borderSolid"
+                cursor={'pointer'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dowloadAllQuote();
+                }}
+              >
+                {'下载引用'}
               </MyTag>
             </MyTooltip>
           )}
