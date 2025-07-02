@@ -13,12 +13,12 @@ import {
   NodeOutputKeyEnum
 } from './constants';
 import {
-  FlowNodeInputItemType,
-  FlowNodeOutputItemType,
-  ReferenceArrayValueType,
-  ReferenceItemValueType
+  type FlowNodeInputItemType,
+  type FlowNodeOutputItemType,
+  type ReferenceArrayValueType,
+  type ReferenceItemValueType
 } from './type/io.d';
-import { StoreNodeItemType } from './type/node';
+import { type StoreNodeItemType } from './type/node';
 import type {
   VariableItemType,
   AppTTSConfigType,
@@ -30,7 +30,7 @@ import type {
   AppAutoExecuteConfigType,
   AppQGConfigType
 } from '../app/type';
-import { EditorVariablePickerType } from '../../../web/components/common/Textarea/PromptEditor/type';
+import { type EditorVariablePickerType } from '../../../web/components/common/Textarea/PromptEditor/type';
 import {
   defaultAutoExecuteConfig,
   defaultChatInputGuideConfig,
@@ -40,7 +40,7 @@ import {
   defaultNetworkSearchConfig
 } from '../app/constants';
 import { IfElseResultEnum } from './template/system/ifElse/constant';
-import { RuntimeNodeItemType } from './runtime/type';
+import { type RuntimeNodeItemType } from './runtime/type';
 import {
   Input_Template_File_Link,
   Input_Template_History,
@@ -48,7 +48,7 @@ import {
   Input_Template_UserChatInput
 } from './template/input';
 import { i18nT } from '../../../web/i18n/utils';
-import { RuntimeUserPromptType, UserChatItemType } from '../../core/chat/type';
+import { type RuntimeUserPromptType, type UserChatItemType } from '../../core/chat/type';
 import { getNanoid } from '../../common/string/tools';
 import { ChatRoleEnum } from '../../core/chat/constants';
 import { runtimePrompt2ChatsValue } from '../../core/chat/adapt';

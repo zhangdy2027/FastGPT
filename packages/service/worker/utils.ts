@@ -6,14 +6,18 @@ export enum WorkerNameEnum {
   readFile = 'readFile',
   htmlStr2Md = 'htmlStr2Md',
   countGptMessagesTokens = 'countGptMessagesTokens',
-  systemPluginRun = 'systemPluginRun'
+  systemPluginRun = 'systemPluginRun',
+  text2Chunks = 'text2Chunks'
 }
 
 export const getSafeEnv = () => {
   return {
     LOG_LEVEL: process.env.LOG_LEVEL,
     STORE_LOG_LEVEL: process.env.STORE_LOG_LEVEL,
-    NODE_ENV: process.env.NODE_ENV
+    NODE_ENV: process.env.NODE_ENV,
+    HTTP_PROXY: process.env.HTTP_PROXY,
+    HTTPS_PROXY: process.env.HTTPS_PROXY,
+    NO_PROXY: process.env.NO_PROXY
   };
 };
 
@@ -87,9 +91,15 @@ export class WorkerPool<Props = Record<string, any>, Response = any> {
     this.maxReservedThreads = maxReservedThreads;
   }
 
-  runTask({ data, resolve, reject }: WorkerRunTaskType<Props>) {
+  private runTask({ data, resolve, reject }: WorkerRunTaskType<Props>) {
     // Get idle worker or create a new worker
     const runningWorker = (() => {
+      // @ts-ignore
+      if (data.workerId) {
+        // @ts-ignore
+        const worker = this.workerQueue.find((item) => item.id === data.workerId);
+        if (worker) return worker;
+      }
       const worker = this.workerQueue.find((item) => item.status === 'idle');
       if (worker) return worker;
 
@@ -157,23 +167,15 @@ export class WorkerPool<Props = Record<string, any>, Response = any> {
 
     // watch response
     worker.on('message', ({ id, type, data }: WorkerResponse<Response>) => {
-      // Run callback
-      const workerItem = this.workerQueue.find((item) => item.id === id);
-
-      if (!workerItem) {
-        addLog.warn('Invalid worker', { id, type, data });
-        return;
-      }
-
       if (type === 'success') {
-        workerItem.resolve(data);
+        item.resolve(data);
       } else if (type === 'error') {
-        workerItem.reject(data);
+        item.reject(data);
       }
 
       // Clear timeout timer and update worker status
-      clearTimeout(workerItem.timeoutId);
-      workerItem.status = 'idle';
+      clearTimeout(item.timeoutId);
+      item.status = 'idle';
     });
 
     // Worker error, terminate and delete it.（Un catch error)
@@ -191,7 +193,7 @@ export class WorkerPool<Props = Record<string, any>, Response = any> {
     return item;
   }
 
-  deleteWorker(workerId: string) {
+  private deleteWorker(workerId: string) {
     const item = this.workerQueue.find((item) => item.id === workerId);
     if (item) {
       item.reject?.('error');

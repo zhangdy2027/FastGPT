@@ -3,7 +3,7 @@ import {
   FlowNodeOutputTypeEnum,
   FlowNodeTypeEnum
 } from '../../../node/constant';
-import { FlowNodeTemplateType } from '../../../type/node';
+import { type FlowNodeTemplateType } from '../../../type/node';
 import {
   WorkflowIOValueTypeEnum,
   NodeInputKeyEnum,
@@ -31,7 +31,7 @@ export const ClassifyQuestionModule: FlowNodeTemplateType = {
   intro: i18nT('workflow:intro_question_classification'),
   showStatus: true,
   version: '4.9.2',
-  courseUrl: '/docs/guide/workbench/workflow/question_classify/',
+  courseUrl: '/docs/guide/dashboard/workflow/question_classify/',
   inputs: [
     {
       ...Input_Template_SelectAIModel,
@@ -39,9 +39,9 @@ export const ClassifyQuestionModule: FlowNodeTemplateType = {
     },
     {
       ...Input_Template_System_Prompt,
-      label: 'core.module.input.label.Background',
-      description: 'core.module.input.description.Background',
-      placeholder: 'core.module.input.placeholder.Classify background'
+      label: i18nT('common:core.module.input.label.Background'),
+      description: i18nT('common:core.module.input.description.Background'),
+      placeholder: i18nT('common:core.module.input.placeholder.Classify background')
     },
     Input_Template_History,
     Input_Template_UserChatInput,

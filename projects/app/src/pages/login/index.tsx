@@ -29,7 +29,6 @@ import { GET } from '@/web/common/api/request';
 import { getDocPath } from '@/web/common/system/doc';
 import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
 import LoginForm from '@/pageComponents/login/LoginForm/LoginForm';
-import { useToast } from '@fastgpt/web/hooks/useToast';
 import { getBdVId } from '@/web/support/marketing/utils';
 
 const RegisterForm = dynamic(() => import('@/pageComponents/login/RegisterForm'));
@@ -49,7 +48,6 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
   const { setLastChatAppId } = useChatStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isPc } = useSystem();
-  const { toast } = useToast();
 
   const {
     isOpen: isOpenCookiesDrawer,
@@ -67,9 +65,10 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       const decodeLastRoute = decodeURIComponent(lastRoute);
 
       const navigateTo =
-        decodeLastRoute && !decodeLastRoute.includes('/login')
-          ? decodeLastRoute
+        decodeLastRoute && !decodeLastRoute.includes('/login') && decodeLastRoute.startsWith('/')
+          ? lastRoute
           : '/dashboard/apps';
+
       router.push(navigateTo);
     },
     [setUserInfo, lastRoute, router]

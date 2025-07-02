@@ -1,6 +1,5 @@
 import { uploadMongoImg } from '../image/controller';
 import FormData from 'form-data';
-import { WorkerNameEnum, runWorker } from '../../../worker/utils';
 import fs from 'fs';
 import type { ReadFileResponse } from '../../../worker/readFile/type';
 import axios from 'axios';
@@ -10,6 +9,7 @@ import { matchMdImg } from '@fastgpt/global/common/string/markdown';
 import { createPdfParseUsage } from '../../../support/wallet/usage/controller';
 import { useDoc2xServer } from '../../../thirdProvider/doc2x';
 import * as cheerio from 'cheerio';
+import { readRawContentFromBuffer } from '../../../worker/function';
 
 export type readRawTextByLocalFileParams = {
   teamId: string;
@@ -17,6 +17,7 @@ export type readRawTextByLocalFileParams = {
   path: string;
   encoding: string;
   customPdfParse?: boolean;
+  getFormatText?: boolean;
   metadata?: Record<string, any>;
 };
 export const readRawTextByLocalFile = async (params: readRawTextByLocalFileParams) => {
@@ -28,8 +29,8 @@ export const readRawTextByLocalFile = async (params: readRawTextByLocalFileParam
 
   return readRawContentByFileBuffer({
     extension,
-    isQAImport: false,
     customPdfParse: params.customPdfParse,
+    getFormatText: params.getFormatText,
     teamId: params.teamId,
     tmbId: params.tmbId,
     encoding: params.encoding,
@@ -47,7 +48,7 @@ export const readRawContentByFileBuffer = async ({
   encoding,
   metadata,
   customPdfParse = false,
-  isQAImport = false
+  getFormatText = true
 }: {
   teamId: string;
   tmbId: string;
@@ -58,14 +59,15 @@ export const readRawContentByFileBuffer = async ({
   metadata?: Record<string, any>;
 
   customPdfParse?: boolean;
-  isQAImport: boolean;
-}): Promise<ReadFileResponse> => {
+  getFormatText?: boolean;
+}): Promise<{
+  rawText: string;
+}> => {
   const systemParse = () =>
-    runWorker<ReadFileResponse>(WorkerNameEnum.readFile, {
+    readRawContentFromBuffer({
       extension,
       encoding,
-      buffer,
-      teamId
+      buffer
     });
 
   const htmlTableToMarkdown = (html: string): string => {
@@ -151,7 +153,7 @@ export const readRawContentByFileBuffer = async ({
 
     return {
       rawText: text,
-      formatText: rawText,
+      formatText: text,
       imageList
     };
   };
@@ -193,7 +195,7 @@ export const readRawContentByFileBuffer = async ({
     return await systemParse();
   })();
 
-  addLog.debug(`Parse file success, time: ${Date.now() - start}ms. Uploading file image.`);
+  addLog.debug(`Parse file success, time: ${Date.now() - start}ms. `);
 
   // markdown data format
   if (imageList) {
@@ -222,14 +224,14 @@ export const readRawContentByFileBuffer = async ({
 
   if (['csv', 'xlsx', 'xls'].includes(extension)) {
     // qa data
-    if (isQAImport) {
-      rawText = rawText || '';
-    } else {
-      rawText = formatText || rawText;
-    }
+    // if (isQAImport) {
+    //   rawText = rawText || '';
+    // } else {
+    //   rawText = formatText || rawText;
+    // }
+    rawText = formatText || rawText;
   }
+  addLog.debug(`Upload file success, time: ${Date.now() - start}ms`);
 
-  addLog.debug(`Upload file image success, time: ${Date.now() - start}ms`);
-
-  return { rawText, formatText, imageList };
+  return { rawText: getFormatText ? formatText || rawText : rawText };
 };

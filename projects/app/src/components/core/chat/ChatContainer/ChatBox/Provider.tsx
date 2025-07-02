@@ -1,16 +1,16 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAudioPlay } from '@/web/common/utils/voice';
-import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import {
-  AppFileSelectConfigType,
-  AppQGConfigType,
-  AppTTSConfigType,
-  AppWhisperConfigType,
-  AppNetworkSearchConfigType,
-  ChatInputGuideConfigType,
-  VariableItemType
+  type AppFileSelectConfigType,
+  type AppQGConfigType,
+  type AppTTSConfigType,
+  type AppWhisperConfigType,
+  type AppNetworkSearchConfigType,
+  type ChatInputGuideConfigType,
+  type VariableItemType
 } from '@fastgpt/global/core/app/type';
-import { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type';
+import { type ChatHistoryItemResType } from '@fastgpt/global/core/chat/type';
 import {
   defaultAppSelectFileConfig,
   defaultChatInputGuideConfig,
@@ -24,6 +24,7 @@ import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
 import { getChatResData } from '@/web/core/chat/api';
 import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
 import { ChatRecordContext } from '@/web/core/chat/context/chatRecordContext';
+import { useCreation } from 'ahooks';
 
 export type ChatProviderProps = {
   appId: string;
@@ -134,13 +135,17 @@ export const ChatBoxContext = createContext<useChatStoreType>({
 const Provider = ({
   appId,
   chatId,
-  outLinkAuthData = {},
+  outLinkAuthData,
   chatType = 'chat',
   children,
   ...props
 }: ChatProviderProps & {
   children: React.ReactNode;
 }) => {
+  const formatOutLinkAuth = useCreation(() => {
+    return outLinkAuthData || {};
+  }, [outLinkAuthData]);
+
   const welcomeText = useContextSelector(
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.welcomeText ?? ''
@@ -197,7 +202,7 @@ const Provider = ({
   } = useAudioPlay({
     appId,
     ttsConfig,
-    ...outLinkAuthData
+    ...formatOutLinkAuth
   });
 
   const autoTTSResponse =
@@ -219,7 +224,7 @@ const Provider = ({
           appId: appId,
           chatId: chatId,
           dataId,
-          ...outLinkAuthData
+          ...formatOutLinkAuth
         });
         setChatRecords((state) =>
           state.map((item) => (item.dataId === dataId ? { ...item, responseData: resData } : item))
@@ -227,7 +232,7 @@ const Provider = ({
         return resData;
       }
     },
-    [chatRecords, chatId, appId, outLinkAuthData, setChatRecords]
+    [chatRecords, chatId, appId, formatOutLinkAuth, setChatRecords]
   );
   const value: useChatStoreType = {
     ...props,
@@ -254,7 +259,7 @@ const Provider = ({
     chatInputGuide,
     appId,
     chatId,
-    outLinkAuthData,
+    outLinkAuthData: formatOutLinkAuth,
     getHistoryResponseData,
     chatType
   };

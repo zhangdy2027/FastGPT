@@ -1,16 +1,25 @@
-import { DatasetDataIndexItemType, DatasetSchemaType } from './type';
-import {
+import type {
+  ChunkSettingsType,
+  DatasetDataIndexItemType,
+  DatasetDataFieldType,
+  DatasetSchemaType
+} from './type';
+import type {
   DatasetCollectionTypeEnum,
   DatasetCollectionDataProcessModeEnum,
   ChunkSettingModeEnum,
-  DataChunkSplitModeEnum
+  DataChunkSplitModeEnum,
+  ChunkTriggerConfigTypeEnum,
+  ParagraphChunkAIModeEnum
 } from './constants';
-import type { LLMModelItemType } from '../ai/model.d';
-import { ParentIdType } from 'common/parentFolder/type';
+import type { ParentIdType } from '../../common/parentFolder/type';
 
 /* ================= dataset ===================== */
 export type DatasetUpdateBody = {
   id: string;
+
+  apiDatasetServer?: DatasetSchemaType['apiDatasetServer'];
+
   parentId?: ParentIdType;
   name?: string;
   avatar?: string;
@@ -22,9 +31,6 @@ export type DatasetUpdateBody = {
   websiteConfig?: DatasetSchemaType['websiteConfig'];
   externalReadUrl?: DatasetSchemaType['externalReadUrl'];
   defaultPermission?: DatasetSchemaType['defaultPermission'];
-  apiServer?: DatasetSchemaType['apiServer'];
-  yuqueServer?: DatasetSchemaType['yuqueServer'];
-  feishuServer?: DatasetSchemaType['feishuServer'];
   chunkSettings?: DatasetSchemaType['chunkSettings'];
 
   // sync schedule
@@ -32,26 +38,16 @@ export type DatasetUpdateBody = {
 };
 
 /* ================= collection ===================== */
-export type DatasetCollectionChunkMetadataType = {
+// Input + store params
+type DatasetCollectionStoreDataType = ChunkSettingsType & {
   parentId?: string;
-  customPdfParse?: boolean;
-  trainingType?: DatasetCollectionDataProcessModeEnum;
-  imageIndex?: boolean;
-  autoIndexes?: boolean;
-
-  chunkSettingMode?: ChunkSettingModeEnum;
-  chunkSplitMode?: DataChunkSplitModeEnum;
-
-  chunkSize?: number;
-  indexSize?: number;
-
-  chunkSplitter?: string;
-  qaPrompt?: string;
   metadata?: Record<string, any>;
+
+  customPdfParse?: boolean;
 };
 
 // create collection params
-export type CreateDatasetCollectionParams = DatasetCollectionChunkMetadataType & {
+export type CreateDatasetCollectionParams = DatasetCollectionStoreDataType & {
   datasetId: string;
   name: string;
   type: DatasetCollectionTypeEnum;
@@ -72,7 +68,7 @@ export type CreateDatasetCollectionParams = DatasetCollectionChunkMetadataType &
   nextSyncTime?: Date;
 };
 
-export type ApiCreateDatasetCollectionParams = DatasetCollectionChunkMetadataType & {
+export type ApiCreateDatasetCollectionParams = DatasetCollectionStoreDataType & {
   datasetId: string;
   tags?: string[];
 };
@@ -90,7 +86,7 @@ export type ApiDatasetCreateDatasetCollectionParams = ApiCreateDatasetCollection
 export type FileIdCreateDatasetCollectionParams = ApiCreateDatasetCollectionParams & {
   fileId: string;
 };
-export type reTrainingDatasetFileCollectionParams = DatasetCollectionChunkMetadataType & {
+export type reTrainingDatasetFileCollectionParams = DatasetCollectionStoreDataType & {
   datasetId: string;
   collectionId: string;
 };
@@ -107,6 +103,9 @@ export type ExternalFileCreateDatasetCollectionParams = ApiCreateDatasetCollecti
   externalFileId?: string;
   externalFileUrl: string;
   filename?: string;
+};
+export type ImageCreateDatasetCollectionParams = ApiCreateDatasetCollectionParams & {
+  collectionName: string;
 };
 
 /* ================= tag ===================== */
@@ -133,8 +132,9 @@ export type PgSearchRawType = {
   score: number;
 };
 export type PushDatasetDataChunkProps = {
-  q: string; // embedding content
-  a?: string; // bonus content
+  q?: string;
+  a?: string;
+  imageId?: string;
   chunkIndex?: number;
   indexes?: Omit<DatasetDataIndexItemType, 'dataId'>[];
 };
@@ -147,6 +147,7 @@ export type PushDatasetDataProps = {
   collectionId: string;
   data: PushDatasetDataChunkProps[];
   trainingType?: DatasetCollectionDataProcessModeEnum;
+  indexSize?: number;
   autoIndexes?: boolean;
   imageIndex?: boolean;
   prompt?: string;

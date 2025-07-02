@@ -9,7 +9,7 @@ import { getSourceNameIcon } from '@fastgpt/global/core/dataset/utils';
 import ChatBoxDivider from '@/components/core/chat/Divider';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
-import { ChatSiteItemType } from '@fastgpt/global/core/chat/type';
+import { type ChatSiteItemType } from '@fastgpt/global/core/chat/type';
 import { addStatisticalDataToHistoryItem } from '@/global/core/chat/utils';
 import { useSize } from 'ahooks';
 import { useContextSelector } from 'use-context-selector';
@@ -22,10 +22,18 @@ const WholeResponseModal = dynamic(() => import('../../../components/WholeRespon
 
 const ResponseTags = ({
   showTags,
-  historyItem
+  historyItem,
+  onOpenCiteModal
 }: {
   showTags: boolean;
   historyItem: ChatSiteItemType;
+  onOpenCiteModal: (e?: {
+    collectionId?: string;
+    sourceId?: string;
+    sourceName?: string;
+    datasetId?: string;
+    quoteId?: string;
+  }) => void;
 }) => {
   const { isPc } = useSystem();
   const { t } = useTranslation();
@@ -75,7 +83,9 @@ const ResponseTags = ({
       .map((item) => ({
         sourceName: item.sourceName,
         sourceId: item.sourceId,
-        icon: getSourceNameIcon({ sourceId: item.sourceId, sourceName: item.sourceName }),
+        icon: item.imageId
+          ? 'core/dataset/imageFill'
+          : getSourceNameIcon({ sourceId: item.sourceId, sourceName: item.sourceName }),
         collectionId: item.collectionId,
         datasetId: item.datasetId
       }));
@@ -166,7 +176,7 @@ const ResponseTags = ({
                     cursor={'pointer'}
                     onClick={(e) => {
                       e.stopPropagation();
-                      openQuoteReader(item);
+                      onOpenCiteModal(item);
                     }}
                     height={6}
                   >
@@ -221,7 +231,7 @@ const ResponseTags = ({
                 cursor={'pointer'}
                 onClick={(e) => {
                   e.stopPropagation();
-                  openQuoteReader();
+                  onOpenCiteModal();
                 }}
               >
                 {t('chat:citations', { num: quoteList.length })}

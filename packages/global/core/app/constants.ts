@@ -1,10 +1,10 @@
 import {
-  AppTTSConfigType,
-  AppFileSelectConfigType,
-  AppWhisperConfigType,
-  AppAutoExecuteConfigType,
-  AppQGConfigType,
-  AppNetworkSearchConfigType
+  type AppTTSConfigType,
+  type AppFileSelectConfigType,
+  type AppWhisperConfigType,
+  type AppAutoExecuteConfigType,
+  type AppQGConfigType,
+  type AppNetworkSearchConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -65,5 +65,3 @@ export enum AppTemplateTypeEnum {
   // special type
   contribute = 'contribute'
 }
-
-export const defaultDatasetMaxTokens = 16000;

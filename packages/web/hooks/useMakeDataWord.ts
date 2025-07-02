@@ -12,39 +12,39 @@ import {
   WidthType,
   ImageRun
 } from 'docx';
-import * as echarts from 'echarts';
+// import * as echarts from 'echarts';
 import { saveAs } from 'file-saver';
 
-const renderEchartsToImage = async (options: any, width = 600, height = 400) => {
-  try {
-    const container = document.createElement('div');
-    container.style.width = `${width}px`;
-    container.style.height = `${height}px`;
-    document.body.appendChild(container);
+// const renderEchartsToImage = async (options: any, width = 600, height = 400) => {
+//   try {
+//     const container = document.createElement('div');
+//     container.style.width = `${width}px`;
+//     container.style.height = `${height}px`;
+//     document.body.appendChild(container);
 
-    const chart = echarts.init(container);
-    chart.setOption(options);
+//     const chart = echarts.init(container);
+//     chart.setOption(options);
 
-    // 等待渲染完成
-    await new Promise((resolve) => setTimeout(resolve, 500));
+//     // 等待渲染完成
+//     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const dataURL = chart.getDataURL({
-      type: 'png',
-      pixelRatio: 2,
-      backgroundColor: '#fff'
-    });
+//     const dataURL = chart.getDataURL({
+//       type: 'png',
+//       pixelRatio: 2,
+//       backgroundColor: '#fff'
+//     });
 
-    chart.dispose();
-    document.body.removeChild(container);
+//     chart.dispose();
+//     document.body.removeChild(container);
 
-    // 将 dataURL 转换为 ArrayBuffer
-    const response = await fetch(dataURL);
-    return await response.arrayBuffer();
-  } catch (error) {
-    console.error('ECharts 渲染失败:', error);
-    return null;
-  }
-};
+//     // 将 dataURL 转换为 ArrayBuffer
+//     const response = await fetch(dataURL);
+//     return await response.arrayBuffer();
+//   } catch (error) {
+//     console.error('ECharts 渲染失败:', error);
+//     return null;
+//   }
+// };
 
 // 添加处理节点的辅助函数
 const processNode = async (node: Node): Promise<any[]> => {

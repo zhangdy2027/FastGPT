@@ -19,13 +19,13 @@ import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import Avatar from '@fastgpt/web/components/common/Avatar';
-import { AppListItemType } from '@fastgpt/global/core/app/type';
+import { type AppListItemType } from '@fastgpt/global/core/app/type';
 import MyDivider from '@fastgpt/web/components/common/MyDivider';
 import MyPopover from '@fastgpt/web/components/common/MyPopover/index';
 import { getMyApps, getAllMyApps } from '@/web/core/app/api';
 import {
-  GetResourceFolderListProps,
-  GetResourceListItemResponse
+  type GetResourceFolderListProps,
+  type GetResourceListItemResponse
 } from '@fastgpt/global/common/parentFolder/type';
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import dynamic from 'next/dynamic';
@@ -271,7 +271,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                   {item.name}
                 </Box>
                 <Box ml={2} className={'textEllipsis'} fontSize={'12px'} color={'#4B5563'}>
-                  {item.intro ? item.intro : t('common.no_intro')}
+                  {item.intro ? item.intro : t('no_intro')}
                 </Box>
               </Flex>
             </Flex>
@@ -307,7 +307,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                     bg: 'myGray.200'
                   }}
                 >
-                  <Box>{t('common:common.More')}</Box>
+                  <Box>{t('common:More')}</Box>
                   <MyIcon name={'common/select'} w={'1rem'} />
                 </HStack>
               }
@@ -436,7 +436,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                               color={'#4B5563'}
                               w={'calc(100% - 1.5rem)'}
                             >
-                              {subItem.intro ? subItem.intro : t('common.no_intro')}
+                              {subItem.intro ? subItem.intro : t('no_intro')}
                             </Box>
                           </Flex>
                         </Flex>
@@ -478,7 +478,7 @@ const SliderApps = ({ apps, activeAppId }: { apps: AppListItemType[]; activeAppI
                   {item.name}
                 </Box>
                 <Box ml={2} className={'textEllipsis'} fontSize={'12px'} color={'#4B5563'}>
-                  {item.intro ? item.intro : t('common.no_intro')}
+                  {item.intro ? item.intro : t('no_intro')}
                 </Box>
               </Flex>
             </Flex>

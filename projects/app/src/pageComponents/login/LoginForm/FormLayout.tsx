@@ -4,7 +4,7 @@ import { AbsoluteCenter, Box, Button, Flex } from '@chakra-ui/react';
 import { LOGO_ICON } from '@fastgpt/global/common/system/constants';
 import { OAuthEnum } from '@fastgpt/global/support/user/constant';
 import { useRouter } from 'next/router';
-import { Dispatch, useCallback, useEffect, useMemo, useRef } from 'react';
+import { type Dispatch, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
 import I18nLngSelector from '@/components/Select/I18nLngSelector';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
@@ -159,6 +159,7 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
           }
         }
       }
+
       if (item.redirectUrl) {
         setLoginStore({
           provider: item.provider as OAuthEnum,

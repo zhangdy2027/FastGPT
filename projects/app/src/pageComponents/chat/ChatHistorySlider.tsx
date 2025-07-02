@@ -7,7 +7,6 @@ import Avatar from '@fastgpt/web/components/common/Avatar';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useTranslation } from 'next-i18next';
-import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import MyMenu from '@fastgpt/web/components/common/MyMenu';
 import { useContextSelector } from 'use-context-selector';
@@ -16,6 +15,7 @@ import MyBox from '@fastgpt/web/components/common/MyBox';
 import { formatTimeToChatTime } from '@fastgpt/global/common/string/time';
 import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
+import PopoverConfirm from '@fastgpt/web/components/common/MyPopover/PopoverConfirm';
 
 type HistoryItemType = {
   id: string;
@@ -46,7 +46,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
   const appName = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.app.name);
   const appAvatar = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.app.avatar);
   const showRouteToAppDetail = useContextSelector(ChatItemContext, (v) => v.showRouteToAppDetail);
-  const setQuoteData = useContextSelector(ChatItemContext, (v) => v.setQuoteData);
+  const setCiteModalData = useContextSelector(ChatItemContext, (v) => v.setCiteModalData);
 
   const concatHistory = useMemo(() => {
     const formatHistories: HistoryItemType[] = histories.map((item) => {
@@ -72,9 +72,6 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
   const { onOpenModal, EditModal: EditTitleModal } = useEditTitle({
     title: t('common:core.chat.Custom History Title'),
     placeholder: t('common:core.chat.Custom History Title Description')
-  });
-  const { openConfirm, ConfirmModal } = useConfirm({
-    content: confirmClearText
   });
 
   const canRouteToDetail = useMemo(
@@ -152,7 +149,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
           }}
           onClick={() => {
             onChangeChatId();
-            setQuoteData(undefined);
+            setCiteModalData(undefined);
           }}
         >
           {t('common:core.chat.New Chat')}
@@ -210,7 +207,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
                 : {
                     onClick: () => {
                       onChangeChatId(item.id);
-                      setQuoteData(undefined);
+                      setCiteModalData(undefined);
                     }
                   })}
               {...(i !== concatHistory.length - 1 && {
@@ -262,7 +259,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
                             },
 
                             {
-                              label: t('common:common.Custom Title'),
+                              label: t('common:custom_title'),
                               icon: 'common/customTitleLight',
                               onClick: () => {
                                 onOpenModal({
@@ -276,13 +273,13 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
                               }
                             },
                             {
-                              label: t('common:common.Delete'),
+                              label: t('common:Delete'),
                               icon: 'delete',
                               onClick: () => {
                                 onDelHistory(item.id);
                                 if (item.id === activeChatId) {
                                   onChangeChatId();
-                                  setQuoteData(undefined);
+                                  setCiteModalData(undefined);
                                 }
                               },
                               type: 'danger'
@@ -322,7 +319,6 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
         </Flex>
       )} */}
       <EditTitleModal />
-      <ConfirmModal />
     </MyBox>
   );
 };
