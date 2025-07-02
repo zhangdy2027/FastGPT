@@ -1,11 +1,12 @@
 import { MongoApp } from '@fastgpt/service/core/app/schema';
-import { AppListItemType } from '@fastgpt/global/core/app/type';
+import type { AppListItemType } from '@fastgpt/global/core/app/type';
 import { NextAPI } from '@/service/middleware/entry';
 import { MongoResourcePermission } from '@fastgpt/service/support/permission/schema';
 import { PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
-import { ApiRequestProps } from '@fastgpt/service/type/next';
-import { AppFolderTypeList, AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import type { ApiRequestProps } from '@fastgpt/service/type/next';
+import type { AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
 import { AppDefaultPermissionVal } from '@fastgpt/global/support/permission/app/constant';
 import { concatPer } from '@fastgpt/service/support/permission/controller';
 import { getGroupsByTmbId } from '@fastgpt/service/support/permission/memberGroup/controllers';
@@ -13,7 +14,7 @@ import { getOrgIdSetWithParentByTmbId } from '@fastgpt/service/support/permissio
 import { addSourceMember } from '@fastgpt/service/support/user/utils';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
-import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
+import type { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { parseParentIdInMongo } from '@fastgpt/global/common/parentFolder/utils';
 
 export type ListAppBody = {

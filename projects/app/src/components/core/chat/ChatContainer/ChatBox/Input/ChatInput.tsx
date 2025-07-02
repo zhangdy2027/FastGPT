@@ -297,9 +297,10 @@ const ChatInput = ({
                 >
                   <Button
                     leftIcon={
-                      <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#485264'} />
+                      <MyIcon name={'core/chat/networkIcon'} w={'19px'} color={'#707070'} />
                     }
-                    borderColor="#485264"
+                    color={'#707070'}
+                    borderColor="#707070"
                     variant="outline"
                     size="xs"
                     borderRadius={'12px'}
@@ -378,9 +379,7 @@ const ChatInput = ({
             w={[7, 9]}
             h={[7, 9]}
             p={[1, 2]}
-            bg={
-              isChatting ? 'primary.50' : canSendMessage ? 'primary.500' : 'rgba(17, 24, 36, 0.1)'
-            }
+            bg={isChatting ? '#DB1010' : canSendMessage ? '#DB1010' : 'rgba(17, 24, 36, 0.1)'}
             borderRadius={['md', 'lg']}
             cursor={isChatting ? 'pointer' : canSendMessage ? 'pointer' : 'not-allowed'}
             onClick={(e) => {
@@ -392,7 +391,7 @@ const ChatInput = ({
             }}
           >
             {isChatting ? (
-              <MyIcon {...iconSize} name={'stop'} color={'primary.600'} />
+              <MyIcon {...iconSize} name={'stop'} color={'white'} />
             ) : (
               <MyTooltip label={t('common:core.chat.Send Message')}>
                 <MyIcon name={'core/chat/sendFill'} {...iconSize} color={'white'} />

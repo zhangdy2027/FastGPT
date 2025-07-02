@@ -246,9 +246,7 @@ const MobileVoiceInput = ({
         }}
         zIndex={4}
       >
-        <Box visibility={isSpeaking ? 'hidden' : 'visible'} color={'white'}>
-          {t('chat:press_to_speak')}
-        </Box>
+        <Box visibility={isSpeaking ? 'hidden' : 'visible'}>{t('chat:press_to_speak')}</Box>
         <Box
           position="absolute"
           h={'100%'}
@@ -392,7 +390,7 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
         bottom={0}
         bg="transparent"
         zIndex={5}
-        borderRadius={'md'}
+        borderRadius={isPc ? 'md' : ''}
         onContextMenu={(e) => e.preventDefault()}
       >
         {isMobileDevice ? (
@@ -426,7 +424,7 @@ const VoiceInput = forwardRef<VoiceInputComponentRef, VoiceInputProps>(
             color={'primary.500'}
             zIndex={15}
           >
-            <Spinner size={'sm'} mr={4} color={'red.500'} />
+            <Spinner size={'sm'} mr={4} />
             {t('common:core.chat.Converting to text')}
           </Flex>
         )}

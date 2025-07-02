@@ -1,10 +1,10 @@
 import { MongoApp } from '@fastgpt/service/core/app/schema';
-import { AppListItemType } from '@fastgpt/global/core/app/type';
+import type { AppListItemType } from '@fastgpt/global/core/app/type';
 import { NextAPI } from '@/service/middleware/entry';
 import { MongoResourcePermission } from '@fastgpt/service/support/permission/schema';
 import { PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
-import { ApiRequestProps } from '@fastgpt/service/type/next';
+import type { ApiRequestProps } from '@fastgpt/service/type/next';
 import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
 import { AppDefaultPermissionVal } from '@fastgpt/global/support/permission/app/constant';
 import { concatPer } from '@fastgpt/service/support/permission/controller';
