@@ -37,6 +37,7 @@ import { useContextSelector } from 'use-context-selector';
 import { DatasetPageContext } from '@/web/core/dataset/context/datasetPageContext';
 import { DatasetImportContext, type ImportFormType } from '../Context';
 import { type ApiCreateDatasetCollectionParams } from '@fastgpt/global/core/dataset/api.d';
+import axios from 'axios';
 
 const Upload = () => {
   const { t } = useTranslation();
@@ -171,7 +172,16 @@ const Upload = () => {
             status: 'success'
           });
         }
+        // 在此处调用接口上传至在线文档平台 0
+        const uploadResp = sources.map((item: any) => {
+          const data = new FormData();
+          data.append('fileId', item.dbFileId);
+          data.append('file', item.file);
 
+          return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
+        });
+        Promise.all(uploadResp);
+        // 在此处调用接口上传至在线文档平台 1
         // Close import page
         router.replace({
           query: {
