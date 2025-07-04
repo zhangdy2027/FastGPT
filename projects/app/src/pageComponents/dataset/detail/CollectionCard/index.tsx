@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import {
   Box,
   Flex,
@@ -52,6 +52,7 @@ import { useFolderDrag } from '@/components/common/folder/useFolderDrag';
 import TagsPopOver from './TagsPopOver';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import TrainingStates from './TrainingStates';
+import axios from 'axios';
 
 const Header = dynamic(() => import('./Header'));
 const EmptyCollectionTip = dynamic(() => import('./EmptyCollectionTip'));
@@ -105,6 +106,17 @@ const CollectionCard = () => {
       }),
     [collections, t]
   );
+
+  const [onlineDocList, setOnlineDocList] = useState<{ fileId: string; uuid: string }[]>([]);
+  useEffect(() => {
+    const initOnLineDocList = async () => {
+      const resp = await axios.get(`${window.myConfig.docServerUrl}/shtl/api/online/list`);
+      if (resp.data && resp.data.code === 0) {
+        setOnlineDocList(resp.data.data);
+      }
+    };
+    initOnLineDocList();
+  }, []);
 
   const [moveCollectionData, setMoveCollectionData] = useState<{ collectionId: string }>();
 
@@ -192,6 +204,13 @@ const CollectionCard = () => {
   const isLoading =
     isUpdating || isSyncing || (isGetting && collections.length === 0) || isDropping;
 
+  const gotoOnlineDocPlatform = (data: any) => {
+    const curDoc = onlineDocList.find((item) => item.fileId === data.fileId);
+    if (curDoc) {
+      window.open(`${window.myConfig.onlineDocPlatformUrl}/file/document-view?uuid=${curDoc.uuid}`);
+    }
+  };
+
   return (
     <MyBox isLoading={isLoading} h={'100%'} py={[2, 4]}>
       <Flex ref={BoxRef} flexDirection={'column'} py={[1, 0]} h={'100%'} px={[2, 6]}>
@@ -208,6 +227,7 @@ const CollectionCard = () => {
                 <Th py={4}>{t('dataset:collection_data_count')}</Th>
                 <Th py={4}>{t('dataset:collection.Create update time')}</Th>
                 <Th py={4}>{t('common:Status')}</Th>
+                <Th py={4}>{t('Operation')}</Th>
                 <Th py={4}>{t('dataset:Enable')}</Th>
                 <Th py={4} />
               </Tr>
@@ -286,6 +306,51 @@ const CollectionCard = () => {
                         </Flex>
                       </MyTag>
                     </MyTooltip>
+                  </Td>
+                  <Td py={2}>
+                    {onlineDocList.findIndex((item) => item.fileId === collection.fileId) ===
+                    -1 ? null : (
+                      <Flex gap={2}>
+                        {collection.permission?.hasWritePer ? (
+                          <Box
+                            color={'#3370FF'}
+                            _hover={{
+                              fontWeight: 'bold'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              gotoOnlineDocPlatform(collection);
+                            }}
+                          >
+                            编辑
+                          </Box>
+                        ) : (
+                          <Box
+                            color={'#3370FF'}
+                            _hover={{
+                              fontWeight: 'bold'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              gotoOnlineDocPlatform(collection);
+                            }}
+                          >
+                            预览
+                          </Box>
+                        )}
+                        <Box
+                          color={'#3370FF'}
+                          _hover={{
+                            fontWeight: 'bold'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          同步更新
+                        </Box>
+                      </Flex>
+                    )}
                   </Td>
                   <Td py={2} onClick={(e) => e.stopPropagation()}>
                     <Switch
