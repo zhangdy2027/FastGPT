@@ -15,36 +15,38 @@ import {
 // import * as echarts from 'echarts';
 import { saveAs } from 'file-saver';
 
-// const renderEchartsToImage = async (options: any, width = 600, height = 400) => {
-//   try {
-//     const container = document.createElement('div');
-//     container.style.width = `${width}px`;
-//     container.style.height = `${height}px`;
-//     document.body.appendChild(container);
+const renderEchartsToImage = async (options: any, width = 600, height = 400) => {
+  if (typeof window === 'undefined') return null; // SSR 安全保护
 
-//     const chart = echarts.init(container);
-//     chart.setOption(options);
+  try {
+    const echarts = await import('echarts');
+    const container = document.createElement('div');
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+    document.body.appendChild(container);
+    const chart = echarts.init(container);
+    chart.setOption(options);
 
-//     // 等待渲染完成
-//     await new Promise((resolve) => setTimeout(resolve, 500));
+    // 等待渲染完成
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-//     const dataURL = chart.getDataURL({
-//       type: 'png',
-//       pixelRatio: 2,
-//       backgroundColor: '#fff'
-//     });
+    const dataURL = chart.getDataURL({
+      type: 'png',
+      pixelRatio: 5,
+      backgroundColor: '#fff'
+    });
 
-//     chart.dispose();
-//     document.body.removeChild(container);
+    chart.dispose();
+    document.body.removeChild(container);
 
-//     // 将 dataURL 转换为 ArrayBuffer
-//     const response = await fetch(dataURL);
-//     return await response.arrayBuffer();
-//   } catch (error) {
-//     console.error('ECharts 渲染失败:', error);
-//     return null;
-//   }
-// };
+    // 将 dataURL 转换为 ArrayBuffer
+    const response = await fetch(dataURL);
+    return await response.arrayBuffer();
+  } catch (error) {
+    console.error('ECharts 渲染失败:', error);
+    return null;
+  }
+};
 
 // 添加处理节点的辅助函数
 const processNode = async (node: Node): Promise<any[]> => {
@@ -241,45 +243,49 @@ export const useMakeDataWord = () => {
           case 'pre': {
             const code = el.textContent || '';
 
-            // // 检查是否是 echarts 代码块
-            // const codeElement = el.querySelector('code');
-            // if (
-            //   codeElement &&
-            //   (codeElement.classList.contains('language-echarts') ||
-            //     codeElement.classList.contains('echarts'))
-            // ) {
-            //   try {
-            //     // const newCode = `(${code})`;
-            //     const parseObj = new Function(`return ${code}`);
-            //     const option = parseObj();
-            //     const imageBuffer = await renderEchartsToImage(option);
+            // 检查是否是 echarts 代码块
+            const codeElement = el.querySelector('code');
+            if (
+              codeElement &&
+              (codeElement.classList.contains('language-echarts') ||
+                codeElement.classList.contains('echarts'))
+            ) {
+              try {
+                // const newCode = `(${code})`;
+                const parseObj = new Function(`return ${code}`);
+                const option = parseObj();
+                option.animation = false;
+                console.log('echarts option:', option);
+                if (typeof window !== 'undefined') {
+                  const imageBuffer = await renderEchartsToImage(option);
 
-            //     if (imageBuffer) {
-            //       children.push(
-            //         new Paragraph({
-            //           children: [
-            //             new ImageRun({
-            //               data: imageBuffer,
-            //               transformation: {
-            //                 width: 480,
-            //                 height: 320
-            //               }
-            //             })
-            //           ],
-            //           spacing: { line: 560, lineRule: 'atLeast' }
-            //           // alignment: AlignmentType.CENTER,
-            //           // spacing: {
-            //           //   line: 1440, // 增加行高到原来的2.5倍左右
-            //           //   lineRule: 'atLeast'
-            //           // }
-            //         })
-            //       );
-            //       break;
-            //     }
-            //   } catch (e) {
-            //     console.warn('ECharts 解析失败，回退到文本显示:', e);
-            //   }
-            // }
+                  if (imageBuffer) {
+                    children.push(
+                      new Paragraph({
+                        children: [
+                          new ImageRun({
+                            data: imageBuffer,
+                            transformation: {
+                              width: 480,
+                              height: 320
+                            }
+                          })
+                        ],
+                        spacing: { line: 560, lineRule: 'atLeast' }
+                        // alignment: AlignmentType.CENTER,
+                        // spacing: {
+                        //   line: 1440, // 增加行高到原来的2.5倍左右
+                        //   lineRule: 'atLeast'
+                        // }
+                      })
+                    );
+                    break;
+                  }
+                }
+              } catch (e) {
+                console.warn('ECharts 解析失败，回退到文本显示:', e);
+              }
+            }
 
             children.push(
               new Paragraph({
