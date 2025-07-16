@@ -19,6 +19,7 @@ import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import type { RequireOnlyOne } from '@fastgpt/global/common/type/utils';
 import { useTranslation } from 'next-i18next';
+import axios from 'axios';
 
 const MemberModal = dynamic(() => import('./MemberModal'));
 const ManageModal = dynamic(() => import('./ManageModal'));
@@ -27,6 +28,7 @@ export type MemberManagerInputPropsType = {
   permission: Permission;
   onGetCollaboratorList: () => Promise<CollaboratorItemType[]>;
   permissionList?: PermissionListType;
+  curDatasetId?: string;
   onUpdateCollaborators: (props: UpdateClbPermissionProps) => Promise<any>;
   onDelOneCollaborator: (
     props: RequireOnlyOne<{ tmbId: string; groupId: string; orgId: string }>
@@ -70,11 +72,48 @@ export const CollaboratorContext = createContext<CollaboratorContextType>({
   permission: new Permission()
 });
 
+const refreshFileFilePermission = async (props: any, curDatasetId?: string, isDelete?: boolean) => {
+  if (curDatasetId) {
+    const params: any = {
+      datasetId: curDatasetId,
+      groups: [],
+      members: [],
+      orgs: [],
+      permission: '0'
+    };
+    if (isDelete) {
+      params.permission = '2';
+      if (props.groupId) {
+        params.groups = [props.groupId];
+      }
+      if (props.orgId) {
+        params.orgs = [props.orgId];
+      }
+      if (props.tmbId) {
+        params.members = [props.tmbId];
+      }
+    } else {
+      params.permission = props.permission === 4 ? '1' : '0';
+      params.groups = props.groups;
+      params.members = props.members;
+      params.orgs = props.orgs;
+    }
+    const resp = await axios.post(
+      `${window.myConfig.docServerUrl}/shtl/api/online/filePermission`,
+      params
+    );
+    if (resp.data.code === 0) {
+      console.log(`在线文档平台权限设置成功，`, params);
+    }
+  }
+};
+
 const CollaboratorContextProvider = ({
   permission,
   onGetCollaboratorList,
   permissionList,
   onUpdateCollaborators,
+  curDatasetId,
   onDelOneCollaborator,
   children,
   refetchResource,
@@ -92,12 +131,14 @@ const CollaboratorContextProvider = ({
   const { t } = useTranslation();
   const onUpdateCollaboratorsThen = async (props: UpdateClbPermissionProps) => {
     await onUpdateCollaborators(props);
+    refreshFileFilePermission(props, curDatasetId);
     refetchCollaboratorList();
   };
   const onDelOneCollaboratorThen = async (
     props: RequireOnlyOne<{ tmbId: string; groupId: string; orgId: string }>
   ) => {
     await onDelOneCollaborator(props);
+    refreshFileFilePermission(props, curDatasetId, true);
     refetchCollaboratorList();
   };
 

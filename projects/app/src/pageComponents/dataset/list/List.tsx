@@ -1,5 +1,10 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { postChangeOwner, resumeInheritPer } from '@/web/core/dataset/api';
+import {
+  postChangeOwner,
+  resumeInheritPer,
+  getDatasetById,
+  getDatasetCollectionById
+} from '@/web/core/dataset/api';
 import { Box, Flex, Grid, HStack } from '@chakra-ui/react';
 import { DatasetTypeEnum, DatasetTypeMap } from '@fastgpt/global/core/dataset/constants';
 import MyMenu from '@fastgpt/web/components/common/MyMenu';
@@ -32,10 +37,14 @@ import { useSystem } from '@fastgpt/web/hooks/useSystem';
 import SideTag from './SideTag';
 import { getModelProvider } from '@fastgpt/global/core/ai/provider';
 import UserBox from '@fastgpt/web/components/common/UserBox';
+import user from '@fastgpt/global/common/error/code/user';
+import axios from 'axios';
+import { useUserStore } from '@/web/support/user/useUserStore';
 
 const EditResourceModal = dynamic(() => import('@/components/common/Modal/EditResourceModal'));
 
 function List() {
+  const { userInfo } = useUserStore();
   const { setLoading } = useSystemStore();
   const { isPc } = useSystem();
   const { t } = useTranslation();
@@ -80,6 +89,112 @@ function List() {
       )();
     }
   });
+
+  const refreshFileFilePermission = async (user: string, datasetId: string) => {
+    axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+      datasetId,
+      members: [user],
+      permission: '0'
+    });
+    axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+      datasetId,
+      members: [userInfo?.team?.tmbId],
+      permission: '2'
+    });
+  };
+
+  // const refreshParentFilePermission = async (id: string) => {
+  //   return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //     datasetId: id
+  //   });
+  //   // const resp = await getDatasetById(id);
+  //   // if (resp.parentId) {
+  //   //   const cResp = await getCollaboratorList(id);
+  //   //   const pResp = await getCollaboratorList(resp.parentId);
+  //   //   cResp.forEach((item: any) => {
+  //   //     if (item.tmbId) {
+  //   //       const curP = pResp.find((subItem: any) => subItem.tmbId === item.tmbId);
+  //   //       if (curP) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           members: [item.tmbId],
+  //   //           permission: curP.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       } else {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           members: [item.tmbId],
+  //   //           permission: '2'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //     if (item.groupId) {
+  //   //       const curP = pResp.find((subItem: any) => subItem.groupId === item.groupId);
+  //   //       if (curP) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           groups: [item.groupId],
+  //   //           permission: curP.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       } else {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           groups: [item.groupId],
+  //   //           permission: '2'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //     if (item.orgId) {
+  //   //       const curP = pResp.find((subItem: any) => subItem.orgId === item.orgId);
+  //   //       if (curP) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           orgs: [item.orgId],
+  //   //           permission: curP.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       } else {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           orgs: [item.orgId],
+  //   //           permission: '2'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //   });
+  //   //   pResp.forEach((item: any) => {
+  //   //     if (item.tmbId) {
+  //   //       const curC = cResp.find((subItem: any) => subItem.tmbId === item.tmbId);
+  //   //       if (!curC) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           members: [item.tmbId],
+  //   //           permission: item.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //     if (item.groupId) {
+  //   //       const curC = cResp.find((subItem: any) => subItem.groupId === item.groupId);
+  //   //       if (!curC) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           groups: [item.groupId],
+  //   //           permission: item.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //     if (item.orgId) {
+  //   //       const curC = cResp.find((subItem: any) => subItem.orgId === item.orgId);
+  //   //       if (!curC) {
+  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
+  //   //           datasetId: id,
+  //   //           orgs: [item.orgId],
+  //   //           permission: item.permission.value === 4 ? '1' : '0'
+  //   //         });
+  //   //       }
+  //   //     }
+  //   //   });
+  //   // }
+  // };
 
   const editPerDataset = useMemo(
     () => myDatasets.find((item) => String(item._id) === String(editPerDatasetId)),
@@ -423,20 +538,35 @@ function List() {
             postChangeOwner({
               datasetId: editPerDataset._id,
               ownerId: tmbId
-            }).then(() => loadMyDatasets())
+            }).then(() => {
+              loadMyDatasets();
+              // 转移所有权结束后
+              refreshFileFilePermission(tmbId, editPerDataset._id);
+            })
           }
           hasParent={!!parentId}
           refetchResource={loadMyDatasets}
           isInheritPermission={editPerDataset.inheritPermission}
-          resumeInheritPermission={() =>
-            resumeInheritPer(editPerDataset._id).then(() => Promise.all([loadMyDatasets()]))
-          }
+          resumeInheritPermission={async () => {
+            const resp = await axios.post(
+              `${window.myConfig.docServerUrl}/shtl/api/online/filePermission`,
+              {
+                datasetId: editPerDataset._id
+              }
+            );
+            if (resp.data.code === 0) {
+              resumeInheritPer(editPerDataset._id).then(() => {
+                Promise.all([loadMyDatasets()]);
+              });
+            }
+          }}
           avatar={editPerDataset.avatar}
           name={editPerDataset.name}
           managePer={{
             permission: editPerDataset.permission,
             onGetCollaboratorList: () => getCollaboratorList(editPerDataset._id),
             permissionList: DatasetPermissionList,
+            curDatasetId: editPerDataset._id,
             onUpdateCollaborators: (props) =>
               postUpdateDatasetCollaborators({
                 ...props,

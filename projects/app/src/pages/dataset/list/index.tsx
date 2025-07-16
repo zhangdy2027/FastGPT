@@ -232,7 +232,12 @@ const Dataset = () => {
         {!!folderDetail && isPc && (
           <Box ml="6" h={'100%'} pb={4} overflow={'auto'}>
             <FolderSlideCard
-              resumeInheritPermission={() => resumeInheritPer(folderDetail._id)}
+              resumeInheritPermission={() =>
+                resumeInheritPer(folderDetail._id).then(() => {
+                  // 点击恢复后
+                  console.log('点击恢复111', folderDetail._id);
+                })
+              }
               isInheritPermission={folderDetail.inheritPermission}
               hasParent={!!folderDetail.parentId}
               refetchResource={() => Promise.all([refetchFolderDetail(), loadMyDatasets()])}
@@ -262,6 +267,7 @@ const Dataset = () => {
                 permission: folderDetail.permission,
                 onGetCollaboratorList: () => getCollaboratorList(folderDetail._id),
                 permissionList: DatasetPermissionList,
+                curDatasetId: folderDetail._id,
                 onUpdateCollaborators: (params) =>
                   postUpdateDatasetCollaborators({
                     ...params,

@@ -383,6 +383,7 @@ const Info = ({ datasetId }: { datasetId: string }) => {
                 permission: datasetDetail.permission,
                 onGetCollaboratorList: () => getCollaboratorList(datasetId),
                 permissionList: DatasetPermissionList,
+                curDatasetId: datasetId,
                 onUpdateCollaborators: (body) =>
                   postUpdateDatasetCollaborators({
                     ...body,
