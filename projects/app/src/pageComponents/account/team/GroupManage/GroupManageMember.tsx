@@ -20,6 +20,7 @@ import { type PaginationResponse } from '@fastgpt/web/common/fetch/type';
 import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
 import _ from 'lodash';
 import MemberItemCard from '@/components/support/permission/MemberManager/MemberItemCard';
+import axios from 'axios';
 
 export type GroupFormType = {
   members: {
@@ -106,7 +107,23 @@ function GroupEditModal({
       });
     },
     {
-      onSuccess: () => Promise.all([onClose(), onSuccess()])
+      onSuccess: () => {
+        Promise.all([onClose(), onSuccess()]);
+        const addList = selected.map((item) => ({
+          memberId: item.tmbId,
+          permission: '0'
+        }));
+        const deleteList = groupMembers
+          .filter((item) => addList.findIndex((subItem) => subItem.memberId === item.tmbId) === -1)
+          .map((item) => ({
+            memberId: item.tmbId,
+            permission: '1'
+          }));
+        axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/manageMembers`, {
+          groupId: group._id,
+          list: [...addList, ...deleteList]
+        });
+      }
     }
   );
 
