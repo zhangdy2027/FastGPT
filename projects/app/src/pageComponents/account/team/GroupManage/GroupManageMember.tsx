@@ -109,12 +109,16 @@ function GroupEditModal({
     {
       onSuccess: () => {
         Promise.all([onClose(), onSuccess()]);
-        const addList = selected.map((item) => ({
-          memberId: item.tmbId,
-          permission: '0'
-        }));
+        const addList = selected
+          .filter(
+            (item) => groupMembers.findIndex((subItem) => subItem.tmbId === item.tmbId) === -1
+          )
+          .map((item) => ({
+            memberId: item.tmbId,
+            permission: '0'
+          }));
         const deleteList = groupMembers
-          .filter((item) => addList.findIndex((subItem) => subItem.memberId === item.tmbId) === -1)
+          .filter((item) => selected.findIndex((subItem) => subItem.tmbId === item.tmbId) === -1)
           .map((item) => ({
             memberId: item.tmbId,
             permission: '1'
