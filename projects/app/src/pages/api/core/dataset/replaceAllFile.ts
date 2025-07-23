@@ -17,12 +17,12 @@ import { MongoDatasetCollection } from '@fastgpt/service/core/dataset/collection
 // import { TrainingModeEnum } from '@fastgpt/global/core/dataset/constants';
 import { uploadFile } from '@fastgpt/service/common/file/gridfs/controller';
 // import { FileType, getUploadModel } from '@fastgpt/service/common/file/multer';
-import { authFrequencyLimit } from '@/service/common/frequencyLimit/api';
-import { addSeconds } from 'date-fns';
+// import { authFrequencyLimit } from '@/service/common/frequencyLimit/api';
+// import { addSeconds } from 'date-fns';
 // import { removeFilesByPaths } from '@fastgpt/service/common/file/utils';
 // import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
 // import { authDatasetCollection } from '@fastgpt/service/support/permission/dataset/auth';
-import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+// import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 // import { postUploadImg, postUploadFiles } from '@/web/common/file/api';
 import { type DatasetSchemaType } from '@fastgpt/global/core/dataset/type';
 import fs from 'fs/promises';
