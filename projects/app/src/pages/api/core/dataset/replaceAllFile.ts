@@ -82,11 +82,11 @@ const uploadFileByBuffer = async ({
 };
 
 async function handler(req: NextApiRequest, res: NextApiResponse<any>): Promise<any> {
-  const resp = await axios.get(`${process.env.DOC_SERVER_URL}/shtl/api/online/list`);
-  if (resp.data.code === 0) {
-    const fList = resp.data.data || [];
+  const cList = req.body;
+  if (Array.isArray(cList) && cList.length > 0) {
+    const fList = cList;
     for (const item of fList) {
-      const { collectionId, uuid } = item;
+      const collectionId = item;
       const collection: any = await MongoDatasetCollection.findById(collectionId)
         .populate<{ dataset: DatasetSchemaType }>('dataset')
         .lean();
