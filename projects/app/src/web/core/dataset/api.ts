@@ -192,6 +192,10 @@ export const postCreateDatasetFileCollection = (data: FileIdCreateDatasetCollect
   POST<{ collectionId: string }>(`/core/dataset/collection/create/fileId`, data, {
     timeout: 360000
   });
+export const postUpdateDatasetFileCollection = (data: any) =>
+  POST<{ collectionId: string }>(`/core/dataset/collection/replaceCollectionFile`, data, {
+    timeout: 360000
+  });
 export const postReTrainingDatasetFileCollection = (data: reTrainingDatasetFileCollectionParams) =>
   POST<{ collectionId: string }>(`/core/dataset/collection/create/reTrainingCollection`, data, {
     timeout: 360000

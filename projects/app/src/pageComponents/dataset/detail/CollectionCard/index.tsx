@@ -15,6 +15,7 @@ import {
 import {
   delDatasetCollectionById,
   putDatasetCollectionById,
+  postUpdateDatasetFileCollection,
   postLinkCollectionSync
 } from '@/web/core/dataset/api';
 import { useQuery } from '@tanstack/react-query';
@@ -107,7 +108,7 @@ const CollectionCard = () => {
     [collections, t]
   );
 
-  const [onlineDocList, setOnlineDocList] = useState<{ fileId: string; uuid: string }[]>([]);
+  const [onlineDocList, setOnlineDocList] = useState<{ collectionId: string; uuid: string }[]>([]);
   useEffect(() => {
     const initOnLineDocList = async () => {
       const resp = await axios.get(`${window.myConfig.docServerUrl}/shtl/api/online/list`);
@@ -151,7 +152,9 @@ const CollectionCard = () => {
       errorToast: t('common:delete_failed')
     }
   );
-
+  const onDelCollectionOnline = (id: string) => {
+    axios.get(`${window.myConfig.docServerUrl}/shtl/api/online/deleteFile?collectionId=${id}`);
+  };
   const { openConfirm: openSyncConfirm, ConfirmModal: ConfirmSyncModal } = useConfirm({
     content: t('dataset:collection_sync_confirm_tip')
   });
@@ -205,9 +208,19 @@ const CollectionCard = () => {
     isUpdating || isSyncing || (isGetting && collections.length === 0) || isDropping;
 
   const gotoOnlineDocPlatform = (data: any) => {
-    const curDoc = onlineDocList.find((item) => item.fileId === data.fileId);
+    const curDoc = onlineDocList.find((item) => item.collectionId === data._id);
     if (curDoc) {
       window.open(`${window.myConfig.onlineDocPlatformUrl}/file/document-view?uuid=${curDoc.uuid}`);
+    }
+  };
+
+  const syncUpdateOnlineDocPlatform = async (data: any) => {
+    const resp = await postUpdateDatasetFileCollection({
+      datasetId: datasetDetail._id,
+      collectionId: data._id
+    });
+    if (resp.collectionId) {
+      getData(pageNum);
     }
   };
 
@@ -308,8 +321,8 @@ const CollectionCard = () => {
                     </MyTooltip>
                   </Td>
                   <Td py={2}>
-                    {onlineDocList.findIndex((item) => item.fileId === collection.fileId) ===
-                    -1 ? null : (
+                    {onlineDocList.findIndex((item) => item.collectionId === collection._id) ===
+                      -1 || collection.type !== 'file' ? null : (
                       <Flex gap={2}>
                         {collection.permission?.hasWritePer ? (
                           <Box
@@ -345,6 +358,7 @@ const CollectionCard = () => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
+                            syncUpdateOnlineDocPlatform(collection);
                           }}
                         >
                           同步更新
@@ -462,7 +476,10 @@ const CollectionCard = () => {
                                 type: 'danger',
                                 onClick: () =>
                                   openDeleteConfirm(
-                                    () => onDelCollection(collection._id),
+                                    async () => {
+                                      await onDelCollection(collection._id);
+                                      onDelCollectionOnline(collection._id);
+                                    },
                                     undefined,
                                     collection.type === DatasetCollectionTypeEnum.folder
                                       ? t('common:dataset.collections.Confirm to delete the folder')

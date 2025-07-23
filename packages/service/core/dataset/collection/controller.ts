@@ -270,6 +270,166 @@ export const createCollectionAndInsertData = async ({
   return mongoSessionRun(fn);
 };
 
+export const updateCollectionAndInsertData = async ({
+  teamId,
+  tmbId,
+  collectionId,
+  dataset,
+  newFileId,
+  rawText,
+  imageIds,
+  backupParse = false,
+  billId,
+  session
+}: {
+  teamId: string;
+  tmbId: string;
+  collectionId: string;
+  dataset: any;
+  newFileId: string;
+  rawText?: string;
+  imageIds?: string[];
+  backupParse?: boolean;
+  billId?: string;
+  session?: ClientSession;
+}) => {
+  const deleteQuery = {
+    teamId,
+    datasetId: dataset._id,
+    collectionId
+  };
+  await MongoDatasetData.deleteMany(deleteQuery);
+  await deleteDatasetDataVector({
+    teamId,
+    datasetIds: [dataset._id],
+    collectionIds: [collectionId]
+  });
+  await MongoDatasetTraining.deleteMany(deleteQuery);
+
+  const fn = async (session: ClientSession) => {
+    const collection = await MongoDatasetCollection.findById(collectionId);
+    if (!collection) throw new Error('Collection not found');
+    // 更新文件相关字段
+    collection.fileId = newFileId;
+    collection.metadata = collection.metadata || {};
+    // collection.metadata.relatedImgId = newFileId;
+
+    // 处理chunks
+    let chunks: any[] = [];
+    let chunkSize = collection.chunkSize;
+    let indexSize = collection.indexSize;
+    let trainingType = collection.trainingType || DatasetCollectionDataProcessModeEnum.chunk;
+
+    if (rawText) {
+      chunks = await rawText2Chunks({
+        rawText,
+        chunkTriggerType: collection.chunkTriggerType,
+        chunkTriggerMinSize: collection.chunkTriggerMinSize,
+        chunkSize: collection.chunkSize,
+        paragraphChunkDeep: collection.paragraphChunkDeep,
+        paragraphChunkMinSize: collection.paragraphChunkMinSize,
+        maxSize: getLLMMaxChunkSize(getLLMModel(dataset.agentModel)),
+        overlapRatio: trainingType === DatasetCollectionDataProcessModeEnum.chunk ? 0.2 : 0,
+        customReg: collection.chunkSplitter ? [collection.chunkSplitter] : [],
+        backupParse
+      });
+    }
+
+    if (imageIds) {
+      // Process image chunks
+      chunks = imageIds.map((imageId: string) => ({
+        imageId,
+        indexes: []
+      }));
+    }
+
+    const trainingMode = getTrainingModeByCollection({
+      trainingType: trainingType,
+      autoIndexes: collection.autoIndexes,
+      imageIndex: collection.imageIndex
+    });
+
+    await checkDatasetIndexLimit({
+      teamId,
+      insertLen: predictDataLimitLength(trainingMode, chunks)
+    });
+
+    collection.hashRawText = rawText ? hashStr(rawText) : undefined;
+    collection.rawTextLength = rawText?.length || 0;
+
+    await collection.save({ session });
+
+    const traingBillId = await (async () => {
+      if (billId) return billId;
+      const { billId: newBillId } = await createTrainingUsage({
+        teamId,
+        tmbId,
+        appName: collection.name,
+        billSource: UsageSourceEnum.training,
+        vectorModel: getEmbeddingModel(dataset.vectorModel)?.name,
+        agentModel: getLLMModel(dataset.agentModel)?.name,
+        vllmModel: getVlmModel(dataset.vlmModel)?.name,
+        session
+      });
+      return newBillId;
+    })();
+
+    const insertResults = await (async () => {
+      if (rawText || imageIds) {
+        return pushDataListToTrainingQueue({
+          teamId,
+          tmbId,
+          datasetId: dataset._id,
+          collectionId,
+          agentModel: dataset.agentModel,
+          vectorModel: dataset.vectorModel,
+          vlmModel: dataset.vlmModel,
+          indexSize,
+          mode: trainingMode,
+          billId: traingBillId,
+          data: chunks.map((item, index) => ({
+            ...item,
+            indexes: item.indexes?.map((text: any) => ({
+              type: DatasetDataIndexTypeEnum.custom,
+              text
+            })),
+            chunkIndex: index
+          })),
+          session
+        });
+      } else {
+        await pushDatasetToParseQueue({
+          teamId,
+          tmbId,
+          datasetId: dataset._id,
+          collectionId,
+          billId: traingBillId,
+          session
+        });
+        return {
+          insertLen: 0
+        };
+      }
+    })();
+
+    await removeDatasetImageExpiredTime({
+      ids: imageIds,
+      collectionId,
+      session
+    });
+
+    return {
+      collectionId: String(collectionId),
+      insertResults
+    };
+  };
+
+  if (session) {
+    return fn(session);
+  }
+  return mongoSessionRun(fn);
+};
+
 export type CreateOneCollectionParams = CreateDatasetCollectionParams & {
   teamId: string;
   tmbId: string;

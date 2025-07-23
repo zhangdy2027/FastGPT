@@ -48,6 +48,7 @@ const Upload = () => {
   };
   const datasetDetail = useContextSelector(DatasetPageContext, (v) => v.datasetDetail);
   const retrainNewCollectionId = useRef('');
+  const curCollectionId = useRef('');
 
   const { importSource, parentId, sources, setSources, processParamsForm } = useContextSelector(
     DatasetImportContext,
@@ -117,36 +118,41 @@ const Upload = () => {
           });
           retrainNewCollectionId.current = res.collectionId;
         } else if (importSource === ImportDataSourceEnum.fileLocal && item.dbFileId) {
-          await postCreateDatasetFileCollection({
+          const res = await postCreateDatasetFileCollection({
             ...commonParams,
             fileId: item.dbFileId
           });
+          curCollectionId.current = res.collectionId;
         } else if (importSource === ImportDataSourceEnum.fileLink && item.link) {
-          await postCreateDatasetLinkCollection({
+          const res = await postCreateDatasetLinkCollection({
             ...commonParams,
             link: item.link,
             metadata: {
               webPageSelector: webSelector
             }
           });
+          curCollectionId.current = res.collectionId;
         } else if (importSource === ImportDataSourceEnum.fileCustom && item.rawText) {
           // manual collection
-          await postCreateDatasetTextCollection({
+          const res = await postCreateDatasetTextCollection({
             ...commonParams,
             text: item.rawText
           });
+          curCollectionId.current = res.collectionId;
         } else if (importSource === ImportDataSourceEnum.externalFile && item.externalFileUrl) {
-          await postCreateDatasetExternalFileCollection({
+          const res = await postCreateDatasetExternalFileCollection({
             ...commonParams,
             externalFileUrl: item.externalFileUrl,
             externalFileId: item.externalFileId,
             filename: item.sourceName
           });
+          curCollectionId.current = res.collectionId;
         } else if (importSource === ImportDataSourceEnum.apiDataset && item.apiFileId) {
-          await postCreateDatasetApiDatasetCollection({
+          const res = await postCreateDatasetApiDatasetCollection({
             ...commonParams,
             apiFileId: item.apiFileId
           });
+          curCollectionId.current = res.collectionId;
         }
 
         setSources((state) =>
@@ -172,16 +178,16 @@ const Upload = () => {
             status: 'success'
           });
         }
-        // 在此处调用接口上传至在线文档平台 0
+
         const uploadResp = sources.map((item: any) => {
           const data = new FormData();
-          data.append('fileId', item.dbFileId);
+          data.append('collectionId', curCollectionId.current);
           data.append('file', item.file);
 
           return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
         });
         Promise.all(uploadResp);
-        // 在此处调用接口上传至在线文档平台 1
+
         // Close import page
         router.replace({
           query: {
