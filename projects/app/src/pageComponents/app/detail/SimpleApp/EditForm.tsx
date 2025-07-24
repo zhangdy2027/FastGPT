@@ -41,6 +41,7 @@ const InputGuideConfig = dynamic(() => import('@/components/core/app/InputGuideC
 const WelcomeTextConfig = dynamic(() => import('@/components/core/app/WelcomeTextConfig'));
 const FileSelectConfig = dynamic(() => import('@/components/core/app/FileSelect'));
 const NetworkSearchConfig = dynamic(() => import('@/components/core/app/NetworkSearchConfig'));
+const FileReferenceConfig = dynamic(() => import('@/components/core/app/FileReferenceConfig'));
 
 const BoxStyles: BoxProps = {
   px: [4, 6],
@@ -454,6 +455,22 @@ const EditForm = ({
           }}
         />
       )}
+
+      {/* file reference */}
+      <Box {...BoxStyles}>
+        <FileReferenceConfig
+          value={appForm.chatConfig.fileReferenceConfig}
+          onChange={(e) => {
+            setAppForm((state) => ({
+              ...state,
+              chatConfig: {
+                ...state.chatConfig,
+                fileReferenceConfig: e
+              }
+            }));
+          }}
+        />
+      </Box>
     </>
   );
 };

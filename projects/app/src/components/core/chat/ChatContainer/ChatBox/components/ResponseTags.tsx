@@ -16,6 +16,7 @@ import { useContextSelector } from 'use-context-selector';
 import { ChatBoxContext } from '../Provider';
 import { eventBus, EventNameEnum } from '@/web/common/utils/eventbus';
 import { getAllCollectionSourceAndOpen } from '@/web/core/dataset/hooks/readCollectionSource';
+import { useRouter } from 'next/router';
 
 const ContextModal = dynamic(() => import('./ContextModal'));
 const WholeResponseModal = dynamic(() => import('../../../components/WholeResponseModal'));
@@ -39,6 +40,11 @@ const ResponseTags = ({
   const { t } = useTranslation();
   const quoteListRef = React.useRef<HTMLDivElement>(null);
   const dataId = historyItem.dataId;
+  const router = useRouter();
+
+  const isChatPage = useMemo(() => {
+    return router.pathname === '/chat';
+  }, [router.pathname]);
 
   const chatTime = historyItem.time || new Date();
   const durationSeconds = historyItem.durationSeconds || 0;
@@ -53,6 +59,21 @@ const ResponseTags = ({
   const chatType = useContextSelector(ChatBoxContext, (v) => v.chatType);
 
   const notSharePage = useMemo(() => chatType !== 'share', [chatType]);
+
+  const fileReferenceConfig = useContextSelector(ChatBoxContext, (v) => v.fileReferenceConfig);
+
+  const fileReferenceOpen = useMemo(
+    () => fileReferenceConfig.open || !isChatPage,
+    [fileReferenceConfig.open, isChatPage]
+  );
+  const fileReferenceReference = useMemo(
+    () => fileReferenceConfig.reference || !isChatPage,
+    [fileReferenceConfig.reference, isChatPage]
+  );
+  const fileReferenceDetail = useMemo(
+    () => fileReferenceConfig.detail || !isChatPage,
+    [fileReferenceConfig.detail, isChatPage]
+  );
 
   const {
     isOpen: isOpenWholeModal,
@@ -111,10 +132,10 @@ const ResponseTags = ({
     (isPc && durationSeconds > 0) ||
     notSharePage;
 
-  return !showTags ? null : (
+  return !showTags || !fileReferenceOpen ? null : (
     <>
       {/* quote */}
-      {sourceList.length > 0 && (
+      {sourceList.length > 0 && fileReferenceReference && (
         <>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
             <Box width={'100%'}>
@@ -223,7 +244,7 @@ const ResponseTags = ({
 
       {notEmptyTags && (
         <Flex alignItems={'center'} mt={3} flexWrap={'wrap'} gap={2}>
-          {quoteList.length > 0 && (
+          {quoteList.length > 0 && fileReferenceReference && (
             <MyTooltip label={t('chat:view_citations')}>
               <MyTag
                 colorSchema="blue"
@@ -238,7 +259,7 @@ const ResponseTags = ({
               </MyTag>
             </MyTooltip>
           )}
-          {llmModuleAccount === 1 && notSharePage && (
+          {/* {llmModuleAccount === 1 && notSharePage && (
             <>
               {historyPreviewLength > 0 && (
                 <MyTooltip label={t('chat:click_contextual_preview')}>
@@ -253,7 +274,7 @@ const ResponseTags = ({
                 </MyTooltip>
               )}
             </>
-          )}
+          )} */}
           {llmModuleAccount > 1 && notSharePage && (
             <MyTag type="borderSolid" colorSchema="blue">
               {t('chat:multiple_AI_conversations')}
@@ -267,7 +288,7 @@ const ResponseTags = ({
             </MyTooltip>
           )}
 
-          {notSharePage && (
+          {notSharePage && fileReferenceDetail && (
             <MyTooltip label={t('common:core.chat.response.Read complete response tips')}>
               <MyTag
                 colorSchema="gray"
@@ -280,7 +301,7 @@ const ResponseTags = ({
             </MyTooltip>
           )}
 
-          {quoteList.length > 0 && (
+          {/* {quoteList.length > 0 && (
             <MyTooltip label={'下载所有引用文件'}>
               <MyTag
                 colorSchema="blue"
@@ -294,7 +315,7 @@ const ResponseTags = ({
                 {'下载引用'}
               </MyTag>
             </MyTooltip>
-          )}
+          )} */}
         </Flex>
       )}
 

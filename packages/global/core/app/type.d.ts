@@ -126,6 +126,7 @@ export type AppChatConfigType = {
   chatInputGuide?: ChatInputGuideConfigType;
   fileSelectConfig?: AppFileSelectConfigType;
   networkSearchConfig?: AppNetworkSearchConfigType;
+  fileReferenceConfig?: AppFileReferenceConfigType;
 
   // plugin
   instruction?: string;
@@ -179,6 +180,12 @@ export type AppWhisperConfigType = {
 
 export type AppNetworkSearchConfigType = {
   open: boolean;
+};
+
+export type AppFileReferenceConfigType = {
+  open: boolean;
+  reference: boolean;
+  detail: boolean;
 };
 
 // question guide

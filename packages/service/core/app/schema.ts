@@ -14,6 +14,7 @@ export const chatConfigType = {
   questionGuide: Object,
   ttsConfig: Object,
   whisperConfig: Object,
+  fileReferenceConfig: Object,
   networkSearchConfig: Object,
   scheduledTriggerConfig: Object,
   chatInputGuide: Object,

@@ -4,7 +4,8 @@ import {
   type AppWhisperConfigType,
   type AppAutoExecuteConfigType,
   type AppQGConfigType,
-  type AppNetworkSearchConfigType
+  type AppNetworkSearchConfigType,
+  type AppFileReferenceConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -30,6 +31,12 @@ export const defaultWhisperConfig: AppWhisperConfigType = {
   open: false,
   autoSend: false,
   autoTTSResponse: false
+};
+
+export const defaultFileReferenceConfig: AppFileReferenceConfigType = {
+  open: true,
+  reference: true,
+  detail: true
 };
 
 export const defaultNetworkSearchConfig: AppNetworkSearchConfigType = {

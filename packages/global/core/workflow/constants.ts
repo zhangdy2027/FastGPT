@@ -119,6 +119,7 @@ export enum NodeInputKeyEnum {
   questionGuide = 'questionGuide',
   tts = 'tts',
   whisper = 'whisper',
+  fileReference = 'fileReference',
   variables = 'variables',
   scheduleTrigger = 'scheduleTrigger',
   chatInputGuide = 'chatInputGuide',

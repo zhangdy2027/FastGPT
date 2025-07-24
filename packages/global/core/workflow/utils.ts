@@ -28,7 +28,8 @@ import type {
   ChatInputGuideConfigType,
   AppChatConfigType,
   AppAutoExecuteConfigType,
-  AppQGConfigType
+  AppQGConfigType,
+  AppFileReferenceConfigType
 } from '../app/type';
 import { type EditorVariablePickerType } from '../../../web/components/common/Textarea/PromptEditor/type';
 import {
@@ -37,7 +38,8 @@ import {
   defaultQGConfig,
   defaultTTSConfig,
   defaultWhisperConfig,
-  defaultNetworkSearchConfig
+  defaultNetworkSearchConfig,
+  defaultFileReferenceConfig
 } from '../app/constants';
 import { IfElseResultEnum } from './template/system/ifElse/constant';
 import { type RuntimeNodeItemType } from './runtime/type';
@@ -97,6 +99,10 @@ export const splitGuideModule = (guideModules?: StoreNodeItemType) => {
     guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.whisper)?.value ??
     defaultWhisperConfig;
 
+  const fileReferenceConfig: AppFileReferenceConfigType =
+    guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.fileReference)?.value ??
+    defaultFileReferenceConfig;
+
   const networkSearchConfig: AppNetworkSearchConfigType =
     guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.networkSearch)?.value ??
     defaultNetworkSearchConfig;
@@ -122,6 +128,7 @@ export const splitGuideModule = (guideModules?: StoreNodeItemType) => {
     questionGuide,
     ttsConfig,
     whisperConfig,
+    fileReferenceConfig,
     networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,
@@ -150,6 +157,7 @@ export const getAppChatConfig = ({
     questionGuide,
     ttsConfig,
     whisperConfig,
+    fileReferenceConfig,
     networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,
@@ -161,6 +169,7 @@ export const getAppChatConfig = ({
     questionGuide,
     ttsConfig,
     whisperConfig,
+    fileReferenceConfig,
     networkSearchConfig,
     scheduledTriggerConfig,
     chatInputGuide,

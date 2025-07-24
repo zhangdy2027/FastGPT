@@ -28,6 +28,7 @@ import { userFilesInput } from '@fastgpt/global/core/workflow/template/system/wo
 import Container from '../components/Container';
 import AutoExecConfig from '@/components/core/app/AutoExecConfig';
 import NetworkSearchConfig from '@/components/core/app/NetworkSearchConfig';
+import FileReferenceConfig from '@/components/core/app/FileReferenceConfig';
 
 type ComponentProps = {
   chatConfig: AppChatConfigType;
@@ -94,6 +95,9 @@ const NodeUserGuide = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
             </Box>
             <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
               <QuestionInputGuide {...componentsProps} />
+            </Box>
+            <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
+              <FileReferenceGuide {...componentsProps} />
             </Box>
           </Container>
         </NodeCard>
@@ -203,6 +207,23 @@ function WhisperGuide({ chatConfig: { whisperConfig, ttsConfig }, setAppDetail }
           chatConfig: {
             ...state.chatConfig,
             whisperConfig: e
+          }
+        }));
+      }}
+    />
+  );
+}
+
+function FileReferenceGuide({ chatConfig: { fileReferenceConfig }, setAppDetail }: ComponentProps) {
+  return (
+    <FileReferenceConfig
+      value={fileReferenceConfig}
+      onChange={(e) => {
+        setAppDetail((state) => ({
+          ...state,
+          chatConfig: {
+            ...state.chatConfig,
+            fileReferenceConfig: e
           }
         }));
       }}
