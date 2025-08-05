@@ -168,7 +168,7 @@ const Upload = () => {
       }
     },
     {
-      onSuccess() {
+      async onSuccess() {
         if (!sources.some((file) => file.errorMsg !== undefined)) {
           toast({
             title:
@@ -179,14 +179,22 @@ const Upload = () => {
           });
         }
 
-        const uploadResp = sources.map((item: any) => {
-          const data = new FormData();
-          data.append('collectionId', curCollectionId.current);
-          data.append('file', item.file);
+        if (importSource === ImportDataSourceEnum.reTraining && collectionId) {
+          // 重新调整训练参数 retrainNewCollectionId.current：新id，collectionId：旧id
+          await axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/updateCollectionId`, {
+            oldCollectionId: collectionId,
+            newCollectionId: retrainNewCollectionId.current
+          });
+        } else {
+          const uploadResp = sources.map((item: any) => {
+            const data = new FormData();
+            data.append('collectionId', curCollectionId.current);
+            data.append('file', item.file);
 
-          return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
-        });
-        Promise.all(uploadResp);
+            return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
+          });
+          await Promise.all(uploadResp);
+        }
 
         // Close import page
         router.replace({

@@ -32,7 +32,7 @@ const FileReferenceConfig = ({
         <FormLabel color={'myGray.600'}>{'文件引用'}</FormLabel>
         <QuestionTip label={'开启后，AI回复中引用的知识库文件，所有用户均可以查看'} />
       </HStack>
-      <MyTooltip label={t('common:core.app.Config whisper')}>
+      <MyTooltip label={'配置文件引用'}>
         <Button
           variant={'transparentBase'}
           iconSpacing={1}
