@@ -188,7 +188,7 @@ export const readRawContentByFileBuffer = async ({
   const start = Date.now();
   addLog.debug(`Start parse file`, { extension });
 
-  let { rawText, formatText, imageList } = await (async () => {
+  let { rawText, formatText, imageList, snExcelData } = await (async () => {
     if (extension === 'pdf') {
       return await pdfParseFn();
     }
@@ -229,9 +229,9 @@ export const readRawContentByFileBuffer = async ({
     // } else {
     //   rawText = formatText || rawText;
     // }
-    rawText = formatText || rawText;
+    rawText = snExcelData || formatText || rawText;
   }
   addLog.debug(`Upload file success, time: ${Date.now() - start}ms`);
 
-  return { rawText: getFormatText ? formatText || rawText : rawText };
+  return { rawText: getFormatText ? snExcelData || formatText || rawText : rawText };
 };

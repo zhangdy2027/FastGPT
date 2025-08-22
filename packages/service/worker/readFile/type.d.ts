@@ -18,4 +18,5 @@ export type ReadFileResponse = {
   rawText: string;
   formatText?: string;
   imageList?: ImageType[];
+  snExcelData?: string;
 };

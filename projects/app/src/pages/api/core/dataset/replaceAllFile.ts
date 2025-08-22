@@ -82,7 +82,7 @@ const uploadFileByBuffer = async ({
 };
 
 async function handler(req: NextApiRequest, res: NextApiResponse<any>): Promise<any> {
-  const cList = req.body;
+  const cList = JSON.parse(req.body);
   if (Array.isArray(cList) && cList.length > 0) {
     const fList = cList;
     for (const item of fList) {

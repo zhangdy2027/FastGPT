@@ -22,7 +22,10 @@ declare module 'xlsx' {
     Sheets: { [sheetName: string]: WorkSheet };
   }
 
-  export function read(data: any, options?: { type: string; cellDates?: boolean }): WorkBook;
+  export function read(
+    data: any,
+    options?: { type: string; cellDates?: boolean; cellNF?: boolean }
+  ): WorkBook;
 
   export const utils: {
     encode_cell(cell: { r: number; c: number }): string;
@@ -34,5 +37,6 @@ declare module 'xlsx' {
         raw?: boolean;
       }
     ): any[];
+    decode_range(w: any): any;
   };
 }

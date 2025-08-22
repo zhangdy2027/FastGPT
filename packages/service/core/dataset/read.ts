@@ -232,6 +232,12 @@ export const rawText2Chunks = async ({
   if (chunkTriggerType !== ChunkTriggerConfigTypeEnum.forceChunk) {
     const textLength = rawText.trim().length;
     if (textLength < chunkTriggerMinSize) {
+      const isMatch = /^-----SN-.+-SN-----/.test(rawText);
+      if (isMatch) {
+        const title = rawText.split('-----SN-')[1].split('-SN-----')[0];
+        const text = rawText.split('-SN-----')[1];
+        return [{ q: `# ${title}\n ${text}`, a: '', imageIdList }];
+      }
       return [{ q: rawText, a: '', imageIdList }];
     }
   }

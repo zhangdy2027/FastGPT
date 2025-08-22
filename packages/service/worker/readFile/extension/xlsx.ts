@@ -1,7 +1,7 @@
+import { CUSTOM_SPLIT_SIGN } from '@fastgpt/global/common/string/textSplitter';
 import { type ReadRawTextByBuffer, type ReadFileResponse } from '../type';
 import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
-import dayjs from 'dayjs';
+import xlsx from 'node-xlsx';
 
 const fillMergedCells = (sheet: XLSX.WorkSheet) => {
   const merges = sheet['!merges'] || [];
@@ -34,75 +34,96 @@ const removeEmptyColumns = (rows: any[][]): any[][] => {
   return rows.map((row) => row.filter((_, colIndex) => !emptyCols.includes(colIndex)));
 };
 
-const sheetToCsvText = (sheet: XLSX.WorkSheet): string => {
-  fillMergedCells(sheet);
-  const json = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: '',
-    raw: true
-  });
+// 日期格式化
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
 
-  const cleaned = removeEmptyColumns(json as any[][]);
+// 将 xlsx 转换为 node-xlsx 风格
+function convertWorkbookToNodeXlsxStyle(workbook: XLSX.WorkBook) {
+  return workbook.SheetNames.map((sheetName) => {
+    const worksheet = workbook.Sheets[sheetName];
+    fillMergedCells(worksheet);
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+    const cleaned = removeEmptyColumns(data as any[][]);
+    // 获取 sheet 最大列数（包括末尾空列）
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
+    const maxCols = range.e.c + 1;
 
-  return cleaned
-    .map((row) =>
-      row
-        .map((cell) => {
-          if (cell instanceof Date) {
-            return dayjs(cell).format('YYYY-MM-DD HH:mm:ss'); // 转换为 YYYY-MM-DD
-          }
-          if (typeof cell === 'string') {
-            return cell.replace(/,/g, '，').replace(/\r?\n/g, ' ');
-          }
-          return cell ?? '';
+    return {
+      name: sheetName,
+      data: cleaned.map((row) =>
+        Array.from({ length: maxCols }, (_, i) => {
+          const cell = row[i];
+          if (cell instanceof Date) return formatDate(cell); // 日期格式化
+          return cell ?? ''; // 空单元格补 ''
         })
-        .join(',')
-    )
-    .join('\n');
-};
+      )
+    };
+  });
+}
 
 export const readXlsxRawText = async ({
   buffer
 }: ReadRawTextByBuffer): Promise<ReadFileResponse> => {
-  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
+  // const temp = xlsx.parse(buffer, { skipHidden: false, defval: '' });
+  // 使用 xlsx 官方库解析 Excel
+  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true, cellNF: true });
 
-  const format2Csv = workbook.SheetNames.map((sheetName: string) => {
-    const sheet = workbook.Sheets[sheetName];
-    const csvText = sheetToCsvText(sheet);
-    return {
-      title: `#${sheetName}`,
-      csvText
-    };
-  });
+  // 转成 node-xlsx 风格
+  const result = convertWorkbookToNodeXlsxStyle(workbook);
 
-  const rawText = format2Csv.map((item: any) => item.csvText).join('\n\n---\n\n');
+  // 生成 CSV 文本
+  const format2Csv = result.map(({ name, data }) => ({
+    title: `#${name}`,
+    csvText: data.map((row) => row.join(',')).join('\n')
+  }));
+  const rawText = format2Csv.map((item) => item.csvText).join('\n');
 
-  const formatText = format2Csv
-    .map((item: any) => {
-      const csvArr = Papa.parse(item.csvText).data as string[][];
+  // 生成 Markdown 表格文本
+  const formatText = result
+    .map(({ data, name }) => {
+      const header = data[0];
+      if (!header) return;
 
-      // 统一最大列数
-      const maxCol = Math.max(...csvArr.map((row) => row.length));
+      const table = `| ${header.join(' | ')} |
+| ${header.map(() => '---').join(' | ')} |
+${data
+  .slice(1)
+  .map((row) => `| ${row.map((cell) => String(cell).replace(/\n/g, '\\n')).join(' | ')} |`)
+  .join('\n')}`;
 
-      // 标题行，自动补齐空单元格
-      const header = (csvArr[0] || [])
-        .map((v) => v || '')
-        .concat(Array.from({ length: maxCol - (csvArr[0]?.length || 0) }, () => ''));
-
-      const rowsMd = csvArr.slice(1).map((row) => {
-        const normalized = Array.from({ length: maxCol }, (_, i) =>
-          (row[i] ?? '').toString().replace(/\n/g, '\\n')
-        );
-        return `| ${normalized.join(' | ')} |`;
-      });
-
-      return `## ${item.title.replace(/^#/, '')}\n\n| ${header.join(' | ')} |\n| ${header.map(() => '---').join(' | ')} |\n${rowsMd.join('\n')}`;
+      return table;
     })
     .filter(Boolean)
-    .join('\n\n---\n\n');
+    .join(CUSTOM_SPLIT_SIGN);
+
+  const snExcelData = result
+    .map(({ data, name }) => {
+      const header = data[0];
+      if (!header) return;
+
+      const table = `| ${header.join(' | ')} |
+| ${header.map(() => '---').join(' | ')} |
+${data
+  .slice(1)
+  .map((row) => `| ${row.map((cell) => String(cell).replace(/\n/g, '\\n')).join(' | ')} |`)
+  .join('\n')}`;
+
+      return `-----SN-${name}-SN-----${table}`;
+    })
+    .filter(Boolean)
+    .join(CUSTOM_SPLIT_SIGN);
 
   return {
     rawText,
-    formatText
+    formatText,
+    snExcelData
   };
 };
