@@ -50,7 +50,7 @@ function convertWorkbookToNodeXlsxStyle(workbook: XLSX.WorkBook) {
   return workbook.SheetNames.map((sheetName) => {
     const worksheet = workbook.Sheets[sheetName];
     fillMergedCells(worksheet);
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true, defval: '' });
     const cleaned = removeEmptyColumns(data as any[][]);
     // 获取 sheet 最大列数（包括末尾空列）
     const range = XLSX.utils.decode_range(worksheet['!ref']!);
