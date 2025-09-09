@@ -14,11 +14,12 @@
   &::after {
     display: inline-block;
     content: '';
-    width: 3px;
+    width: auto;
     height: 14px;
-    transform: translate(4px, 2px) scaleY(1.3);
-    background-color: var(--chakra-colors-primary-700);
-    animation: blink 0.6s infinite;
+    font-size: 14px;
+    // transform: translate(4px, 2px) scaleY(1.3);
+    // background-color: var(--chakra-colors-primary-700);
+    animation: dotsText 1.5s steps(3, end) infinite;
   }
 }
 @keyframes blink {
@@ -28,6 +29,24 @@
   }
   50% {
     opacity: 1;
+  }
+}
+
+@keyframes dotsText {
+  0% {
+    content: '思考中，请耐心等待.';
+  }
+
+  33% {
+    content: '思考中，请耐心等待. .';
+  }
+
+  66% {
+    content: '思考中，请耐心等待. . .';
+  }
+
+  100% {
+    content: '思考中，请耐心等待.';
   }
 }
 
@@ -347,7 +366,7 @@
   tab-size: 4;
   word-spacing: normal;
   width: 100%;
-  font-size: var(--chakra-fontSizes-sm);
+  font-size: var(--chakra-fontSizes-md);
   // overflow-x: auto;
 
   * {

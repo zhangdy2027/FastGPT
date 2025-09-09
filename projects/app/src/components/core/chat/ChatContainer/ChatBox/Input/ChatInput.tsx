@@ -151,7 +151,7 @@ const ChatInput = ({
             w={'100%'}
             _placeholder={{
               color: '#707070',
-              fontSize: 'sm'
+              fontSize: 'md'
             }}
             value={inputValue}
             onChange={(e) => {

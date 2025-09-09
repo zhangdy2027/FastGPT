@@ -186,7 +186,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               cursor={'pointer'}
               userSelect={'none'}
               borderRadius={'md'}
-              fontSize={'sm'}
+              fontSize={'md'}
               _hover={{
                 bg: 'myGray.50',
                 '& .more': {
