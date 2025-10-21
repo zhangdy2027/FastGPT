@@ -139,11 +139,11 @@ const Signin = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
 
   return (
     <>
-      {feConfigs.googleClientVerKey && (
+      {/* {feConfigs.googleClientVerKey && (
         <Script
           src={`https://www.recaptcha.net/recaptcha/api.js?render=${feConfigs.googleClientVerKey}`}
         ></Script>
-      )}
+      )} */}
 
       <Flex
         alignItems={'center'}
