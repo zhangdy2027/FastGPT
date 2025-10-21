@@ -9,6 +9,7 @@ import { setCron } from '../../../common/system/cron';
 import { checkTimerLock } from '../../../common/system/timerLock/utils';
 import { TimerIdEnum } from '../../../common/system/timerLock/constants';
 import { addLog } from '../../../common/system/log';
+import { UserError } from '@fastgpt/global/common/error/utils';
 
 const getGridBucket = () => {
   return new connectionMongo.mongo.GridFSBucket(connectionMongo.connection.db!, {
@@ -69,7 +70,7 @@ export const getDatasetImageReadData = async (imageId: string) => {
     _id: new Types.ObjectId(imageId)
   }).lean();
   if (!fileInfo) {
-    return Promise.reject('Image not found');
+    return Promise.reject(new UserError('Image not found'));
   }
 
   const gridBucket = getGridBucket();
@@ -84,7 +85,7 @@ export const getDatasetImageBase64 = async (imageId: string) => {
     _id: new Types.ObjectId(imageId)
   }).lean();
   if (!fileInfo) {
-    return Promise.reject('Image not found');
+    return Promise.reject(new UserError('Image not found'));
   }
 
   // Get image stream from GridFS
@@ -141,7 +142,7 @@ export const clearExpiredDatasetImageCron = async () => {
 
     for (const item of data) {
       try {
-        await gridBucket.delete(item._id);
+        await gridBucket.delete(new Types.ObjectId(item._id));
       } catch (error) {
         addLog.error('Delete expired dataset image error', error);
       }

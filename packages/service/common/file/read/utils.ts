@@ -48,6 +48,7 @@ export const readRawContentByFileBuffer = async ({
   encoding,
   metadata,
   customPdfParse = false,
+  usageId,
   getFormatText = true
 }: {
   teamId: string;
@@ -59,6 +60,7 @@ export const readRawContentByFileBuffer = async ({
   metadata?: Record<string, any>;
 
   customPdfParse?: boolean;
+  usageId?: string;
   getFormatText?: boolean;
 }): Promise<{
   rawText: string;
@@ -148,7 +150,8 @@ export const readRawContentByFileBuffer = async ({
     createPdfParseUsage({
       teamId,
       tmbId,
-      pages: response.pages
+      pages: response.pages,
+      usageId
     });
 
     return {
@@ -167,7 +170,8 @@ export const readRawContentByFileBuffer = async ({
     createPdfParseUsage({
       teamId,
       tmbId,
-      pages
+      pages,
+      usageId
     });
 
     return {

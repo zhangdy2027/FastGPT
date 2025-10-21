@@ -21,21 +21,25 @@ import ChatRecordContextProvider, {
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
 import MyBox from '@fastgpt/web/components/common/MyBox';
 import ChatQuoteList from '@/pageComponents/chat/ChatQuoteList';
-import VariablePopover from '@/components/core/chat/ChatContainer/ChatBox/components/VariablePopover';
+import VariablePopover from '@/components/core/chat/ChatContainer/components/VariablePopover';
+import { useCopyData } from '@fastgpt/web/hooks/useCopyData';
+import { ChatTypeEnum } from '@/components/core/chat/ChatContainer/ChatBox/constants';
 
 type Props = {
   isOpen: boolean;
   nodes?: StoreNodeItemType[];
   edges?: StoreEdgeItemType[];
   onClose: () => void;
+  chatId: string;
 };
 
-const ChatTest = ({ isOpen, nodes = [], edges = [], onClose }: Props) => {
+const ChatTest = ({ isOpen, nodes = [], edges = [], onClose, chatId }: Props) => {
   const { t } = useTranslation();
-  const { appDetail } = useContextSelector(AppContext, (v) => v);
+  const appDetail = useContextSelector(AppContext, (v) => v.appDetail);
   const isPlugin = appDetail.type === AppTypeEnum.plugin;
+  const { copyData } = useCopyData();
 
-  const { restartChat, ChatContainer, loading } = useChatTest({
+  const { restartChat, ChatContainer } = useChatTest({
     nodes,
     edges,
     chatConfig: appDetail.chatConfig,
@@ -118,9 +122,18 @@ const ChatTest = ({ isOpen, nodes = [], edges = [], onClose }: Props) => {
           >
             <Flex fontSize={'16px'} fontWeight={'bold'} alignItems={'center'} mr={3}>
               <MyIcon name={'common/paused'} w={'14px'} mr={2.5} />
-              {t('common:core.chat.Run test')}
+              <MyTooltip label={chatId ? t('common:chat_chatId', { chatId }) : ''}>
+                <Box
+                  cursor={'pointer'}
+                  onClick={() => {
+                    copyData(chatId);
+                  }}
+                >
+                  {t('common:core.chat.Run test')}
+                </Box>
+              </MyTooltip>
             </Flex>
-            {!isVariableVisible && <VariablePopover showExternalVariables />}
+            {!isVariableVisible && <VariablePopover chatType={ChatTypeEnum.test} />}
             <Box flex={1} />
             <MyTooltip label={t('common:core.chat.Restart')}>
               <IconButton
@@ -192,7 +205,6 @@ const Render = (Props: Props) => {
 
   return (
     <ChatItemContextProvider
-      showRouteToAppDetail={true}
       showRouteToDatasetDetail={true}
       isShowReadRawSource={true}
       isResponseDetail={true}
@@ -200,7 +212,7 @@ const Render = (Props: Props) => {
       showNodeStatus
     >
       <ChatRecordContextProvider params={chatRecordProviderParams}>
-        <ChatTest {...Props} />
+        <ChatTest {...Props} chatId={chatId} />
       </ChatRecordContextProvider>
     </ChatItemContextProvider>
   );

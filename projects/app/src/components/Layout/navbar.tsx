@@ -11,6 +11,7 @@ import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useTranslation } from 'next-i18next';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
+import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
 
 export enum NavbarTypeEnum {
   normal = 'normal',
@@ -40,7 +41,7 @@ const Navbar = ({ unread }: { unread: number }) => {
   const router = useRouter();
   const { userInfo } = useUserStore();
   const { gitStar, feConfigs } = useSystemStore();
-  const { lastChatAppId } = useChatStore();
+  const { lastChatAppId, lastPane } = useChatStore();
 
   const navbarList = useMemo(() => {
     const list = [
@@ -54,7 +55,9 @@ const Navbar = ({ unread }: { unread: number }) => {
           '/app/detail',
           '/dashboard/templateMarket',
           '/dashboard/[pluginGroupId]',
-          '/dashboard/mcpServer'
+          '/dashboard/mcpServer',
+          '/dashboard/evaluation',
+          '/dashboard/evaluation/create'
         ]
       },
       {
@@ -121,7 +124,7 @@ const Navbar = ({ unread }: { unread: number }) => {
       );
     }
     return list;
-  }, [lastChatAppId, t]);
+  }, [lastChatAppId, t, userInfo?.username]);
 
   const isSecondNavbarPage = useMemo(() => {
     return ['/toolkit'].includes(router.pathname);
@@ -173,7 +176,13 @@ const Navbar = ({ unread }: { unread: number }) => {
                   })}
               {...(item.link !== router.asPath
                 ? {
-                    onClick: () => router.push(item.link)
+                    onClick: () => {
+                      if (item.link.startsWith('/chat')) {
+                        window.open(getWebReqUrl(item.link), '_blank', 'noopener,noreferrer');
+                        return;
+                      }
+                      router.push(item.link);
+                    }
                   }
                 : {})}
             >

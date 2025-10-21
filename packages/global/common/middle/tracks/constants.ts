@@ -3,5 +3,7 @@ export enum TrackEnum {
   createApp = 'createApp',
   useAppTemplate = 'useAppTemplate',
   createDataset = 'createDataset',
-  appNodes = 'appNodes'
+  appNodes = 'appNodes',
+  runSystemTool = 'runSystemTool',
+  datasetSearch = 'datasetSearch'
 }

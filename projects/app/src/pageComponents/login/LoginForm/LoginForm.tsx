@@ -1,20 +1,20 @@
 import React, { type Dispatch } from 'react';
-import { FormControl, Flex, Input, Button, Box, Link } from '@chakra-ui/react';
+import { FormControl, Flex, Input, Button, Box } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { LoginPageTypeEnum } from '@/web/support/user/login/constants';
 import { postLogin, getPreLogin } from '@/web/support/user/api';
-import type { ResLogin } from '@/global/support/api/userRes';
+import type { LoginSuccessResponse } from '@/global/support/api/userRes';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { getDocPath } from '@/web/common/system/doc';
 import { useTranslation } from 'next-i18next';
 import FormLayout from './FormLayout';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
+import PolicyTip from './PolicyTip';
 
 interface Props {
   setPageType: Dispatch<`${LoginPageTypeEnum}`>;
-  loginSuccess: (e: ResLogin) => void;
   fromSignin?: Boolean;
+  loginSuccess: (e: LoginSuccessResponse) => void;
 }
 
 interface LoginFormType {
@@ -80,7 +80,7 @@ const LoginForm = ({ setPageType, loginSuccess, fromSignin }: Props) => {
       loginSuccess={loginSuccess}
     >
       <Box
-        mt={9}
+        mt={8}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey && !requesting) {
             handleSubmit(onclickLogin)();
@@ -116,37 +116,11 @@ const LoginForm = ({ setPageType, loginSuccess, fromSignin }: Props) => {
             })}
           ></Input>
         </FormControl>
-        {feConfigs?.docUrl && (
-          <Flex
-            alignItems={'center'}
-            mt={7}
-            fontSize={'mini'}
-            color={'myGray.700'}
-            fontWeight={'medium'}
-          >
-            {t('login:policy_tip')}
-            <Link
-              ml={1}
-              href={getDocPath('/docs/agreement/terms/')}
-              target={'_blank'}
-              color={'primary.700'}
-            >
-              {t('login:terms')}
-            </Link>
-            <Box mx={1}>&</Box>
-            <Link
-              href={getDocPath('/docs/agreement/privacy/')}
-              target={'_blank'}
-              color={'primary.700'}
-            >
-              {t('login:privacy')}
-            </Link>
-          </Flex>
-        )}
+        <PolicyTip isCenter={false} />
 
         <Button
           type="submit"
-          my={5}
+          my={[5, 7]}
           w={'100%'}
           size={['md', 'md']}
           h={[10, 10]}
@@ -160,7 +134,7 @@ const LoginForm = ({ setPageType, loginSuccess, fromSignin }: Props) => {
 
         <Flex
           align={'center'}
-          justifyContent={'flex-end'}
+          justifyContent={['flex-end', 'center']}
           color={'primary.700'}
           fontWeight={'medium'}
         >

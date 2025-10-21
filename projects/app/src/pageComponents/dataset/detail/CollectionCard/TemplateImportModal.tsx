@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useTranslation } from 'next-i18next';
 import { Box, Button, HStack, ModalBody, ModalFooter, VStack, Flex, Link } from '@chakra-ui/react';
-import FileSelector, { type SelectFileItemType } from '../components/FileSelector';
+import FileSelector, { type SelectFileItemType } from '@/components/Select/FileSelectorBox';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyIconButton from '@fastgpt/web/components/common/Icon/button';
 import { postTemplateDatasetCollection } from '@/web/core/dataset/api';
@@ -77,7 +77,7 @@ const TemplateImportModal = ({
               display={'flex'}
               alignItems={'center'}
               gap={0.5}
-              href={getDocPath('/docs/guide/knowledge_base/template/')}
+              href={getDocPath('/docs/introduction/guide/knowledge_base/template/')}
               color="primary.600"
               target="_blank"
             >

@@ -79,6 +79,8 @@ export async function uploadFile({
       .pipe(stream as any)
       .on('finish', resolve)
       .on('error', reject);
+  }).finally(() => {
+    readStream.destroy();
   });
 
   return String(stream.id);
@@ -149,10 +151,6 @@ export async function getFileById({
     _id: new Types.ObjectId(fileId)
   });
 
-  // if (!file) {
-  //   return Promise.reject('File not found');
-  // }
-
   return file || undefined;
 }
 
@@ -198,7 +196,8 @@ export const readFileContentFromMongo = async ({
   bucketName,
   fileId,
   customPdfParse = false,
-  getFormatText
+  getFormatText,
+  usageId
 }: {
   teamId: string;
   tmbId: string;
@@ -206,6 +205,7 @@ export const readFileContentFromMongo = async ({
   fileId: string;
   customPdfParse?: boolean;
   getFormatText?: boolean; // 数据类型都尽可能转化成 markdown 格式
+  usageId?: string;
 }): Promise<{
   rawText: string;
   filename: string;
@@ -239,6 +239,7 @@ export const readFileContentFromMongo = async ({
   // Get raw text
   const { rawText } = await readRawContentByFileBuffer({
     customPdfParse,
+    usageId,
     getFormatText,
     extension,
     teamId,

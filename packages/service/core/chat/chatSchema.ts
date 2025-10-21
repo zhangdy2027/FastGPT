@@ -1,14 +1,13 @@
 import { connectionMongo, getMongoModel } from '../../common/mongo';
 const { Schema } = connectionMongo;
-import { type ChatSchema as ChatType } from '@fastgpt/global/core/chat/type.d';
-import { ChatSourceEnum, ChatSourceMap } from '@fastgpt/global/core/chat/constants';
+import { type ChatSchemaType } from '@fastgpt/global/core/chat/type.d';
+import { ChatSourceEnum } from '@fastgpt/global/core/chat/constants';
 import {
   TeamCollectionName,
   TeamMemberCollectionName
 } from '@fastgpt/global/support/user/team/constant';
 import { AppCollectionName } from '../app/schema';
-
-export const chatCollectionName = 'chat';
+import { chatCollectionName } from './constants';
 
 const ChatSchema = new Schema({
   chatId: {
@@ -83,10 +82,16 @@ const ChatSchema = new Schema({
     //For special storage
     type: Object,
     default: {}
-  }
+  },
+
+  initStatistics: Boolean
 });
 
 try {
+  // Tmp
+  ChatSchema.index({ initStatistics: 1, _id: -1 });
+  ChatSchema.index({ appId: 1, tmbId: 1, outLinkUid: 1 });
+
   ChatSchema.index({ chatId: 1 });
   // get user history
   ChatSchema.index({ tmbId: 1, appId: 1, top: -1, updateTime: -1 });
@@ -94,7 +99,7 @@ try {
   ChatSchema.index({ appId: 1, chatId: 1 });
 
   // get chat logs;
-  ChatSchema.index({ teamId: 1, appId: 1, updateTime: -1, sources: 1 });
+  ChatSchema.index({ teamId: 1, appId: 1, sources: 1, tmbId: 1, updateTime: -1 });
   // get share chat history
   ChatSchema.index({ shareId: 1, outLinkUid: 1, updateTime: -1 });
 
@@ -104,4 +109,4 @@ try {
   console.log(error);
 }
 
-export const MongoChat = getMongoModel<ChatType>(chatCollectionName, ChatSchema);
+export const MongoChat = getMongoModel<ChatSchemaType>(chatCollectionName, ChatSchema);

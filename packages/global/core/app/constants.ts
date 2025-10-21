@@ -13,9 +13,13 @@ export enum AppTypeEnum {
   simple = 'simple',
   workflow = 'advanced',
   plugin = 'plugin',
-  httpPlugin = 'httpPlugin',
-  toolSet = 'toolSet',
-  tool = 'tool'
+  toolSet = 'toolSet', // 'mcp'
+  httpToolSet = 'httpToolSet',
+  tool = 'tool',
+  hidden = 'hidden',
+
+  // deprecated
+  httpPlugin = 'httpPlugin'
 }
 
 export const AppFolderTypeList = [AppTypeEnum.folder, AppTypeEnum.httpPlugin];
@@ -45,7 +49,7 @@ export const defaultNetworkSearchConfig: AppNetworkSearchConfigType = {
 
 export const defaultQGConfig: AppQGConfigType = {
   open: false,
-  model: 'gpt-4o-mini',
+  model: 'gpt-5',
   customPrompt: ''
 };
 

@@ -18,6 +18,14 @@ import { eventBus, EventNameEnum } from '@/web/common/utils/eventbus';
 import { getAllCollectionSourceAndOpen } from '@/web/core/dataset/hooks/readCollectionSource';
 import { useRouter } from 'next/router';
 
+export type CitationRenderItem = {
+  type: 'dataset' | 'link';
+  key: string;
+  displayText: string;
+  icon?: string;
+  onClick: () => any;
+};
+
 const ContextModal = dynamic(() => import('./ContextModal'));
 const WholeResponseModal = dynamic(() => import('../../../components/WholeResponseModal'));
 
@@ -51,7 +59,8 @@ const ResponseTags = ({
   const {
     totalQuoteList: quoteList = [],
     llmModuleAccount = 0,
-    historyPreviewLength = 0
+    historyPreviewLength = 0,
+    toolCiteLinks = []
   } = useMemo(() => addStatisticalDataToHistoryItem(historyItem), [historyItem]);
 
   const [quoteFolded, setQuoteFolded] = useState<boolean>(true);
@@ -91,8 +100,9 @@ const ResponseTags = ({
     ? quoteListRef.current.scrollHeight > (isPc ? 50 : 55)
     : true;
 
-  const sourceList = useMemo(() => {
-    return Object.values(
+  const citationRenderList: CitationRenderItem[] = useMemo(() => {
+    // Dataset citations
+    const datasetItems = Object.values(
       quoteList.reduce((acc: Record<string, SearchDataResponseItemType[]>, cur) => {
         if (!acc[cur.collectionId]) {
           acc[cur.collectionId] = [cur];
@@ -102,40 +112,41 @@ const ResponseTags = ({
     )
       .flat()
       .map((item) => ({
-        sourceName: item.sourceName,
-        sourceId: item.sourceId,
+        type: 'dataset' as const,
+        key: item.collectionId,
+        displayText: item.sourceName,
         icon: item.imageId
           ? 'core/dataset/imageFill'
           : getSourceNameIcon({ sourceId: item.sourceId, sourceName: item.sourceName }),
-        collectionId: item.collectionId,
-        datasetId: item.datasetId
+        onClick: () => {
+          onOpenCiteModal({
+            collectionId: item.collectionId,
+            sourceId: item.sourceId,
+            sourceName: item.sourceName,
+            datasetId: item.datasetId
+          });
+        }
       }));
-  }, [quoteList]);
 
-  const dowloadAllQuote = getAllCollectionSourceAndOpen({
-    collectionList: sourceList
-  });
+    // Link citations
+    const linkItems = toolCiteLinks.map((r, index) => ({
+      type: 'link' as const,
+      key: `${r.url}-${index}`,
+      displayText: r.name,
+      onClick: () => {
+        window.open(r.url, '_blank');
+      }
+    }));
 
-  const openQuoteReader = (item?: {
-    collectionId?: string;
-    sourceId?: string;
-    sourceName?: string;
-    datasetId?: string;
-  }) => {
-    eventBus.emit(EventNameEnum.openQuoteReader, item);
-  };
+    return [...datasetItems, ...linkItems];
+  }, [quoteList, toolCiteLinks, onOpenCiteModal]);
 
-  const notEmptyTags =
-    quoteList.length > 0 ||
-    (llmModuleAccount === 1 && notSharePage) ||
-    (llmModuleAccount > 1 && notSharePage) ||
-    (isPc && durationSeconds > 0) ||
-    notSharePage;
+  const notEmptyTags = notSharePage || quoteList.length > 0 || (isPc && durationSeconds > 0);
 
   return !showTags || !fileReferenceOpen ? null : (
     <>
       {/* quote */}
-      {sourceList.length > 0 && fileReferenceReference && (
+      {citationRenderList.length > 0 && fileReferenceReference && (
         <>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
             <Box width={'100%'}>
@@ -179,9 +190,9 @@ const ResponseTags = ({
                 : {}
             }
           >
-            {sourceList.map((item, index) => {
+            {citationRenderList.map((item, index) => {
               return (
-                <MyTooltip key={item.collectionId} label={t('common:core.chat.quote.Read Quote')}>
+                <MyTooltip key={item.key} label={t('common:core.chat.quote.Read Quote')}>
                   <Flex
                     alignItems={'center'}
                     fontSize={'xs'}
@@ -197,7 +208,7 @@ const ResponseTags = ({
                     cursor={'pointer'}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onOpenCiteModal(item);
+                      item.onClick?.();
                     }}
                     height={6}
                   >
@@ -220,7 +231,7 @@ const ResponseTags = ({
                         flex={'1 0 0'}
                         fontSize={'mini'}
                       >
-                        {item.sourceName}
+                        {item.displayText}
                       </Box>
                     </Flex>
                   </Flex>

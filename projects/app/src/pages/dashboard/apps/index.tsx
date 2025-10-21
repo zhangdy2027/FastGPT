@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Button, useDisclosure, Input, InputGroup } from '@chakra-ui/react';
+import { Box, Flex, Button, useDisclosure } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import { serviceSideProps } from '@/web/common/i18n/utils';
 import { useUserStore } from '@/web/support/user/useUserStore';
@@ -17,7 +17,7 @@ import FolderPath from '@/components/common/folder/Path';
 import { useRouter } from 'next/router';
 import FolderSlideCard from '@/components/common/folder/SlideCard';
 import { delAppById, resumeInheritPer } from '@/web/core/app/api';
-import { AppPermissionList } from '@fastgpt/global/support/permission/app/constant';
+import { AppRoleList } from '@fastgpt/global/support/permission/app/constant';
 import {
   deleteAppCollaborators,
   getCollaboratorList,
@@ -27,19 +27,24 @@ import type { CreateAppType } from '@/pageComponents/dashboard/apps/CreateModal'
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import MyBox from '@fastgpt/web/components/common/MyBox';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
-import MyIcon from '@fastgpt/web/components/common/Icon';
 import JsonImportModal from '@/pageComponents/dashboard/apps/JsonImportModal';
 import DashboardContainer from '@/pageComponents/dashboard/Container';
 import List from '@/pageComponents/dashboard/apps/List';
-import MCPToolsEditModal from '@/pageComponents/dashboard/apps/MCPToolsEditModal';
 import { getUtmWorkflow } from '@/web/support/marketing/utils';
 import { useMount } from 'ahooks';
+import SearchInput from '@fastgpt/web/components/common/Input/SearchInput';
+import { ReadRoleVal } from '@fastgpt/global/support/permission/constant';
 
 const CreateModal = dynamic(() => import('@/pageComponents/dashboard/apps/CreateModal'));
 const EditFolderModal = dynamic(
   () => import('@fastgpt/web/components/common/MyModal/EditFolderModal')
 );
-const HttpEditModal = dynamic(() => import('@/pageComponents/dashboard/apps/HttpPluginEditModal'));
+const HttpToolsCreateModal = dynamic(
+  () => import('@/pageComponents/dashboard/apps/HttpToolsCreateModal')
+);
+const MCPToolsEditModal = dynamic(
+  () => import('@/pageComponents/dashboard/apps/MCPToolsEditModal')
+);
 
 const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
   const { t } = useTranslation();
@@ -56,25 +61,23 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
     isFetchingApps,
     folderDetail,
     refetchFolderDetail,
-    searchKey,
-    setSearchKey
+    setSearchKey,
+    searchKey
   } = useContextSelector(AppListContext, (v) => v);
   const { userInfo } = useUserStore();
-
   const [createAppType, setCreateAppType] = useState<CreateAppType>();
+  const [editFolder, setEditFolder] = useState<EditFolderFormType>();
+
   const {
-    isOpen: isOpenCreateHttpPlugin,
-    onOpen: onOpenCreateHttpPlugin,
-    onClose: onCloseCreateHttpPlugin
+    isOpen: isOpenCreateHttpTools,
+    onOpen: onOpenCreateHttpTools,
+    onClose: onCloseCreateHttpTools
   } = useDisclosure();
   const {
     isOpen: isOpenCreateMCPTools,
     onOpen: onOpenCreateMCPTools,
     onClose: onCloseCreateMCPTools
   } = useDisclosure();
-
-  const [editFolder, setEditFolder] = useState<EditFolderFormType>();
-
   const {
     isOpen: isOpenJsonImportModal,
     onOpen: onOpenJsonImportModal,
@@ -94,7 +97,11 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
     errorToast: 'Error'
   });
   const { runAsync: onDeleFolder } = useRequest2(delAppById, {
-    onSuccess() {
+    onSuccess(data) {
+      data.forEach((appId) => {
+        localStorage.removeItem(`app_log_keys_${appId}`);
+      });
+
       router.replace({
         query: {
           parentId: folderDetail?.parentId
@@ -114,38 +121,17 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
       [AppTypeEnum.simple]: t('app:type.Simple bot'),
       [AppTypeEnum.workflow]: t('app:type.Workflow bot'),
       [AppTypeEnum.plugin]: t('app:type.Plugin'),
-      [AppTypeEnum.httpPlugin]: t('app:type.Http plugin'),
+      [AppTypeEnum.httpToolSet]: t('app:type.Http tool set'),
       [AppTypeEnum.folder]: t('common:Folder'),
       [AppTypeEnum.toolSet]: t('app:type.MCP tools'),
-      [AppTypeEnum.tool]: t('app:type.MCP tools')
+      [AppTypeEnum.tool]: t('app:type.MCP tools'),
+      [AppTypeEnum.hidden]: t('app:type.hidden'),
+
+      // deprecated
+      [AppTypeEnum.httpPlugin]: t('app:type.Http plugin')
     };
     return map[appType] || map['all'];
   }, [appType, t]);
-  const RenderSearchInput = useMemo(
-    () => (
-      <InputGroup maxW={['auto', '250px']} position={'relative'}>
-        <MyIcon
-          position={'absolute'}
-          zIndex={10}
-          name={'common/searchLight'}
-          w={'1rem'}
-          color={'myGray.600'}
-          left={2.5}
-          top={'50%'}
-          transform={'translateY(-50%)'}
-        />
-        <Input
-          value={searchKey}
-          onChange={(e) => setSearchKey(e.target.value)}
-          placeholder={t('app:search_app')}
-          maxLength={30}
-          pl={8}
-          bg={'white'}
-        />
-      </InputGroup>
-    ),
-    [searchKey, setSearchKey, t]
-  );
 
   return (
     <Flex flexDirection={'column'} h={'100%'}>
@@ -186,7 +172,15 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
             )}
             <Box flex={1} />
 
-            {isPc && RenderSearchInput}
+            {isPc && (
+              <SearchInput
+                maxW={['auto', '250px']}
+                value={searchKey}
+                onChange={(e) => setSearchKey(e.target.value)}
+                placeholder={t('app:search_app')}
+                maxLength={30}
+              />
+            )}
 
             {(folderDetail
               ? folderDetail.permission.hasWritePer && folderDetail?.type !== AppTypeEnum.httpPlugin
@@ -223,9 +217,9 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
                             },
                             {
                               icon: 'core/app/type/httpPluginFill',
-                              label: t('app:type.Http plugin'),
+                              label: t('app:type.Http tool set'),
                               description: t('app:type.Create http plugin tip'),
-                              onClick: onOpenCreateHttpPlugin
+                              onClick: onOpenCreateHttpTools
                             },
                             {
                               icon: 'core/app/type/mcpToolsFill',
@@ -262,7 +256,19 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
             )}
           </Flex>
 
-          {!isPc && <Box mt={2}>{RenderSearchInput}</Box>}
+          {!isPc && (
+            <Box mt={2}>
+              {
+                <SearchInput
+                  maxW={['auto', '250px']}
+                  value={searchKey}
+                  onChange={(e) => setSearchKey(e.target.value)}
+                  placeholder={t('app:search_app')}
+                  maxLength={30}
+                />
+              }
+            </Box>
+          )}
 
           <MyBox flex={'1 0 0'} isLoading={myApps.length === 0 && isFetchingApps}>
             <List />
@@ -291,9 +297,10 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
               deleteTip={t('app:confirm_delete_folder_tip')}
               onDelete={() => onDeleFolder(folderDetail._id)}
               managePer={{
+                defaultRole: ReadRoleVal,
                 permission: folderDetail.permission,
                 onGetCollaboratorList: () => getCollaboratorList(folderDetail._id),
-                permissionList: AppPermissionList,
+                roleList: AppRoleList,
                 onUpdateCollaborators: (props) =>
                   postUpdateAppCollaborators({
                     ...props,
@@ -322,7 +329,7 @@ const MyApps = ({ MenuIcon }: { MenuIcon: JSX.Element }) => {
       {!!createAppType && (
         <CreateModal type={createAppType} onClose={() => setCreateAppType(undefined)} />
       )}
-      {isOpenCreateHttpPlugin && <HttpEditModal onClose={onCloseCreateHttpPlugin} />}
+      {isOpenCreateHttpTools && <HttpToolsCreateModal onClose={onCloseCreateHttpTools} />}
       {isOpenCreateMCPTools && <MCPToolsEditModal onClose={onCloseCreateMCPTools} />}
       {isOpenJsonImportModal && <JsonImportModal onClose={onCloseJsonImportModal} />}
     </Flex>

@@ -29,7 +29,8 @@ import type {
   AppChatConfigType,
   AppAutoExecuteConfigType,
   AppQGConfigType,
-  AppFileReferenceConfigType
+  AppFileReferenceConfigType,
+  AppSchema
 } from '../app/type';
 import { type EditorVariablePickerType } from '../../../web/components/common/Textarea/PromptEditor/type';
 import {
@@ -56,7 +57,11 @@ import { ChatRoleEnum } from '../../core/chat/constants';
 import { runtimePrompt2ChatsValue } from '../../core/chat/adapt';
 import { getPluginRunContent } from '../../core/app/plugin/utils';
 
-export const getHandleId = (nodeId: string, type: 'source' | 'target', key: string) => {
+export const getHandleId = (
+  nodeId: string,
+  type: 'source' | 'source_catch' | 'target',
+  key: string
+) => {
   return `${nodeId}-${type}-${key}`;
 };
 
@@ -237,16 +242,14 @@ export const pluginData2FlowNodeIO = ({
         ]
       : [],
     outputs: pluginOutput
-      ? [
-          ...pluginOutput.inputs.map((item) => ({
-            id: item.key,
-            type: FlowNodeOutputTypeEnum.static,
-            key: item.key,
-            valueType: item.valueType,
-            label: item.label || item.key,
-            description: item.description
-          }))
-        ]
+      ? pluginOutput.inputs.map((item) => ({
+          id: item.key,
+          type: FlowNodeOutputTypeEnum.static,
+          key: item.key,
+          valueType: item.valueType,
+          label: item.label || item.key,
+          description: item.description
+        }))
       : []
   };
 };
@@ -262,7 +265,7 @@ export const appData2FlowNodeIO = ({
   const variableInput = !chatConfig?.variables
     ? []
     : chatConfig.variables.map((item) => {
-        const renderTypeMap = {
+        const renderTypeMap: Record<VariableInputEnum, FlowNodeInputTypeEnum[]> = {
           [VariableInputEnum.input]: [FlowNodeInputTypeEnum.input, FlowNodeInputTypeEnum.reference],
           [VariableInputEnum.textarea]: [
             FlowNodeInputTypeEnum.textarea,
@@ -270,30 +273,33 @@ export const appData2FlowNodeIO = ({
           ],
           [VariableInputEnum.numberInput]: [FlowNodeInputTypeEnum.numberInput],
           [VariableInputEnum.select]: [FlowNodeInputTypeEnum.select],
-          [VariableInputEnum.custom]: [
-            FlowNodeInputTypeEnum.input,
-            FlowNodeInputTypeEnum.reference
-          ],
-          default: [FlowNodeInputTypeEnum.reference]
+          [VariableInputEnum.multipleSelect]: [FlowNodeInputTypeEnum.multipleSelect],
+          [VariableInputEnum.JSONEditor]: [FlowNodeInputTypeEnum.JSONEditor],
+          [VariableInputEnum.timePointSelect]: [FlowNodeInputTypeEnum.timePointSelect],
+          [VariableInputEnum.timeRangeSelect]: [FlowNodeInputTypeEnum.timeRangeSelect],
+          [VariableInputEnum.switch]: [FlowNodeInputTypeEnum.switch],
+          [VariableInputEnum.password]: [FlowNodeInputTypeEnum.password],
+          [VariableInputEnum.file]: [FlowNodeInputTypeEnum.fileSelect],
+          [VariableInputEnum.modelSelect]: [FlowNodeInputTypeEnum.selectLLMModel],
+          [VariableInputEnum.datasetSelect]: [FlowNodeInputTypeEnum.selectDataset],
+          [VariableInputEnum.internal]: [FlowNodeInputTypeEnum.hidden],
+          [VariableInputEnum.custom]: [FlowNodeInputTypeEnum.input, FlowNodeInputTypeEnum.reference]
         };
 
         return {
           key: item.key,
-          renderTypeList: renderTypeMap[item.type] || renderTypeMap.default,
+          renderTypeList: renderTypeMap[item.type] || [FlowNodeInputTypeEnum.reference],
           label: item.label,
           debugLabel: item.label,
           description: '',
           valueType: WorkflowIOValueTypeEnum.any,
           required: item.required,
-          list: item.enums?.map((enumItem) => ({
+          list: (item.list || item.enums)?.map((enumItem) => ({
             label: enumItem.value,
             value: enumItem.value
           }))
         };
       });
-
-  // const showFileLink =
-  //   chatConfig?.fileSelectConfig?.canSelectFile || chatConfig?.fileSelectConfig?.canSelectImg;
 
   return {
     inputs: [
@@ -329,35 +335,25 @@ export const appData2FlowNodeIO = ({
   };
 };
 
-export const toolData2FlowNodeIO = ({
-  nodes
-}: {
-  nodes: StoreNodeItemType[];
-}): {
-  inputs: FlowNodeInputItemType[];
-  outputs: FlowNodeOutputItemType[];
-} => {
+export const toolData2FlowNodeIO = ({ nodes }: { nodes: StoreNodeItemType[] }) => {
   const toolNode = nodes.find((node) => node.flowNodeType === FlowNodeTypeEnum.tool);
 
   return {
     inputs: toolNode?.inputs || [],
-    outputs: toolNode?.outputs || []
+    outputs: toolNode?.outputs || [],
+    toolConfig: toolNode?.toolConfig
   };
 };
 
-export const toolSetData2FlowNodeIO = ({
-  nodes
-}: {
-  nodes: StoreNodeItemType[];
-}): {
-  inputs: FlowNodeInputItemType[];
-  outputs: FlowNodeOutputItemType[];
-} => {
+export const toolSetData2FlowNodeIO = ({ nodes }: { nodes: StoreNodeItemType[] }) => {
   const toolSetNode = nodes.find((node) => node.flowNodeType === FlowNodeTypeEnum.toolSet);
 
   return {
     inputs: toolSetNode?.inputs || [],
-    outputs: toolSetNode?.outputs || []
+    outputs: toolSetNode?.outputs || [],
+    toolConfig: toolSetNode?.toolConfig,
+    showSourceHandle: false,
+    showTargetHandle: false
   };
 };
 
@@ -374,7 +370,7 @@ export const formatEditorVariablePickerIcon = (
 export const isValidReferenceValueFormat = (value: any): value is ReferenceItemValueType => {
   return Array.isArray(value) && value.length === 2 && typeof value[0] === 'string';
 };
-/* 
+/*
   Check whether the value([variableId, outputId]) value is a valid reference value:
   1. The value must be an array of length 2
   2. The first item of the array must be one of VARIABLE_NODE_ID or nodeIds
@@ -388,7 +384,7 @@ export const isValidReferenceValue = (
   const validIdSet = new Set([VARIABLE_NODE_ID, ...nodeIds]);
   return validIdSet.has(value[0]);
 };
-/* 
+/*
   Check whether the value([variableId, outputId][]) value is a valid reference value array:
   1. The value must be an array
   2. The array must contain at least one element
@@ -463,4 +459,25 @@ export const getPluginRunUserQuery = ({
       files
     })
   };
+};
+
+export const removeUnauthModels = async ({
+  modules,
+  allowedModels = new Set()
+}: {
+  modules: AppSchema['modules'];
+  allowedModels?: Set<string>;
+}) => {
+  if (modules) {
+    modules.forEach((module) => {
+      module.inputs.forEach((input) => {
+        if (input.key === 'model') {
+          if (!allowedModels.has(input.value)) {
+            input.value = undefined;
+          }
+        }
+      });
+    });
+  }
+  return modules;
 };

@@ -12,7 +12,7 @@ import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { type FlowNodeInputItemType } from '@fastgpt/global/core/workflow/type/io';
 import { type toolCallProps } from './type';
 import { type AppSchema } from '@fastgpt/global/core/app/type';
-import { getUserChatInfoAndAuthTeamPoints } from '@fastgpt/service/support/permission/auth/team';
+import { getRunningUserInfoByTmbId } from '@fastgpt/service/support/user/team/utils';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 import { type AIChatItemType, type UserChatItemType } from '@fastgpt/global/core/chat/type';
 import {
@@ -35,9 +35,8 @@ import { dispatchWorkFlow } from '@fastgpt/service/core/workflow/dispatch';
 import { getChatTitleFromChatMessage, removeEmptyUserInput } from '@fastgpt/global/core/chat/utils';
 import { saveChat } from '@fastgpt/service/core/chat/saveChat';
 import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
-import { createChatUsage } from '@fastgpt/service/support/wallet/usage/controller';
 import { UsageSourceEnum } from '@fastgpt/global/support/wallet/usage/constants';
-import { removeDatasetCiteText } from '@fastgpt/service/core/ai/utils';
+import { removeDatasetCiteText } from '@fastgpt/global/core/ai/llm/utils';
 
 export const pluginNodes2InputSchema = (
   nodes: { flowNodeType: FlowNodeTypeEnum; inputs: FlowNodeInputItemType[] }[]
@@ -124,7 +123,9 @@ export const getMcpServerTools = async (key: string): Promise<Tool[]> => {
   const appList = await MongoApp.find(
     {
       _id: { $in: mcp.apps.map((app) => app.appId) },
-      type: { $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin] }
+      type: {
+        $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin]
+      }
     },
     { name: 1, intro: 1 }
   ).lean();
@@ -172,7 +173,6 @@ export const callMcpServerTool = async ({ key, toolName, inputs }: toolCallProps
   const dispatchApp = async (app: AppSchema, variables: Record<string, any>) => {
     const isPlugin = app.type === AppTypeEnum.plugin;
 
-    const { timezone, externalProvider } = await getUserChatInfoAndAuthTeamPoints(app.tmbId);
     // Get app latest version
     const { nodes, edges, chatConfig } = await getAppLatestVersion(app._id, app);
 
@@ -220,18 +220,15 @@ export const callMcpServerTool = async ({ key, toolName, inputs }: toolCallProps
       system_memories
     } = await dispatchWorkFlow({
       chatId,
-      timezone,
-      externalProvider,
       mode: 'chat',
+      usageSource: UsageSourceEnum.mcp,
       runningAppInfo: {
         id: String(app._id),
+        name: app.name,
         teamId: String(app.teamId),
         tmbId: String(app.tmbId)
       },
-      runningUserInfo: {
-        teamId: String(app.teamId),
-        tmbId: String(app.tmbId)
-      },
+      runningUserInfo: await getRunningUserInfoByTmbId(app.tmbId),
       uid: String(app.tmbId),
       runtimeNodes,
       runtimeEdges: storeEdges2RuntimeEdges(edges),
@@ -262,18 +259,9 @@ export const callMcpServerTool = async ({ key, toolName, inputs }: toolCallProps
       isUpdateUseTime: false, // owner update use time
       newTitle,
       source: ChatSourceEnum.mcp,
-      content: [userQuestion, aiResponse],
+      userContent: userQuestion,
+      aiContent: aiResponse,
       durationSeconds
-    });
-
-    // Push usage
-    createChatUsage({
-      appName: app.name,
-      appId: app._id,
-      teamId: app.teamId,
-      tmbId: app.tmbId,
-      source: UsageSourceEnum.mcp,
-      flowUsages
     });
 
     // Get MCP response type
@@ -310,7 +298,9 @@ export const callMcpServerTool = async ({ key, toolName, inputs }: toolCallProps
   // Get app list
   const appList = await MongoApp.find({
     _id: { $in: mcp.apps.map((app) => app.appId) },
-    type: { $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin] }
+    type: {
+      $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin]
+    }
   }).lean();
 
   const app = appList.find((app) => {

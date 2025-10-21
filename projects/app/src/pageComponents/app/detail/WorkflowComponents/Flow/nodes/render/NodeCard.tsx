@@ -2,7 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import { Box, Button, Flex, useDisclosure, type FlexProps } from '@chakra-ui/react';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import Avatar from '@fastgpt/web/components/common/Avatar';
-import type { FlowNodeItemType } from '@fastgpt/global/core/workflow/type/node.d';
+import type {
+  FlowNodeItemType,
+  StoreNodeItemType
+} from '@fastgpt/global/core/workflow/type/node.d';
 import { useTranslation } from 'next-i18next';
 import { useEditTitle } from '@/web/common/hooks/useEditTitle';
 import { useToast } from '@fastgpt/web/hooks/useToast';
@@ -30,13 +33,14 @@ import MyImage from '@fastgpt/web/components/common/Image/MyImage';
 import MyIconButton from '@fastgpt/web/components/common/Icon/button';
 import UseGuideModal from '@/components/common/Modal/UseGuideModal';
 import NodeDebugResponse from './RenderDebug/NodeDebugResponse';
-import { getAppVersionList } from '@/web/core/app/api/version';
 import { useScrollPagination } from '@fastgpt/web/hooks/useScrollPagination';
 import MyTag from '@fastgpt/web/components/common/Tag/index';
 import MySelect from '@fastgpt/web/components/common/MySelect';
-import { useCreation } from 'ahooks';
+import { useBoolean, useCreation } from 'ahooks';
 import { formatToolError } from '@fastgpt/global/core/app/utils';
 import HighlightText from '@fastgpt/web/components/common/String/HighlightText';
+import { NodeInputKeyEnum } from '@fastgpt/global/core/workflow/constants';
+import SecretInputModal from '@/pageComponents/app/plugin/SecretInputModal';
 
 type Props = FlowNodeItemType & {
   children?: React.ReactNode | React.ReactNode[] | string;
@@ -48,18 +52,18 @@ type Props = FlowNodeItemType & {
   selected?: boolean;
   searchedText?: string;
   menuForbid?: {
+    copilot?: boolean;
     debug?: boolean;
     copy?: boolean;
     delete?: boolean;
   };
   customStyle?: FlexProps;
+  rtDoms?: React.ReactNode[];
 };
 
 const NodeCard = (props: Props) => {
   const { t } = useTranslation();
-
   const { toast } = useToast();
-
   const {
     children,
     avatar = LOGO_ICON,
@@ -78,12 +82,24 @@ const NodeCard = (props: Props) => {
     isError = false,
     debugResult,
     isFolded,
-    customStyle
+    customStyle,
+    inputs,
+    rtDoms
   } = props;
+
   const nodeList = useContextSelector(WorkflowContext, (v) => v.nodeList);
   const onUpdateNodeError = useContextSelector(WorkflowContext, (v) => v.onUpdateNodeError);
   const onChangeNode = useContextSelector(WorkflowContext, (v) => v.onChangeNode);
   const setHoverNodeId = useContextSelector(WorkflowEventContext, (v) => v.setHoverNodeId);
+
+  const inputConfig = useMemo(
+    () => inputs?.find((item) => item.key === NodeInputKeyEnum.systemInputConfig),
+    [inputs]
+  );
+  const [
+    isOpenToolParamConfigModal,
+    { setTrue: onOpenToolParamConfigModal, setFalse: onCloseToolParamConfigModal }
+  ] = useBoolean(false);
 
   // custom title edit
   const { onOpenModal: onOpenCustomTitleModal, EditModal: EditTitleModal } = useEditTitle({
@@ -92,7 +108,7 @@ const NodeCard = (props: Props) => {
   });
 
   const showToolHandle = useMemo(
-    () => isTool && !!nodeList.find((item) => item?.flowNodeType === FlowNodeTypeEnum.tools),
+    () => isTool && !!nodeList.find((item) => item?.flowNodeType === FlowNodeTypeEnum.agent),
     [isTool, nodeList]
   );
 
@@ -105,11 +121,21 @@ const NodeCard = (props: Props) => {
 
     return { node, parentNode };
   }, [nodeList, nodeId]);
+
   const isAppNode = node && AppNodeFlowNodeTypeMap[node?.flowNodeType];
   const showVersion = useMemo(() => {
-    if (!isAppNode || !node?.pluginId || node?.pluginData?.error) return false;
-    if ([FlowNodeTypeEnum.tool, FlowNodeTypeEnum.toolSet].includes(node.flowNodeType)) return false;
-    return typeof node.version === 'string';
+    // 1. MCP tool & HTTP tool set do not have version
+    if (
+      isAppNode &&
+      (node.toolConfig?.mcpToolSet || node.toolConfig?.mcpTool || node?.toolConfig?.httpToolSet)
+    )
+      return false;
+    // 2. Team app/System commercial plugin
+    if (isAppNode && node?.pluginId && !node?.pluginData?.error) return true;
+    // 3. System tool
+    if (isAppNode && node?.toolConfig?.systemTool) return true;
+
+    return false;
   }, [isAppNode, node]);
 
   const { data: nodeTemplate } = useRequest2(
@@ -146,6 +172,42 @@ const NodeCard = (props: Props) => {
   const Header = useMemo(() => {
     const showHeader = node?.flowNodeType !== FlowNodeTypeEnum.comment;
     const error = formatToolError(node?.pluginData?.error);
+
+    // Header buttons array
+    const headerButtons = [
+      ...(nodeTemplate?.diagram
+        ? [
+            <MyTooltip
+              key="diagram"
+              label={
+                <MyImage src={nodeTemplate?.diagram} w={'100%'} minH={['auto', '200px']} alt={''} />
+              }
+            >
+              <Button variant={'grayGhost'} size={'xs'} color={'primary.600'} px={1}>
+                {t('common:core.module.Diagram')}
+              </Button>
+            </MyTooltip>
+          ]
+        : []),
+      ...(node?.courseUrl || nodeTemplate?.userGuide
+        ? [
+            <UseGuideModal
+              key="userGuide"
+              title={nodeTemplate?.name}
+              iconSrc={nodeTemplate?.avatar}
+              text={nodeTemplate?.userGuide}
+              link={nodeTemplate?.courseUrl}
+            >
+              {({ onClick }) => (
+                <MyTooltip label={t('workflow:Node.Open_Node_Course')}>
+                  <MyIconButton ml={1} icon="book" color={'primary.600'} onClick={onClick} />
+                </MyTooltip>
+              )}
+            </UseGuideModal>
+          ]
+        : []),
+      ...(rtDoms ?? [])
+    ];
 
     return (
       <Box position={'relative'}>
@@ -227,40 +289,13 @@ const NodeCard = (props: Props) => {
                 <MyIcon name={'edit'} w={'14px'} />
               </Button>
               <Box flex={1} mr={1} />
-              {showVersion && node && <NodeVersion node={node} />}
-              {!!nodeTemplate?.diagram && (
-                <MyTooltip
-                  label={
-                    <MyImage
-                      src={nodeTemplate?.diagram}
-                      w={'100%'}
-                      minH={['auto', '200px']}
-                      alt={''}
-                    />
-                  }
-                >
-                  <Button variant={'grayGhost'} size={'xs'} color={'primary.600'} px={1}>
-                    {t('common:core.module.Diagram')}
-                  </Button>
-                </MyTooltip>
-              )}
-              {!!nodeTemplate?.diagram && node?.courseUrl && (
-                <Box bg={'myGray.300'} w={'1px'} h={'12px'} ml={1} mr={0.5} />
-              )}
-              {!!(node?.courseUrl || nodeTemplate?.userGuide) && (
-                <UseGuideModal
-                  title={nodeTemplate?.name}
-                  iconSrc={nodeTemplate?.avatar}
-                  text={nodeTemplate?.userGuide}
-                  link={nodeTemplate?.courseUrl}
-                >
-                  {({ onClick }) => (
-                    <MyTooltip label={t('workflow:Node.Open_Node_Course')}>
-                      <MyIconButton ml={1} icon="book" color={'primary.600'} onClick={onClick} />
-                    </MyTooltip>
-                  )}
-                </UseGuideModal>
-              )}
+              {showVersion && <NodeVersion node={node!} />}
+              {headerButtons.map((Node, index) => (
+                <React.Fragment key={index}>
+                  {index > 0 && <Box bg={'myGray.300'} w={'1px'} h={'12px'} mx={1} />}
+                  {Node}
+                </React.Fragment>
+              ))}
               {!!error && (
                 <Flex
                   bg={'red.50'}
@@ -308,14 +343,14 @@ const NodeCard = (props: Props) => {
   const RenderHandle = useMemo(() => {
     return (
       <>
-        <ConnectionSourceHandle nodeId={nodeId} isFoldNode={isFolded} />
+        <ConnectionSourceHandle nodeId={nodeId} />
         <ConnectionTargetHandle nodeId={nodeId} />
       </>
     );
-  }, [nodeId, isFolded]);
+  }, [nodeId]);
   const RenderToolHandle = useMemo(
     () =>
-      node?.flowNodeType === FlowNodeTypeEnum.tools ? <ToolSourceHandle nodeId={nodeId} /> : null,
+      node?.flowNodeType === FlowNodeTypeEnum.agent ? <ToolSourceHandle nodeId={nodeId} /> : null,
     [node?.flowNodeType, nodeId]
   );
 
@@ -361,13 +396,62 @@ const NodeCard = (props: Props) => {
     >
       {debugResult && <NodeDebugResponse nodeId={nodeId} debugResult={debugResult} />}
       {Header}
-      <Flex flexDirection={'column'} flex={1} my={!isFolded ? 3 : 0} gap={2}>
-        {!isFolded ? children : <Box h={4} />}
+
+      <Flex flexDirection={'column'} flex={1} py={!isFolded ? 3 : 0} gap={2} position={'relative'}>
+        {!isFolded ? (
+          <>
+            {inputConfig && !inputConfig?.value ? (
+              <Flex
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+                borderRadius={'lg'}
+                h={'200px'}
+                bg={'myGray.25'}
+                border={'base'}
+                mx={4}
+              >
+                <Box>{t('app:tool_not_active')}</Box>
+                <Button w={'83px'} mt={2} size={'lg'} onClick={onOpenToolParamConfigModal}>
+                  {t('app:too_to_active')}
+                </Button>
+              </Flex>
+            ) : (
+              children
+            )}
+          </>
+        ) : (
+          <Box h={4} />
+        )}
       </Flex>
+
       {RenderHandle}
       {RenderToolHandle}
 
       <EditTitleModal maxLength={100} />
+      {inputConfig && isOpenToolParamConfigModal && (
+        <SecretInputModal
+          isFolder={node?.isFolder}
+          onClose={onCloseToolParamConfigModal}
+          onSubmit={(data) => {
+            onChangeNode({
+              nodeId: nodeId as string,
+              type: 'updateInput',
+              key: inputConfig.key,
+              value: {
+                ...inputConfig,
+                value: data
+              }
+            });
+            onCloseToolParamConfigModal();
+          }}
+          courseUrl={node?.courseUrl}
+          inputConfig={inputConfig}
+          hasSystemSecret={node?.hasSystemSecret}
+          parentId={node?.pluginId}
+          secretCost={node?.systemKeyCost}
+        />
+      )}
     </Flex>
   );
 };
@@ -386,6 +470,12 @@ const MenuRender = React.memo(function MenuRender({
   const { t } = useTranslation();
   const { openDebugNode, DebugInputModal } = useDebug();
 
+  const {
+    isOpen: isNodeCopilotOpen,
+    onOpen: onOpenNodeCopilot,
+    onClose: onCloseNodeCopilot
+  } = useDisclosure();
+
   const setNodes = useContextSelector(WorkflowNodeEdgeContext, (v) => v.setNodes);
   const setEdges = useContextSelector(WorkflowNodeEdgeContext, (v) => v.setEdges);
   const { computedNewNodeName } = useWorkflowUtils();
@@ -395,7 +485,9 @@ const MenuRender = React.memo(function MenuRender({
       setNodes((state) => {
         const node = state.find((node) => node.id === nodeId);
         if (!node) return state;
-        const template = {
+        const template: Omit<StoreNodeItemType, 'nodeId'> = {
+          flowNodeType: node.data.flowNodeType,
+          parentNodeId: node.data.parentNodeId,
           avatar: node.data.avatar,
           name: computedNewNodeName({
             templateName: node.data.name,
@@ -403,14 +495,27 @@ const MenuRender = React.memo(function MenuRender({
             pluginId: node.data.pluginId
           }),
           intro: node.data.intro,
-          flowNodeType: node.data.flowNodeType,
-          inputs: node.data.inputs,
-          outputs: node.data.outputs,
+          toolDescription: node.data.toolDescription,
           showStatus: node.data.showStatus,
-          pluginId: node.data.pluginId,
+
           version: node.data.version,
           versionLabel: node.data.versionLabel,
-          isLatestVersion: node.data.isLatestVersion
+          isLatestVersion: node.data.isLatestVersion,
+
+          catchError: node.data.catchError,
+          inputs: node.data.inputs,
+          outputs: node.data.outputs,
+
+          pluginId: node.data.pluginId,
+          isFolder: node.data.isFolder,
+          pluginData: node.data.pluginData,
+
+          toolConfig: node.data.toolConfig,
+
+          currentCost: node.data.currentCost,
+          systemKeyCost: node.data.systemKeyCost,
+          hasTokenFee: node.data.hasTokenFee,
+          hasSystemSecret: node.data.hasSystemSecret
         };
 
         return [
@@ -432,7 +537,9 @@ const MenuRender = React.memo(function MenuRender({
               outputs: template.outputs,
               version: template.version,
               versionLabel: template.versionLabel,
-              isLatestVersion: template.isLatestVersion
+              isLatestVersion: template.isLatestVersion,
+              toolConfig: template.toolConfig,
+              catchError: template.catchError
             },
             selected: true,
             parentNodeId: undefined,
@@ -536,6 +643,7 @@ const MenuRender = React.memo(function MenuRender({
       </>
     );
   }, [
+    menuForbid?.copilot,
     menuForbid?.debug,
     menuForbid?.copy,
     menuForbid?.delete,
@@ -544,7 +652,10 @@ const MenuRender = React.memo(function MenuRender({
     openDebugNode,
     nodeId,
     onCopyNode,
-    onDelNode
+    onDelNode,
+    onOpenNodeCopilot,
+    isNodeCopilotOpen,
+    onCloseNodeCopilot
   ]);
 
   return Render;
@@ -626,10 +737,10 @@ const NodeVersion = React.memo(function NodeVersion({ node }: { node: FlowNodeIt
   const { ScrollData, data: versionList } = useScrollPagination(getToolVersionList, {
     pageSize: 20,
     params: {
-      toolId: node.pluginId
+      pluginId: node.pluginId
     },
     refreshDeps: [node.pluginId, isOpen],
-    disalbed: !isOpen,
+    disabled: !isOpen,
     manual: false
   });
 

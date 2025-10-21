@@ -7,9 +7,11 @@ import { readFromSecondary } from '../../mongo/utils';
 import { addHours } from 'date-fns';
 import { imageFileType } from '@fastgpt/global/common/file/constants';
 import { retryFn } from '@fastgpt/global/common/system/utils';
+import { UserError } from '@fastgpt/global/common/error/utils';
 
 export const maxImgSize = 1024 * 1024 * 12;
 const base64MimeRegex = /data:image\/([^\)]+);base64/;
+
 export async function uploadMongoImg({
   base64Img,
   teamId,
@@ -21,13 +23,13 @@ export async function uploadMongoImg({
   forever?: Boolean;
 }) {
   if (base64Img.length > maxImgSize) {
-    return Promise.reject('Image too large');
+    return Promise.reject(new UserError('Image too large'));
   }
 
   const [base64Mime, base64Data] = base64Img.split(',');
   // Check if mime type is valid
   if (!base64MimeRegex.test(base64Mime)) {
-    return Promise.reject('Invalid image base64');
+    return Promise.reject(new UserError('Invalid image base64'));
   }
 
   const mime = `image/${base64Mime.match(base64MimeRegex)?.[1] ?? 'image/jpeg'}`;
@@ -38,7 +40,7 @@ export async function uploadMongoImg({
   }
 
   if (!extension || !imageFileType.includes(`.${extension}`)) {
-    return Promise.reject(`Invalid image file type: ${mime}`);
+    return Promise.reject(new UserError(`Invalid image file type: ${mime}`));
   }
 
   const { _id } = await retryFn(() =>
@@ -53,6 +55,46 @@ export async function uploadMongoImg({
 
   return `${process.env.NEXT_PUBLIC_BASE_URL || ''}${imageBaseUrl}${String(_id)}.${extension}`;
 }
+export const copyImage = async ({
+  teamId,
+  imageUrl,
+  session
+}: {
+  teamId: string;
+  imageUrl: string;
+  session?: ClientSession;
+}) => {
+  const imageId = getIdFromPath(imageUrl);
+  if (!imageId) return imageUrl;
+
+  const image = await MongoImage.findOne(
+    {
+      _id: imageId,
+      teamId
+    },
+    undefined,
+    {
+      session
+    }
+  );
+  if (!image) return imageUrl;
+
+  const [newImage] = await MongoImage.create(
+    [
+      {
+        teamId,
+        binary: image.binary,
+        metadata: image.metadata
+      }
+    ],
+    {
+      session,
+      ordered: true
+    }
+  );
+
+  return `${process.env.NEXT_PUBLIC_BASE_URL || ''}${imageBaseUrl}${String(newImage._id)}.${image.metadata?.mime?.split('/')[1]}`;
+};
 
 const getIdFromPath = (path?: string) => {
   if (!path) return;
@@ -105,7 +147,7 @@ export async function readMongoImg({ id }: { id: string }) {
     ...readFromSecondary
   });
   if (!data) {
-    return Promise.reject('Image not found');
+    return Promise.reject(new UserError('Image not found'));
   }
 
   return {

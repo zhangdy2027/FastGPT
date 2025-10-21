@@ -3,12 +3,15 @@ import chalk from 'chalk';
 import { LogLevelEnum } from './log/constant';
 import { connectionMongo } from '../mongo/index';
 import { getMongoLog } from './log/schema';
+import { getLogger } from '../otel/log';
 
 export enum EventTypeEnum {
   outLinkBot = '[Outlink bot]',
   feishuBot = '[Feishu bot]',
   wxOffiaccount = '[Offiaccount bot]'
 }
+
+const logger = getLogger();
 
 const logMap = {
   [LogLevelEnum.debug]: {
@@ -31,13 +34,15 @@ const envLogLevelMap: Record<string, number> = {
   error: LogLevelEnum.error
 };
 
-const { LOG_LEVEL, STORE_LOG_LEVEL } = (() => {
+const { LOG_LEVEL, STORE_LOG_LEVEL, SIGNOZ_STORE_LEVEL } = (() => {
   const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLocaleLowerCase();
   const STORE_LOG_LEVEL = (process.env.STORE_LOG_LEVEL || '').toLocaleLowerCase();
+  const SIGNOZ_STORE_LEVEL = (process.env.SIGNOZ_STORE_LEVEL || 'warn').toLocaleLowerCase();
 
   return {
     LOG_LEVEL: envLogLevelMap[LOG_LEVEL] ?? LogLevelEnum.info,
-    STORE_LOG_LEVEL: envLogLevelMap[STORE_LOG_LEVEL] ?? 99
+    STORE_LOG_LEVEL: envLogLevelMap[STORE_LOG_LEVEL] ?? 99,
+    SIGNOZ_STORE_LEVEL: envLogLevelMap[SIGNOZ_STORE_LEVEL] ?? LogLevelEnum.warn
   };
 })();
 
@@ -56,6 +61,17 @@ export const addLog = {
     );
 
     level === LogLevelEnum.error && console.error(obj);
+
+    if (logger && level >= SIGNOZ_STORE_LEVEL) {
+      logger.emit({
+        severityNumber: level.valueOf(),
+        severityText: ['debug', 'info', 'warn', 'error'][level],
+        body: {
+          msg,
+          obj
+        }
+      });
+    }
 
     // store log
     if (level >= STORE_LOG_LEVEL && connectionMongo.connection.readyState === 1) {

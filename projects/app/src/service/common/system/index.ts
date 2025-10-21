@@ -3,12 +3,11 @@ import fs, { existsSync } from 'fs';
 import type { FastGPTFeConfigsType } from '@fastgpt/global/common/system/types/index.d';
 import type { FastGPTConfigFileType } from '@fastgpt/global/common/system/types/index.d';
 import { getFastGPTConfigFromDB } from '@fastgpt/service/common/system/config/controller';
-import { FastGPTProUrl } from '@fastgpt/service/common/system/constants';
 import { isProduction } from '@fastgpt/global/common/system/constants';
 import { initFastGPTConfig } from '@fastgpt/service/common/system/tools';
 import json5 from 'json5';
 import { defaultGroup, defaultTemplateTypes } from '@fastgpt/web/core/workflow/constants';
-import { MongoPluginGroups } from '@fastgpt/service/core/app/plugin/pluginGroupSchema';
+import { MongoToolGroups } from '@fastgpt/service/core/app/plugin/pluginGroupSchema';
 import { MongoTemplateTypes } from '@fastgpt/service/core/app/templates/templateTypeSchema';
 import { POST } from '@fastgpt/service/common/api/plusRequest';
 import {
@@ -16,11 +15,13 @@ import {
   type SearchDatasetDataResponse
 } from '@fastgpt/service/core/dataset/search/controller';
 import { type AuthOpenApiLimitProps } from '@fastgpt/service/support/openapi/auth';
-import {
-  type ConcatUsageProps,
-  type CreateUsageProps
+import type {
+  PushUsageItemsProps,
+  ConcatUsageProps,
+  CreateUsageProps
 } from '@fastgpt/global/support/wallet/usage/api';
-import { isProVersion } from './constants';
+import { getSystemToolTypes } from '@fastgpt/service/core/app/tool/api';
+import { isProVersion } from '@fastgpt/service/common/system/constants';
 
 export const readConfigData = async (name: string) => {
   const splitName = name.split('.');
@@ -64,16 +65,19 @@ export function initGlobalVariables() {
 
     global.createUsageHandler = function createUsageHandler(data: CreateUsageProps) {
       if (!isProVersion()) return;
-      return POST('/support/wallet/usage/createUsage', data);
+      return POST<string>('/support/wallet/usage/createUsage', data);
     };
-
     global.concatUsageHandler = function concatUsageHandler(data: ConcatUsageProps) {
       if (!isProVersion()) return;
       return POST('/support/wallet/usage/concatUsage', data);
     };
+    global.pushUsageItemsHandler = function pushUsageItemsHandler(data: PushUsageItemsProps) {
+      if (!isProVersion()) return;
+      return POST('/support/wallet/usage/pushUsageItems', data);
+    };
   }
 
-  global.communityPlugins = [];
+  global.datasetParseQueueLen = global.datasetParseQueueLen ?? 0;
   global.qaQueueLen = global.qaQueueLen ?? 0;
   global.vectorQueueLen = global.vectorQueueLen ?? 0;
   initHttpAgent();
@@ -106,8 +110,8 @@ export async function getInitConfig() {
 const defaultFeConfigs: FastGPTFeConfigsType = {
   show_emptyChat: true,
   show_git: true,
-  docUrl: 'https://doc.tryfastgpt.ai',
-  openAPIDocUrl: 'https://doc.tryfastgpt.ai/docs/development/openapi',
+  docUrl: 'https://doc.fastgpt.io',
+  openAPIDocUrl: 'https://doc.fastgpt.io/docs/introduction/development/openapi',
   systemPluginCourseUrl: 'https://fael3z0zfze.feishu.cn/wiki/ERZnw9R26iRRG0kXZRec6WL9nwh',
   appTemplateCourse:
     'https://fael3z0zfze.feishu.cn/wiki/CX9wwMGyEi5TL6koiLYcg7U0nWb?fromScene=spaceOverview',
@@ -120,7 +124,8 @@ const defaultFeConfigs: FastGPTFeConfigsType = {
   },
   scripts: [],
   favicon: '/favicon.ico',
-  uploadFileMaxSize: 500
+  uploadFileMaxSize: 500,
+  chineseRedirectUrl: process.env.CHINESE_IP_REDIRECT_URL || ''
 };
 
 export async function initSystemConfig() {
@@ -140,6 +145,7 @@ export async function initSystemConfig() {
       ...defaultFeConfigs,
       ...(fastgptConfig.feConfigs || {}),
       isPlus: !!licenseData,
+      hideChatCopyrightSetting: process.env.HIDE_CHAT_COPYRIGHT_SETTING === 'true',
       show_aiproxy: !!process.env.AIPROXY_API_ENDPOINT,
       show_coupon: process.env.SHOW_COUPON === 'true',
       show_dataset_enhance: licenseData?.functions?.datasetEnhance,
@@ -166,17 +172,28 @@ export async function initSystemConfig() {
 export async function initSystemPluginGroups() {
   try {
     const { groupOrder, ...restDefaultGroup } = defaultGroup;
-    await MongoPluginGroups.updateOne(
-      {
-        groupId: defaultGroup.groupId
-      },
-      {
-        $set: restDefaultGroup
-      },
-      {
-        upsert: true
-      }
-    );
+
+    const toolTypes = await getSystemToolTypes();
+
+    if (toolTypes.length > 0) {
+      await MongoToolGroups.updateOne(
+        {
+          groupId: defaultGroup.groupId
+        },
+        {
+          $set: {
+            ...restDefaultGroup,
+            groupTypes: toolTypes.map((toolType) => ({
+              typeId: toolType.type,
+              typeName: toolType.name
+            }))
+          }
+        },
+        {
+          upsert: true
+        }
+      );
+    }
   } catch (error) {
     console.error('Error initializing system plugins:', error);
   }

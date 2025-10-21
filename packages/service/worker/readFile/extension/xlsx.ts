@@ -86,9 +86,8 @@ export const readXlsxRawText = async ({
   }));
   const rawText = format2Csv.map((item) => item.csvText).join('\n');
 
-  // 生成 Markdown 表格文本
   const formatText = result
-    .map(({ data, name }) => {
+    .map(({ data }) => {
       const header = data[0];
       if (!header) return;
 

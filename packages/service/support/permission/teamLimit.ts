@@ -46,7 +46,13 @@ export const checkTeamAppLimit = async (teamId: string, amount = 1) => {
     MongoApp.countDocuments({
       teamId,
       type: {
-        $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin, AppTypeEnum.tool]
+        $in: [
+          AppTypeEnum.simple,
+          AppTypeEnum.workflow,
+          AppTypeEnum.plugin,
+          AppTypeEnum.toolSet,
+          AppTypeEnum.httpToolSet
+        ]
       }
     })
   ]);
@@ -59,7 +65,7 @@ export const checkTeamAppLimit = async (teamId: string, amount = 1) => {
   if (global?.licenseData?.maxApps && typeof global?.licenseData?.maxApps === 'number') {
     const totalApps = await MongoApp.countDocuments({
       type: {
-        $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin, AppTypeEnum.tool]
+        $in: [AppTypeEnum.simple, AppTypeEnum.workflow, AppTypeEnum.plugin, AppTypeEnum.toolSet]
       }
     });
     if (totalApps >= global.licenseData.maxApps) {
@@ -113,13 +119,9 @@ export const checkTeamDatasetLimit = async (teamId: string) => {
       return Promise.reject(SystemErrEnum.licenseDatasetAmountLimit);
     }
   }
-  // Open source check
-  if (!global.feConfigs.isPlus && datasetCount >= 30) {
-    return Promise.reject(SystemErrEnum.communityVersionNumLimit);
-  }
 };
 
-export const checkTeamWebSyncPermission = async (teamId: string) => {
+export const checkTeamDatasetSyncPermission = async (teamId: string) => {
   const { standardConstants } = await getTeamStandPlan({
     teamId
   });

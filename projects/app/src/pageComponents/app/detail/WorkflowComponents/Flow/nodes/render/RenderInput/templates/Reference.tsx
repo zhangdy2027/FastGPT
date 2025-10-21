@@ -2,10 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import type { RenderInputProps } from '../type';
 import { Flex, Box, type ButtonProps, Grid } from '@chakra-ui/react';
 import MyIcon from '@fastgpt/web/components/common/Icon';
-import {
-  computedNodeInputReference,
-  filterWorkflowNodeOutputsByType
-} from '@/web/core/workflow/utils';
+import { getNodeAllSource, filterWorkflowNodeOutputsByType } from '@/web/core/workflow/utils';
 import { useTranslation } from 'next-i18next';
 import {
   NodeOutputKeyEnum,
@@ -19,7 +16,10 @@ import type {
 import dynamic from 'next/dynamic';
 import { useContextSelector } from 'use-context-selector';
 import { WorkflowContext } from '@/pageComponents/app/detail/WorkflowComponents/context';
-import { FlowNodeTypeEnum } from '@fastgpt/global/core/workflow/node/constant';
+import {
+  FlowNodeOutputTypeEnum,
+  FlowNodeTypeEnum
+} from '@fastgpt/global/core/workflow/node/constant';
 import { AppContext } from '@/pageComponents/app/detail/context';
 import { WorkflowNodeEdgeContext } from '../../../../../context/workflowInitContext';
 
@@ -69,15 +69,13 @@ export const useReference = ({
 
   // 获取可选的变量列表
   const referenceList = useMemo(() => {
-    const sourceNodes = computedNodeInputReference({
+    const sourceNodes = getNodeAllSource({
       nodeId,
       nodes: nodeList,
       edges: edges,
       chatConfig: appDetail.chatConfig,
       t
     });
-
-    if (!sourceNodes) return [];
 
     const isArray = valueType?.includes('array');
 
@@ -93,9 +91,12 @@ export const useReference = ({
           ),
           value: node.nodeId,
           children: filterWorkflowNodeOutputsByType(node.outputs, valueType)
-            .filter(
-              (output) => output.id !== NodeOutputKeyEnum.addOutputParam && output.invalid !== true
-            )
+            .filter((output) => {
+              if (output.type === FlowNodeOutputTypeEnum.error) {
+                return node.catchError === true;
+              }
+              return output.id !== NodeOutputKeyEnum.addOutputParam && output.invalid !== true;
+            })
             .map((output) => {
               return {
                 label: t(output.label as any),
@@ -257,6 +258,10 @@ const MultipleReferenceSelector = ({
     });
   }, [getSelectValue, value]);
 
+  const invalidList = useMemo(() => {
+    return formatList.filter((item) => item.nodeName && item.outputName);
+  }, [formatList]);
+
   useEffect(() => {
     // Adapt array type from old version
     if (Array.isArray(value) && typeof value[0] === 'string') {
@@ -265,33 +270,35 @@ const MultipleReferenceSelector = ({
     }
   }, [formatList, onSelect, value]);
 
-  const invalidList = useMemo(() => {
-    return formatList.filter((item) => item.nodeName && item.outputName);
-  }, [formatList]);
-
   const ArraySelector = useMemo(() => {
     return (
       <MultipleRowArraySelect
         label={
           invalidList.length > 0 ? (
-            <Grid py={3} gridTemplateColumns={'1fr 1fr'} gap={2} fontSize={'sm'}>
+            <Grid
+              py={3}
+              gridTemplateColumns={'1fr 1fr'}
+              gap={2}
+              fontSize={'sm'}
+              _hover={{
+                '.delete': {
+                  visibility: 'visible'
+                }
+              }}
+            >
               {invalidList.map(({ nodeName, outputName }, index) => {
                 return (
                   <Flex
-                    alignItems={'center'}
                     key={index}
+                    w={'100%'}
+                    alignItems={'center'}
                     bg={'primary.50'}
                     color={'myGray.900'}
                     py={1}
                     px={1.5}
                     rounded={'sm'}
                   >
-                    <Flex
-                      alignItems={'center'}
-                      flex={'1 0 0'}
-                      maxW={'200px'}
-                      className="textEllipsis"
-                    >
+                    <Flex alignItems={'center'} flex={'1 0 0'} className="textEllipsis">
                       {nodeName}
                       <MyIcon
                         name={'common/rightArrowLight'}
@@ -302,6 +309,8 @@ const MultipleReferenceSelector = ({
                       {outputName}
                     </Flex>
                     <MyIcon
+                      className="delete"
+                      visibility={'hidden'}
                       name={'common/closeLight'}
                       w={'1rem'}
                       ml={1}
@@ -327,7 +336,9 @@ const MultipleReferenceSelector = ({
         }
         value={value as any}
         list={list}
-        onSelect={onSelect as any}
+        onSelect={(e) => {
+          onSelect(e as any);
+        }}
         popDirection={popDirection}
       />
     );

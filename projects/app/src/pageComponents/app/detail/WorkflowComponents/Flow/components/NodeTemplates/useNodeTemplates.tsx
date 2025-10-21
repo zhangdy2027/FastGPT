@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import type { NodeTemplateListItemType } from '@fastgpt/global/core/workflow/type/node';
@@ -8,10 +8,15 @@ import { TemplateTypeEnum } from './header';
 import { useContextSelector } from 'use-context-selector';
 import { WorkflowContext } from '../../../context';
 import type { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
+import { useDebounceEffect } from 'ahooks';
 
 export const useNodeTemplates = () => {
   const { feConfigs } = useSystemStore();
   const [templateType, setTemplateType] = useState(TemplateTypeEnum.basic);
+
+  const [searchKey, setSearchKey] = useState('');
+  const searchKeyLock = useRef(false);
+
   const [parentId, setParentId] = useState<ParentIdType>('');
 
   const basicNodeTemplates = useContextSelector(WorkflowContext, (v) => v.basicNodeTemplates);
@@ -19,7 +24,7 @@ export const useNodeTemplates = () => {
   const nodeList = useContextSelector(WorkflowContext, (v) => v.nodeList);
 
   const hasToolNode = useMemo(
-    () => nodeList.some((node) => node.flowNodeType === FlowNodeTypeEnum.tools),
+    () => nodeList.some((node) => node.flowNodeType === FlowNodeTypeEnum.agent),
     [nodeList]
   );
 
@@ -69,24 +74,26 @@ export const useNodeTemplates = () => {
   const {
     data: teamAndSystemApps,
     loading: templatesIsLoading,
-    runAsync
+    runAsync: loadNodeTemplates
   } = useRequest2(
     async ({
-      parentId = '',
+      parentId,
       type = templateType,
-      searchVal = ''
+      searchVal
     }: {
       parentId?: ParentIdType;
       type?: TemplateTypeEnum;
       searchVal?: string;
     }) => {
       if (type === TemplateTypeEnum.teamPlugin) {
+        // app, workflow-plugin, mcp
         return getTeamPlugTemplates({
           parentId,
           searchKey: searchVal
         }).then((res) => res.filter((app) => app.id !== appId));
       }
       if (type === TemplateTypeEnum.systemPlugin) {
+        // systemTool
         return getSystemPlugTemplates({
           searchKey: searchVal,
           parentId
@@ -94,26 +101,42 @@ export const useNodeTemplates = () => {
       }
     },
     {
-      onSuccess(res, [{ parentId = '', type = templateType }]) {
-        setParentId(parentId);
-        setTemplateType(type);
-      },
-      refreshDeps: [templateType]
+      onSuccess() {
+        searchKeyLock.current = false;
+      }
     }
   );
 
-  const loadNodeTemplates = useCallback(
-    async (params: { parentId?: ParentIdType; type?: TemplateTypeEnum; searchVal?: string }) => {
-      await runAsync(params);
+  useDebounceEffect(
+    () => {
+      if (searchKeyLock.current) {
+        return;
+      }
+
+      loadNodeTemplates({ parentId, searchVal: searchKey });
     },
-    [runAsync]
+    [searchKey],
+    {
+      wait: 300
+    }
   );
 
   const onUpdateParentId = useCallback(
     (parentId: ParentIdType) => {
-      loadNodeTemplates({
-        parentId
-      });
+      searchKeyLock.current = true;
+      setSearchKey('');
+      setParentId(parentId);
+      loadNodeTemplates({ parentId });
+    },
+    [loadNodeTemplates]
+  );
+  const onUpdateTemplateType = useCallback(
+    (type: TemplateTypeEnum) => {
+      searchKeyLock.current = true;
+      setSearchKey('');
+      setParentId('');
+      setTemplateType(type);
+      loadNodeTemplates({ type });
     },
     [loadNodeTemplates]
   );
@@ -130,7 +153,9 @@ export const useNodeTemplates = () => {
     parentId,
     templatesIsLoading,
     templates,
-    loadNodeTemplates,
-    onUpdateParentId
+    onUpdateParentId,
+    onUpdateTemplateType,
+    searchKey,
+    setSearchKey
   };
 };

@@ -45,12 +45,14 @@ export type FastGPTFeConfigsType = {
   show_workorder?: boolean;
   show_emptyChat?: boolean;
   isPlus?: boolean;
+  hideChatCopyrightSetting?: boolean;
   register_method?: ['email' | 'phone' | 'sync'];
   login_method?: ['email' | 'phone']; // Attention: login method is diffrent with oauth
   find_password_method?: ['email' | 'phone'];
   bind_notification_method?: ['email' | 'phone'];
   googleClientVerKey?: string;
   mcpServerProxyEndpoint?: string;
+  chineseRedirectUrl?: string;
 
   show_emptyChat?: boolean;
   show_appStore?: boolean;
@@ -68,6 +70,7 @@ export type FastGPTFeConfigsType = {
   show_dataset_yuque?: boolean;
   show_publish_feishu?: boolean;
   show_publish_dingtalk?: boolean;
+  show_publish_wecom?: boolean;
   show_publish_offiaccount?: boolean;
 
   show_dataset_enhance?: boolean;
@@ -82,7 +85,6 @@ export type FastGPTFeConfigsType = {
   customSharePageDomain?: string;
 
   systemTitle?: string;
-  systemDescription?: string;
   scripts?: { [key: string]: string }[];
   favicon?: string;
 
@@ -109,6 +111,7 @@ export type FastGPTFeConfigsType = {
 
   uploadFileMaxAmount?: number;
   uploadFileMaxSize?: number;
+  evalFileMaxLines?: number;
 
   // Compute by systemEnv.customPdfParse
   showCustomPdfParse?: boolean;
@@ -127,10 +130,12 @@ export type FastGPTFeConfigsType = {
 
 export type SystemEnvType = {
   openapiPrefix?: string;
+  tokenWorkers: number; // token count max worker
+
+  datasetParseMaxProcess: number;
   vectorMaxProcess: number;
   qaMaxProcess: number;
   vlmMaxProcess: number;
-  tokenWorkers: number; // token count max worker
 
   hnswEfSearch: number;
   hnswMaxScanTuples: number;

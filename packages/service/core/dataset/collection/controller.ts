@@ -1,8 +1,4 @@
-import {
-  DatasetCollectionTypeEnum,
-  DatasetCollectionDataProcessModeEnum,
-  DatasetTypeEnum
-} from '@fastgpt/global/core/dataset/constants';
+import { DatasetCollectionDataProcessModeEnum } from '@fastgpt/global/core/dataset/constants';
 import type { CreateDatasetCollectionParams } from '@fastgpt/global/core/dataset/api.d';
 import { MongoDatasetCollection } from './schema';
 import type {
@@ -25,9 +21,7 @@ import { createTrainingUsage } from '../../../support/wallet/usage/controller';
 import { UsageSourceEnum } from '@fastgpt/global/support/wallet/usage/constants';
 import { getLLMModel, getEmbeddingModel, getVlmModel } from '../../ai/model';
 import { pushDataListToTrainingQueue, pushDatasetToParseQueue } from '../training/controller';
-import { MongoImage } from '../../../common/file/image/schema';
 import { hashStr } from '@fastgpt/global/common/string/tools';
-import { addDays } from 'date-fns';
 import { MongoDatasetDataText } from '../data/dataTextSchema';
 import { retryFn } from '@fastgpt/global/common/system/utils';
 import { getTrainingModeByCollection } from './utils';
@@ -37,7 +31,6 @@ import {
 } from '@fastgpt/global/core/dataset/training/utils';
 import { DatasetDataIndexTypeEnum } from '@fastgpt/global/core/dataset/data/constants';
 import { clearCollectionImages, removeDatasetImageExpiredTime } from '../image/utils';
-import { MongoDatasetCollectionTags } from '../tag/schema';
 
 export const createCollectionAndInsertData = async ({
   dataset,
@@ -181,25 +174,13 @@ export const createCollectionAndInsertData = async ({
 
       hashRawText: rawText ? hashStr(rawText) : undefined,
       rawTextLength: rawText?.length,
-      nextSyncTime: (() => {
-        // ignore auto collections sync for website datasets
-        if (!dataset.autoSync && dataset.type === DatasetTypeEnum.websiteDataset) return undefined;
-        if (
-          [DatasetCollectionTypeEnum.link, DatasetCollectionTypeEnum.apiFile].includes(
-            formatCreateCollectionParams.type
-          )
-        ) {
-          return addDays(new Date(), 1);
-        }
-        return undefined;
-      })(),
       session
     });
 
     // 4. create training bill
-    const traingBillId = await (async () => {
+    const traingUsageId = await (async () => {
       if (billId) return billId;
-      const { billId: newBillId } = await createTrainingUsage({
+      const { usageId: newUsageId } = await createTrainingUsage({
         teamId,
         tmbId,
         appName: formatCreateCollectionParams.name,
@@ -209,7 +190,7 @@ export const createCollectionAndInsertData = async ({
         vllmModel: getVlmModel(dataset.vlmModel)?.name,
         session
       });
-      return newBillId;
+      return newUsageId;
     })();
 
     // 5. insert to training queue
@@ -225,7 +206,7 @@ export const createCollectionAndInsertData = async ({
           vlmModel: dataset.vlmModel,
           indexSize,
           mode: trainingMode,
-          billId: traingBillId,
+          billId: traingUsageId,
           data: chunks.map((item, index) => ({
             ...item,
             indexes: item.indexes?.map((text) => ({
@@ -242,7 +223,7 @@ export const createCollectionAndInsertData = async ({
           tmbId,
           datasetId: dataset._id,
           collectionId,
-          billId: traingBillId,
+          billId: traingUsageId,
           session
         });
         return {
@@ -440,23 +421,18 @@ export async function createOneCollection({ session, ...props }: CreateOneCollec
     teamId,
     parentId,
     datasetId,
-    tags: tagIdList,
+    tags,
 
     fileId,
     rawLink,
     externalFileId,
     externalFileUrl,
-    apiFileId
+    apiFileId,
+    apiFileParentId
   } = props;
-  // Create collection tags
-  const tags = await MongoDatasetCollectionTags.find({
-    teamId,
-    datasetId,
-    _id: { $in: tagIdList }
-  });
 
   const collectionTags = await createOrGetCollectionTags({
-    tags: tags.map((item) => item.tag),
+    tags,
     teamId,
     datasetId,
     session
@@ -477,7 +453,8 @@ export async function createOneCollection({ session, ...props }: CreateOneCollec
         ...(rawLink ? { rawLink } : {}),
         ...(externalFileId ? { externalFileId } : {}),
         ...(externalFileUrl ? { externalFileUrl } : {}),
-        ...(apiFileId ? { apiFileId } : {})
+        ...(apiFileId ? { apiFileId } : {}),
+        ...(apiFileParentId ? { apiFileParentId } : {})
       }
     ],
     { session, ordered: true }

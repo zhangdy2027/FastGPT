@@ -8,7 +8,7 @@ import { clearToken } from '@/web/support/user/auth';
 import { TOKEN_ERROR_CODE } from '@fastgpt/global/common/error/errorCode';
 import { TeamErrEnum } from '@fastgpt/global/common/error/code/team';
 import { useSystemStore } from '../system/useSystemStore';
-import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
+import { getWebReqUrl, subRoute } from '@fastgpt/web/common/system/utils';
 import { i18nT } from '@fastgpt/web/i18n/utils';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 
@@ -35,7 +35,7 @@ const maxQuantityMap: Record<
     }[]
 > = {};
 
-/* 
+/*
   Every request generates a unique sign
   If the number of requests exceeds maxQuantity, cancel the earliest request and initiate a new request
 */
@@ -110,9 +110,9 @@ function checkRes(data: ResponseDataType) {
 function responseError(err: any) {
   console.log('error->', '请求错误', err);
   const isOutlinkPage = {
-    '/chat/share': true,
-    '/chat/team': true,
-    '/login': true
+    [`${subRoute}/chat/share`]: true,
+    [`${subRoute}/chat`]: true,
+    [`${subRoute}/login`]: true
   }[window.location.pathname];
 
   const data = err?.response?.data || err;
@@ -223,3 +223,15 @@ export function PUT<T = undefined>(url: string, data = {}, config: ConfigType = 
 export function DELETE<T = undefined>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
   return request(url, data, config, 'DELETE');
 }
+
+export {
+  maxQuantityMap,
+  checkMaxQuantity,
+  requestFinish,
+  startInterceptors,
+  responseSuccess,
+  checkRes,
+  responseError,
+  instance,
+  request
+};
