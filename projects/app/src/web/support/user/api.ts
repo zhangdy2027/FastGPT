@@ -95,7 +95,7 @@ export const postLogin = ({ password, ...props }: PostLoginProps) =>
   });
 
 export const postLoginByNoPc = ({ ...props }) =>
-  POST<ResLogin>('/support/user/account/loginByNoPc', {
+  POST<LoginSuccessResponse>('/support/user/account/loginByNoPc', {
     ...props
   });
 

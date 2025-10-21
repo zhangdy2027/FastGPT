@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { LoginPageTypeEnum } from '@/web/support/user/login/constants';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import type { ResLogin } from '@/global/support/api/userRes.d';
+import type { LoginSuccessResponse } from '@/global/support/api/userRes';
 import { useRouter } from 'next/router';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
@@ -60,7 +60,7 @@ const Signin = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
     useLocalStorageState<string>('localCookieVersion');
 
   const loginSuccess = useCallback(
-    (res: ResLogin) => {
+    (res: LoginSuccessResponse) => {
       setUserInfo(res.user);
 
       const decodeLastRoute = decodeURIComponent(lastRoute);

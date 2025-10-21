@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
-import { setCookie } from '@fastgpt/service/support/permission/controller';
+import { setCookie } from '@fastgpt/service/support/permission/auth/common';
 import { getUserDetail } from '@fastgpt/service/support/user/controller';
 import type { PostLoginProps } from '@fastgpt/global/support/user/api.d';
 import { UserStatusEnum } from '@fastgpt/global/support/user/constant';
