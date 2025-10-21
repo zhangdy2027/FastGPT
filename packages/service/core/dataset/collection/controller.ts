@@ -340,9 +340,24 @@ export const updateCollectionAndInsertData = async ({
 
     await collection.save({ session });
 
-    const traingBillId = await (async () => {
+    // const traingBillId = await (async () => {
+    //   if (billId) return billId;
+    //   const { billId: newBillId } = await createTrainingUsage({
+    //     teamId,
+    //     tmbId,
+    //     appName: collection.name,
+    //     billSource: UsageSourceEnum.training,
+    //     vectorModel: getEmbeddingModel(dataset.vectorModel)?.name,
+    //     agentModel: getLLMModel(dataset.agentModel)?.name,
+    //     vllmModel: getVlmModel(dataset.vlmModel)?.name,
+    //     session
+    //   });
+    //   return newBillId;
+    // })();
+
+    const traingUsageId = await (async () => {
       if (billId) return billId;
-      const { billId: newBillId } = await createTrainingUsage({
+      const { usageId: newUsageId } = await createTrainingUsage({
         teamId,
         tmbId,
         appName: collection.name,
@@ -352,7 +367,7 @@ export const updateCollectionAndInsertData = async ({
         vllmModel: getVlmModel(dataset.vlmModel)?.name,
         session
       });
-      return newBillId;
+      return newUsageId;
     })();
 
     const insertResults = await (async () => {
@@ -367,7 +382,7 @@ export const updateCollectionAndInsertData = async ({
           vlmModel: dataset.vlmModel,
           indexSize,
           mode: trainingMode,
-          billId: traingBillId,
+          billId: traingUsageId,
           data: chunks.map((item, index) => ({
             ...item,
             indexes: item.indexes?.map((text: any) => ({
@@ -384,7 +399,7 @@ export const updateCollectionAndInsertData = async ({
           tmbId,
           datasetId: dataset._id,
           collectionId,
-          billId: traingBillId,
+          billId: traingUsageId,
           session
         });
         return {
