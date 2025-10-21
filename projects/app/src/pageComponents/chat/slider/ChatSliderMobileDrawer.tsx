@@ -36,7 +36,7 @@ const ChatSliderMobileDrawer = ({
   return (
     <Drawer
       size="xs"
-      placement="left"
+      placement="right"
       autoFocus={false}
       isOpen={isOpenSlider}
       onClose={onCloseSlider}
@@ -53,14 +53,14 @@ const ChatSliderMobileDrawer = ({
           borderRight={['', theme.borders.base]}
           whiteSpace={'nowrap'}
         >
-          {showHeader && <ChatSliderHeader title={title} banner={banner} />}
+          {/* {showHeader && <ChatSliderHeader title={title} banner={banner} />}
 
-          {showMenu && <MyDivider h="0.5px" bg="myGray.100" my={2} mx={2} w="calc(100% - 16px)" />}
+          {showMenu && <MyDivider h="0.5px" bg="myGray.100" my={2} mx={2} w="calc(100% - 16px)" />} */}
           {showMenu && <ChatSliderMenu menuConfirmButtonText={menuConfirmButtonText} />}
 
           {showList && <ChatSliderList />}
 
-          {showFooter && <ChatSliderFooter />}
+          {/* {showFooter && <ChatSliderFooter />} */}
         </MyBox>
       </DrawerContent>
     </Drawer>

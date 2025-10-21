@@ -62,6 +62,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
           w={collapse ? '72px' : '220px'}
           overflow={'hidden'}
           transition={'width 0.1s ease-in-out'}
+          display={hideSlider ? 'none' : 'block'}
         >
           <ChatSlider apps={myApps} activeAppId={appId} />
         </Box>
@@ -111,7 +112,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       )}
 
       {(!datasetCiteData || isPc) && (
-        <PageContainer flex="1 0 0" w={0} position="relative">
+        <PageContainer flex="1 0 0" w={0} p={[0, '64px 16px 16px 16px']} position="relative">
           {/* home chat window */}
           {pane === ChatSidebarPaneEnum.HOME && <HomeChatWindow myApps={myApps} />}
 

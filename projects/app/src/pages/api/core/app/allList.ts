@@ -6,13 +6,12 @@ import { PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant
 import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
 import type { ApiRequestProps } from '@fastgpt/service/type/next';
 import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
-import { AppDefaultPermissionVal } from '@fastgpt/global/support/permission/app/constant';
-import { concatPer } from '@fastgpt/service/support/permission/controller';
 import { getGroupsByTmbId } from '@fastgpt/service/support/permission/memberGroup/controllers';
 import { getOrgIdSetWithParentByTmbId } from '@fastgpt/service/support/permission/org/controllers';
 import { addSourceMember } from '@fastgpt/service/support/user/utils';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
+import { sumPer } from '@fastgpt/global/support/permission/utils';
 
 // export type ListAppBody = {
 //   parentId?: ParentIdType;
@@ -34,7 +33,7 @@ export type ListAppBody = {
    6. 再根据 read 权限进行一次过滤。
  */
 
-async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemType[]> {
+async function handler(req: ApiRequestProps<ListAppBody>): Promise<any[]> {
   // const { parentId, type, getRecentlyChat, searchKey } = req.body;
   const { username } = req.body;
   const { tmbId, teamId } = await (async () => {
@@ -96,11 +95,11 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
     .map((app) => {
       const { Per, privateApp } = (() => {
         const getPer = (appId: string) => {
-          const tmbPer = myPerList.find(
+          const tmbRole = myPerList.find(
             (item) => String(item.resourceId) === appId && !!item.tmbId
           )?.permission;
-          const groupPer = concatPer(
-            myPerList
+          const groupAndOrgRole = sumPer(
+            ...myPerList
               .filter(
                 (item) => String(item.resourceId) === appId && (!!item.groupId || !!item.orgId)
               )
@@ -108,7 +107,7 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
           );
 
           return new AppPermission({
-            per: tmbPer ?? groupPer ?? AppDefaultPermissionVal,
+            role: tmbRole ?? groupAndOrgRole,
             isOwner: String(app.tmbId) === String(tmbId)
           });
         };

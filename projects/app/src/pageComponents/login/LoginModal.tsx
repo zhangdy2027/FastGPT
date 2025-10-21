@@ -22,6 +22,15 @@ const LoginModal = ({ onSuccess }: LoginModalProps) => {
       userSelect={'none'}
       h={'100%'}
     >
+      <Box
+        pos={'absolute'}
+        top={0}
+        left={0}
+        w={'100%'}
+        h={'100%'}
+        bg={`linear-gradient(180deg, #FFE1E1 3%, #FCFCFF 52%)`}
+        zIndex={100}
+      ></Box>
       {/* Language selector - login page */}
       {isPc && (
         <Box position="absolute" top="24px" right="24px" zIndex={10}>

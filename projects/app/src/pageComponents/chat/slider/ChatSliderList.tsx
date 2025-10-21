@@ -91,8 +91,8 @@ const ChatSliderList = () => {
             bg={item.top ? '#E6F6F6 !important' : ''}
             {...(item.id === activeChatId
               ? {
-                  backgroundColor: 'primary.50 !important',
-                  color: 'primary.600'
+                  backgroundColor: 'rgba(244, 15, 15, 0.12) !important',
+                  color: '#F40F0F'
                 }
               : {
                   onClick: () => {

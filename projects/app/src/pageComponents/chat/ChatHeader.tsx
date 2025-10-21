@@ -89,7 +89,7 @@ const ChatHeader = ({
           appId={chatData.appId}
           name={
             pane === ChatSidebarPaneEnum.HOME && !isShare
-              ? chatSettings?.homeTabTitle || 'FastGPT'
+              ? chatSettings?.homeTabTitle || '朔风智语'
               : chatData.app.name
           }
           avatar={
@@ -104,7 +104,7 @@ const ChatHeader = ({
       {/* control */}
       {/* {!isPlugin && <ToolMenu history={history} />} */}
       <Flex gap={2} alignItems={'center'}>
-        {!isVariableVisible && <VariablePopover chatType={chatType} />}
+        {/* {!isVariableVisible && <VariablePopover chatType={chatType} />} */}
 
         {/* control */}
         {/* {!isPlugin && <ToolMenu history={history} />} */}
@@ -268,7 +268,7 @@ const MobileHeader = ({
   return (
     <>
       <ChevronLeftIcon boxSize={6} onClick={backToSfzyClick}></ChevronLeftIcon>
-      {showHistory && (
+      {/* {showHistory && (
         <MyIcon
           name={'core/chat/sidebar/menu'}
           w={'20px'}
@@ -276,7 +276,7 @@ const MobileHeader = ({
           color={'myGray.900'}
           onClick={onOpenSlider}
         />
-      )}
+      )} */}
       <Flex px={3} alignItems={'center'} flex={'1 0 0'} w={0} justifyContent={'center'}>
         <Flex alignItems={'center'} onClick={toggleDrawer}>
           <Avatar borderRadius={'sm'} src={avatar} w={'1rem'} />

@@ -32,7 +32,7 @@ const ChatSliderMenu = ({ menuConfirmButtonText }: Props) => {
     >
       {!isPc && (
         <Flex height={'100%'} align={'center'} justify={'center'}>
-          <MyIcon ml={2} name="core/chat/sideLine" />
+          {/* <MyIcon ml={2} name="core/chat/sideLine" color={'red'} /> */}
           <Box ml={2} fontWeight={'bold'}>
             {t('common:core.chat.History')}
           </Box>
@@ -44,8 +44,13 @@ const ChatSliderMenu = ({ menuConfirmButtonText }: Props) => {
         flex={['0 0 auto', 1]}
         h={'100%'}
         px={6}
-        color={'primary.600'}
+        color={'#F40F0F'}
+        borderColor={'rgba(244, 15, 15, 0.19)'}
         borderRadius={'xl'}
+        _hover={{
+          bg: 'rgba(244, 15, 15, 0.12)',
+          color: '#F40F0F'
+        }}
         leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} />}
         overflow={'hidden'}
         onClick={() => {

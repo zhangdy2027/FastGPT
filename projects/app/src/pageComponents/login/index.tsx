@@ -60,7 +60,7 @@ const CookiesModal = () => {
   }
 
   return (
-    <Drawer placement="bottom" size={'xs'} isOpen={isOpen} onClose={handleClose}>
+    <Drawer placement="bottom" size={'xs'} isOpen={false} onClose={handleClose}>
       <DrawerOverlay backgroundColor={'rgba(0,0,0,0.2)'} />
       <DrawerContent py={'1.75rem'} px={'3rem'}>
         <DrawerCloseButton size={'sm'} />

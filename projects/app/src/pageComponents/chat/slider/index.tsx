@@ -1,6 +1,20 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import type { BoxProps } from '@chakra-ui/react';
-import { Flex, Box, HStack, Image } from '@chakra-ui/react';
+import {
+  Flex,
+  Box,
+  HStack,
+  Image,
+  InputGroup,
+  InputLeftElement,
+  Input,
+  Accordion,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  AccordionItem
+} from '@chakra-ui/react';
+import { SearchIcon } from '@chakra-ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'next-i18next';
 import Avatar from '@fastgpt/web/components/common/Avatar';
@@ -19,6 +33,20 @@ import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useContextSelector } from 'use-context-selector';
 import { ChatSettingContext } from '@/web/core/chat/context/chatSettingContext';
 import { usePathname } from 'next/navigation';
+import localFont from 'next/font/local';
+import { getAllMyApps } from '@/web/core/app/api';
+import { useRouter } from 'next/router';
+
+const ysbthFont = localFont({
+  src: [
+    {
+      path: './优设标题黑.ttf',
+      weight: 'normal',
+      style: 'normal'
+    }
+  ],
+  variable: '--ysbthFont'
+});
 
 type Props = {
   activeAppId: string;
@@ -205,6 +233,39 @@ const LogoSection = () => {
         </Flex>
       </AnimatedSection>
     </MotionFlex>
+  );
+};
+
+const CustomLogoSection = (props: any) => {
+  return (
+    <Box
+      mt={0}
+      p={3}
+      className={ysbthFont.variable}
+      background={'linear-gradient(180deg, rgba(255, 0, 0, 0.06) 0%, rgba(255, 0, 0, 0) 100%)'}
+    >
+      <Flex alignItems={'center'} borderRadius={'md'}>
+        <Flex flexDirection={'column'} gap={4}>
+          <Flex alignItems={'center'} justifyContent={'center'} gap={3}>
+            <Image src="/icon/logo.svg" borderRadius="full" boxSize="32px" alt="Dan Abramov" />
+            <Box fontSize={30} fontFamily={'var(--ysbthFont)'} color={'#C01920'}>
+              {'朔风智语'}
+            </Box>
+          </Flex>
+          <InputGroup size="sm">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon color="gray.300" />
+            </InputLeftElement>
+            <Input
+              type="tel"
+              placeholder="搜索智能体"
+              backgroundColor={'#F1F2F3'}
+              onChange={(e) => props.setSearchKey(e.target?.value)}
+            />
+          </InputGroup>
+        </Flex>
+      </Flex>
+    </Box>
   );
 };
 
@@ -485,13 +546,118 @@ const BottomSection = () => {
   );
 };
 
+const buildFilteredTree = (data: any, targetId?: string) => {
+  const map = new Map();
+  const tree: any = [];
+
+  // 先创建一个映射，方便快速查找节点
+  data.forEach((item: any) => {
+    map.set(item._id, { ...item, children: [] });
+  });
+
+  let targetItem: any = null; // 要置顶的第二层数据
+  let targetParent: any = null; // 目标第二层数据的父节点（第一层）
+
+  // 遍历数据，构造树结构
+  data.forEach((item: any) => {
+    if (item.parentId && map.has(item.parentId)) {
+      const parent = map.get(item.parentId);
+
+      // 仅允许第一层的 type === 'folder'
+      if (!parent.parentId && parent.type === 'folder' && item.type !== 'folder') {
+        parent.children.push(map.get(item._id));
+
+        if (item._id === targetId) {
+          targetItem = map.get(item._id);
+          targetParent = parent;
+        }
+      }
+    } else {
+      // 只有第一层 type === 'folder' 的数据才能作为根节点
+      if (item.type === 'folder') {
+        tree.push(map.get(item._id));
+      }
+    }
+  });
+
+  // 如果找到了目标项，则将目标项置顶
+  if (targetItem && targetParent) {
+    // 将目标父节点从第一层中移除并置顶
+    const parentIndex = tree.indexOf(targetParent);
+    if (parentIndex > -1) {
+      tree.splice(parentIndex, 1);
+    }
+    tree.unshift(targetParent); // 将父节点置顶
+
+    // 将目标项从目标父节点的 children 中移除并置顶
+    const childIndex = targetParent.children.indexOf(targetItem);
+    if (childIndex > -1) {
+      targetParent.children.splice(childIndex, 1);
+    }
+    targetParent.children.unshift(targetItem); // 将子节点置顶
+  }
+
+  return tree;
+};
+
+const getAppCardLogo = (data: any) => {
+  if (data.avatar.startsWith('core/')) {
+    return `/imgs/${data.avatar}.svg`;
+  } else if (data.avatar.startsWith('/api/')) {
+    return `${location.origin}${data.avatar}`;
+  }
+  return data.avatar;
+};
+
 const ChatSlider = ({ apps, activeAppId }: Props) => {
   const { t } = useTranslation();
+  const [searchKey, setSearchKey] = useState<string>(''); // 搜索关键字
+  const { userInfo } = useUserStore();
+  const router = useRouter();
+  const [allAppList, setAllAppList] = useState<any[]>([]); // 所有应用列表，包括文件夹和应用
+  const [allFolderList, setAllFolderList] = useState<any[]>([]);
+  const [searchFlag, setSearchFlag] = useState<boolean>(false);
 
   const isCollapsed = useContextSelector(ChatSettingContext, (v) => v.collapse === 1);
   const pane = useContextSelector(ChatSettingContext, (v) => v.pane);
 
   const handlePaneChange = useContextSelector(ChatSettingContext, (v) => v.handlePaneChange);
+
+  useEffect(() => {
+    initAllApps();
+  }, []);
+
+  const onChangeApp = useCallback(
+    (appId: string) => {
+      router.replace({
+        query: {
+          ...router.query,
+          appId
+        }
+      });
+    },
+    [router]
+  );
+
+  const initAllApps = async () => {
+    const resp = await getAllMyApps({
+      username: userInfo?.username
+    });
+    setAllAppList(resp);
+    const aId: any = router.query?.appId || activeAppId;
+    const tree = buildFilteredTree(resp, aId);
+    setAllFolderList(tree);
+  };
+
+  const searchApps = useMemo(() => {
+    if (searchKey) {
+      setSearchFlag(true);
+      return allAppList.filter((item) => item.name.includes(searchKey));
+    } else {
+      setSearchFlag(false);
+      return [];
+    }
+  }, [searchKey, allAppList]);
 
   return (
     <MotionFlex
@@ -509,13 +675,14 @@ const ChatSlider = ({ apps, activeAppId }: Props) => {
       animate={isCollapsed ? 'folded' : 'expanded'}
       initial={false}
       userSelect={'none'}
+      bgColor={'#ffffff'}
     >
-      <LogoSection />
+      <CustomLogoSection setSearchKey={setSearchKey} />
 
-      <NavigationSection />
+      {/* <NavigationSection /> */}
 
       {/* recently used apps */}
-      <AnimatedSection show={!isCollapsed} display={'flex'} flexDir={'column'} flex={'1 0 0'}>
+      {/* <AnimatedSection show={!isCollapsed} display={'flex'} flexDir={'column'} flex={'1 0 0'}>
         <MyDivider h={1} my={1} mx="16px" w="calc(100% - 32px)" />
 
         <HStack px={3} my={2} color={'myGray.500'} fontSize={'sm'} justifyContent={'space-between'}>
@@ -558,7 +725,170 @@ const ChatSlider = ({ apps, activeAppId }: Props) => {
         </MyBox>
       </AnimatedSection>
 
-      <BottomSection />
+      <BottomSection /> */}
+
+      {searchFlag ? (
+        <Box flex={'1 0 0'} px={4} h={0} overflow={'overlay'}>
+          {searchApps.map((item) => (
+            <Flex
+              key={item._id}
+              py={2}
+              px={3}
+              mb={3}
+              cursor={'pointer'}
+              borderRadius={'md'}
+              alignItems={'center'}
+              fontSize={'sm'}
+              boxSizing={'border-box'}
+              {...(item._id === activeAppId
+                ? {
+                    bg: 'rgba(255, 0, 36, 0.04)',
+                    border: '1px solid rgba(255, 0, 0, 0.1)',
+                    boxShadow: 'md'
+                    // color: 'primary.600'
+                  }
+                : {
+                    border: '1px solid #F1F2F3',
+                    _hover: {
+                      bg: 'myGray.200'
+                    },
+                    onClick: () => onChangeApp(item._id)
+                  })}
+            >
+              <Avatar src={item.avatar} w={6} borderRadius={'md'} />
+              <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
+                <Box ml={2} className={'textEllipsis'} fontSize={'14px'}>
+                  {item.name}
+                </Box>
+                <Box ml={2} className={'textEllipsis'} fontSize={'12px'} color={'#4B5563'}>
+                  {item.intro ? item.intro : t('no_intro')}
+                </Box>
+              </Flex>
+            </Flex>
+          ))}
+        </Box>
+      ) : (
+        <Box flex={'1 0 0'} px={0} h={0} overflow={'overlay'}>
+          <Accordion defaultIndex={[0]} allowMultiple>
+            {allFolderList.map((item, index) => {
+              return (
+                <AccordionItem key={item['_id']} border={'none'}>
+                  <h2>
+                    <AccordionButton>
+                      <Box
+                        as="span"
+                        flex="1"
+                        textAlign="left"
+                        fontSize={16}
+                        fontWeight={'bold'}
+                        color={'#555'}
+                      >
+                        {item.name}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    {item.children &&
+                      item.children.map((subItem: any) => (
+                        <Flex
+                          key={subItem._id}
+                          py={2}
+                          px={3}
+                          mb={3}
+                          cursor={'pointer'}
+                          borderRadius={'md'}
+                          alignItems={'center'}
+                          fontSize={'sm'}
+                          boxSizing={'border-box'}
+                          {...(subItem._id === activeAppId
+                            ? {
+                                bg: 'rgba(255, 0, 36, 0.04)',
+                                border: '1px solid rgba(255, 0, 0, 0.1)',
+                                boxShadow: 'md'
+                                // color: 'primary.600'
+                              }
+                            : {
+                                border: '1px solid #F1F2F3',
+                                _hover: {
+                                  bg: 'myGray.200'
+                                },
+                                onClick: () => onChangeApp(subItem._id)
+                              })}
+                        >
+                          {/* <Avatar src={subItem.avatar} w={6} borderRadius={'md'} color='black' /> */}
+                          <Image
+                            objectFit={'contain'}
+                            boxSize={8}
+                            borderRadius={'md'}
+                            alt={''}
+                            src={getAppCardLogo(subItem)}
+                          />
+                          <Flex flexDir={'column'} gap={2} w={'150px'}>
+                            <Box
+                              ml={2}
+                              className={'textEllipsis'}
+                              fontSize={'14px'}
+                              w={'calc(100% - 1.5rem)'}
+                            >
+                              {subItem.name}
+                            </Box>
+                            <Box
+                              ml={2}
+                              className={'textEllipsis'}
+                              fontSize={'12px'}
+                              color={'#4B5563'}
+                              w={'calc(100% - 1.5rem)'}
+                            >
+                              {subItem.intro ? subItem.intro : t('no_intro')}
+                            </Box>
+                          </Flex>
+                        </Flex>
+                      ))}
+                  </AccordionPanel>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+          {/* {apps.map((item) => (
+            <Flex
+              key={item._id}
+              py={2}
+              px={3}
+              mb={3}
+              cursor={'pointer'}
+              borderRadius={'md'}
+              alignItems={'center'}
+              fontSize={'sm'}
+              boxSizing={'border-box'}
+              {...(item._id === activeAppId
+                ? {
+                  bg: 'rgba(255, 0, 36, 0.04)',
+                  border: '1px solid rgba(255, 0, 0, 0.1)',
+                  boxShadow: 'md'
+                  // color: 'primary.600'
+                }
+                : {
+                  border: '1px solid #F1F2F3',
+                  _hover: {
+                    bg: 'myGray.200'
+                  },
+                  onClick: () => onChangeApp(item._id)
+                })}
+            >
+              <Avatar src={item.avatar} w={6} borderRadius={'md'} />
+              <Flex flexDir={'column'} gap={2} w={'calc(100% - 20px)'}>
+                <Box ml={2} className={'textEllipsis'} fontSize={'14px'}>
+                  {item.name}
+                </Box>
+                <Box ml={2} className={'textEllipsis'} fontSize={'12px'} color={'#4B5563'}>
+                  {item.intro ? item.intro : t('no_intro')}
+                </Box>
+              </Flex>
+            </Flex>
+          ))} */}
+        </Box>
+      )}
     </MotionFlex>
   );
 };
