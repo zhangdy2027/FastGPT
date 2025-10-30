@@ -93,108 +93,18 @@ function List() {
   const refreshFileFilePermission = async (user: string, datasetId: string) => {
     axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
       datasetId,
-      members: [user],
-      permission: '0'
-    });
-    axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-      datasetId,
-      members: [userInfo?.team?.tmbId],
-      permission: '2'
+      collaborators: [
+        {
+          tmbId: user,
+          permission: '0'
+        },
+        {
+          tmbId: userInfo?.team?.tmbId,
+          permission: '2'
+        }
+      ]
     });
   };
-
-  // const refreshParentFilePermission = async (id: string) => {
-  //   return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //     datasetId: id
-  //   });
-  //   // const resp = await getDatasetById(id);
-  //   // if (resp.parentId) {
-  //   //   const cResp = await getCollaboratorList(id);
-  //   //   const pResp = await getCollaboratorList(resp.parentId);
-  //   //   cResp.forEach((item: any) => {
-  //   //     if (item.tmbId) {
-  //   //       const curP = pResp.find((subItem: any) => subItem.tmbId === item.tmbId);
-  //   //       if (curP) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           members: [item.tmbId],
-  //   //           permission: curP.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       } else {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           members: [item.tmbId],
-  //   //           permission: '2'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //     if (item.groupId) {
-  //   //       const curP = pResp.find((subItem: any) => subItem.groupId === item.groupId);
-  //   //       if (curP) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           groups: [item.groupId],
-  //   //           permission: curP.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       } else {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           groups: [item.groupId],
-  //   //           permission: '2'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //     if (item.orgId) {
-  //   //       const curP = pResp.find((subItem: any) => subItem.orgId === item.orgId);
-  //   //       if (curP) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           orgs: [item.orgId],
-  //   //           permission: curP.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       } else {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           orgs: [item.orgId],
-  //   //           permission: '2'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //   });
-  //   //   pResp.forEach((item: any) => {
-  //   //     if (item.tmbId) {
-  //   //       const curC = cResp.find((subItem: any) => subItem.tmbId === item.tmbId);
-  //   //       if (!curC) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           members: [item.tmbId],
-  //   //           permission: item.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //     if (item.groupId) {
-  //   //       const curC = cResp.find((subItem: any) => subItem.groupId === item.groupId);
-  //   //       if (!curC) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           groups: [item.groupId],
-  //   //           permission: item.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //     if (item.orgId) {
-  //   //       const curC = cResp.find((subItem: any) => subItem.orgId === item.orgId);
-  //   //       if (!curC) {
-  //   //         axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/filePermission`, {
-  //   //           datasetId: id,
-  //   //           orgs: [item.orgId],
-  //   //           permission: item.permission.value === 4 ? '1' : '0'
-  //   //         });
-  //   //       }
-  //   //     }
-  //   //   });
-  //   // }
-  // };
 
   const editPerDataset = useMemo(
     () => myDatasets.find((item) => item._id === editPerDatasetId),

@@ -1126,7 +1126,7 @@ const ChatBox = ({
     >
       <Script src={getWebReqUrl('/js/html2pdf.bundle.min.js')} strategy="lazyOnload"></Script>
       {/* chat box container */}
-      {isHomeRender ? (
+      {false ? (
         <MyBox
           isLoading={isLoadingRecords}
           flex={'1 0 0'}

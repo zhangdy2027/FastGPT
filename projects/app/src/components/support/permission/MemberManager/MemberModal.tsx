@@ -116,7 +116,8 @@ function MemberModal({
               orgId: clb.orgId,
               permission: clb.permission.role
             }) as CollaboratorItemType
-        )
+        ),
+        collaboratorDetailList: collaboratorDetailList
       }),
     {
       successToast: t('common:add_success'),

@@ -323,7 +323,7 @@ const ChatInput = ({
         )}
         {/* 左侧自定义按钮组 */}
         <Flex alignItems={'center'} gap={2} flex={'1 0 0'} w={0}>
-          {InputLeftComponent}
+          {/* {InputLeftComponent} */}
         </Flex>
 
         {/* 右侧原有按钮组 */}

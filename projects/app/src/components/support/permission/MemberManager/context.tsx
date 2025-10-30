@@ -32,7 +32,9 @@ export type MemberManagerInputPropsType = {
   defaultRole: RoleValueType;
   onGetCollaboratorList: () => Promise<CollaboratorListType>;
   roleList?: RoleListType;
-  onUpdateCollaborators: (props: UpdateClbPermissionProps) => Promise<any>;
+  onUpdateCollaborators: (
+    props: UpdateClbPermissionProps & { collaboratorDetailList: any }
+  ) => Promise<any>;
   onDelOneCollaborator?: (
     props: RequireOnlyOne<{ tmbId: string; groupId: string; orgId: string }>
   ) => Promise<any>;
@@ -80,32 +82,38 @@ export const CollaboratorContext = createContext<CollaboratorContextType>({
   isInheritPermission: false
 });
 
-const refreshFileFilePermission = async (props: any, curDatasetId?: string, isDelete?: boolean) => {
+const refreshFileFilePermission = async (old: any, props: any, curDatasetId?: string) => {
   if (curDatasetId) {
-    const params: any = {
+    const params = {
       datasetId: curDatasetId,
-      groups: [],
-      members: [],
-      orgs: [],
-      permission: '0'
+      collaborators: props.collaborators.map((item: any) => ({
+        ...item,
+        permission: item.permission === 4 ? '1' : '0'
+      }))
     };
-    if (isDelete) {
-      params.permission = '2';
-      if (props.groupId) {
-        params.groups = [props.groupId];
+
+    Object.values(old).forEach((item: any) => {
+      if (item.groupId) {
+        const isDelete = !params.collaborators.find(
+          (subItem: any) => subItem.groupId === item.groupId
+        );
+        if (isDelete) {
+          params.collaborators.push({ groupId: item.groupId, permission: '2' });
+        }
+      } else if (item.orgId) {
+        const isDelete = !params.collaborators.find((subItem: any) => subItem.orgId === item.orgId);
+        if (isDelete) {
+          params.collaborators.push({ orgId: item.orgId, permission: '2' });
+        }
+      } else {
+        // tmbId
+        const isDelete = !params.collaborators.find((subItem: any) => subItem.tmbId === item.tmbId);
+        if (isDelete) {
+          params.collaborators.push({ tmbId: item.tmbId, permission: '2' });
+        }
       }
-      if (props.orgId) {
-        params.orgs = [props.orgId];
-      }
-      if (props.tmbId) {
-        params.members = [props.tmbId];
-      }
-    } else {
-      params.permission = props.permission === 4 ? '1' : '0';
-      params.groups = props.groups;
-      params.members = props.members;
-      params.orgs = props.orgs;
-    }
+    });
+
     const resp = await axios.post(
       `${window.myConfig.docServerUrl}/shtl/api/online/filePermission`,
       params
@@ -138,9 +146,13 @@ const CollaboratorContextProvider = ({
   selectedHint?: string;
 }) => {
   const { t } = useTranslation();
-  const onUpdateCollaboratorsThen = async (props: UpdateClbPermissionProps) => {
+  const onUpdateCollaboratorsThen = async (
+    props: UpdateClbPermissionProps & { collaboratorDetailList: any }
+  ) => {
+    const collaboratorDetailList = { ...props.collaboratorDetailList };
+    delete props.collaboratorDetailList;
     await onUpdateCollaborators(props);
-    refreshFileFilePermission(props, curDatasetId);
+    refreshFileFilePermission(collaboratorDetailList, props, curDatasetId);
     refetchCollaboratorList();
   };
   const onDelOneCollaboratorThen = async (
@@ -148,7 +160,7 @@ const CollaboratorContextProvider = ({
   ) => {
     if (onDelOneCollaborator) {
       await onDelOneCollaborator(props);
-      refreshFileFilePermission(props, curDatasetId, true);
+      // refreshFileFilePermission(collaboratorDetailList, props, curDatasetId, true);
       refetchCollaboratorList();
     }
   };
