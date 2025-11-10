@@ -436,7 +436,11 @@ const ChatInput = ({
     onSelectFile,
     handleSend,
     onStop,
-    InputLeftComponent
+    appId,
+    fileList.length,
+    getNetworkSearch(appId),
+    networkSearchConfig.open,
+    setNetworkSearch
   ]);
 
   const activeStyles: FlexProps = {

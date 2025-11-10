@@ -177,10 +177,10 @@ const Navbar = ({ unread }: { unread: number }) => {
               {...(item.link !== router.asPath
                 ? {
                     onClick: () => {
-                      if (item.link.startsWith('/chat')) {
-                        window.open(getWebReqUrl(item.link), '_blank', 'noopener,noreferrer');
-                        return;
-                      }
+                      // if (item.link.startsWith('/chat')) {
+                      //   window.open(getWebReqUrl(item.link), '_blank', 'noopener,noreferrer');
+                      //   return;
+                      // }
                       router.push(item.link);
                     }
                   }
