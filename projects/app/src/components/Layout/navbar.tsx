@@ -92,7 +92,7 @@ const Navbar = ({ unread }: { unread: number }) => {
         label: t('common:navbar.Chat'),
         icon: 'core/chat/chatLight',
         activeIcon: 'core/chat/chatFill',
-        link: `/chat?appId=${lastChatAppId}`,
+        link: `/chat?appId=${lastChatAppId}&pane=${lastPane}`,
         activeLink: ['/chat']
       });
       list.push(

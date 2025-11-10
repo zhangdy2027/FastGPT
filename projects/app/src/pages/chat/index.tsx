@@ -131,7 +131,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       )}
 
       {datasetCiteData && (
-        <PageContainer flex="1 0 0" w={0} maxW="560px">
+        <PageContainer flex="1 0 0" w={0} maxW="560px" pt={'64px !important'}>
           <ChatQuoteList
             metadata={datasetCiteData.metadata}
             rawSearch={datasetCiteData.rawSearch}
