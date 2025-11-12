@@ -13,9 +13,6 @@ import { checkIsWecomTerminal } from '@fastgpt/global/support/user/login/constan
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 import Avatar from '@fastgpt/web/components/common/Avatar';
 import dynamic from 'next/dynamic';
-import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
-import { postLoginByNoPc } from '@/web/support/user/api';
-import { getBdVId } from '@/web/support/marketing/utils';
 import { POST } from '@/web/common/api/request';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 
@@ -23,8 +20,6 @@ type Props = {
   children: React.ReactNode;
   setPageType: Dispatch<`${LoginPageTypeEnum}`>;
   pageType: `${LoginPageTypeEnum}`;
-  fromSignin?: Boolean;
-  loginSuccess: any;
 };
 
 type OAuthItem = {
@@ -35,7 +30,7 @@ type OAuthItem = {
   redirectUrl?: string;
 };
 
-const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess }: Props) => {
+const FormLayout = ({ children, setPageType, pageType }: Props) => {
   const { t } = useTranslation();
   const router = useRouter();
   const rootLogin = router.query.rootLogin === '1';
@@ -125,48 +120,20 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
     [feConfigs?.sso?.url, oAuthList.length]
   );
 
-  const { runAsync: onNoPcClickLogin, loading: requesting } = useRequest2(
-    async ({ username }: any) => {
-      loginSuccess(
-        await postLoginByNoPc({
-          username
-        })
-      );
-    },
-    {
-      refreshDeps: [loginSuccess]
-    }
-  );
-
   const onClickOauth = useCallback(
     async (item: OAuthItem) => {
       if (item.provider === OAuthEnum.sso) {
-        if (isPc) {
-          const redirectUrl = await POST<string>('/proApi/support/user/account/login/getAuthURL', {
-            redirectUri,
-            isWecomWorkTerminal
-          });
-          setLoginStore({
-            provider: item.provider as OAuthEnum,
-            lastRoute,
-            state: state.current
-          });
-          router.replace(redirectUrl, '_self');
-          return;
-        } else {
-          const lastRoute = router.query.lastRoute as string;
-          if (lastRoute) {
-            const params = lastRoute.split('&');
-            const aParam = params.find((item: string) => item.includes('account='));
-            if (aParam) {
-              const account = aParam.split('=')[1];
-              onNoPcClickLogin({
-                username: account
-              });
-              return;
-            }
-          }
-        }
+        const redirectUrl = await POST<string>('/proApi/support/user/account/login/getAuthURL', {
+          redirectUri,
+          isWecomWorkTerminal
+        });
+        setLoginStore({
+          provider: item.provider as OAuthEnum,
+          lastRoute: computedLastRoute,
+          state: state.current
+        });
+        router.replace(redirectUrl, '_self');
+        return;
       }
 
       if (item.redirectUrl) {
@@ -184,7 +151,7 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
 
   // Auto login
   useEffect(() => {
-    if (rootLogin || fromSignin) return;
+    if (rootLogin) return;
     const sso = oAuthList.find((item) => item.provider === OAuthEnum.sso);
     // sso auto login
     if (sso && (feConfigs?.sso?.autoLogin || isWecomWorkTerminal)) onClickOauth(sso);
@@ -214,33 +181,52 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
       </Flex>
       {children}
       {/* {show_oauth && (
-        <>
+        <Box mt={['80px', 9]}>
           <Box flex={1} />
 
           <Flex position={'relative'} mb={5} alignItems={'center'}>
             <Box h={'1px'} flex={'1'} bg={'myGray.250'} />
             <Box px={3} color={'myGray.500'} fontSize={'mini'}>
               or
-            </AbsoluteCenter>
-          </Box>
-          <Box mt={4}>
-            {oAuthList.map((item) => (
-              <Box key={item.provider} _notFirst={{ mt: 4 }}>
-                <Button
-                  variant={'whitePrimary'}
-                  w={'100%'}
-                  h={'40px'}
-                  borderRadius={'sm'}
-                  fontWeight={'medium'}
-                  leftIcon={<Avatar src={item.icon as any} w={'20px'} />}
-                  onClick={() => onClickOauth(item)}
-                >
-                  {item.label}
-                </Button>
-              </Box>
-            ))}
-          </Box>
-        </>
+            </Box>
+            <Box h={'1px'} flex={'1'} bg={'myGray.250'} />
+          </Flex>
+
+          {oAuthList.length > 2 ? (
+            <Flex gap={4} alignItems={'center'} justifyContent={'center'}>
+              {oAuthList.map((item) => (
+                <MyTooltip key={item.provider}>
+                  <IconButton
+                    size={'lgSquare'}
+                    borderRadius={'50%'}
+                    aria-label={item.label}
+                    variant={'whitePrimary'}
+                    icon={<Avatar src={item.icon as any} w={'20px'} />}
+                    onClick={() => onClickOauth(item)}
+                  />
+                </MyTooltip>
+              ))}
+            </Flex>
+          ) : (
+            <Flex gap={4} alignItems={'center'} justifyContent={'center'}>
+              {oAuthList.map((item) => (
+                <Box key={item.provider} flex={1}>
+                  <Button
+                    variant={'whitePrimary'}
+                    w={'100%'}
+                    h={'40px'}
+                    borderRadius={'sm'}
+                    fontWeight={'medium'}
+                    leftIcon={<Avatar src={item.icon as any} w={'20px'} />}
+                    onClick={() => onClickOauth(item)}
+                  >
+                    {item.label}
+                  </Button>
+                </Box>
+              ))}
+            </Flex>
+          )}
+        </Box>
       )} */}
     </Flex>
   );

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
-// import type { ECharts } from 'echarts';
+import type { ECharts } from 'echarts';
 import { Box, Skeleton } from '@chakra-ui/react';
 import json5 from 'json5';
 import { useMount } from 'ahooks';
@@ -57,8 +56,10 @@ const EChartsCodeBlock = ({ code }: { code: string }) => {
 
     if (chartRef.current) {
       try {
-        eChart.current = echarts.init(chartRef.current);
-        eChart.current.setOption(option);
+        import('echarts').then((module) => {
+          eChart.current = module.init(chartRef.current!);
+          eChart.current.setOption(option);
+        });
       } catch (error) {
         console.error('ECharts render failed:', error);
       }

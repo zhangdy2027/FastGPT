@@ -63,7 +63,7 @@ const strIsMdTable = (str: string) => {
   return true;
 };
 const markdownTableSplit = (props: SplitProps): SplitResponse => {
-  let { text = '', chunkSize } = props;
+  let { text = '', chunkSize, maxSize = defaultMaxChunkSize } = props;
 
   // split by rows
   const splitText2Lines = text.split('\n').filter((line) => line.trim());
@@ -82,9 +82,10 @@ const markdownTableSplit = (props: SplitProps): SplitResponse => {
     .join(' | ')} |`;
 
   const chunks: string[] = [];
-  let chunk = `${header}
+  const defaultChunk = `${header}
 ${mdSplitString}
 `;
+  let chunk = defaultChunk;
 
   for (let i = 2; i < splitText2Lines.length; i++) {
     const chunkLength = getTextValidLength(chunk);
@@ -92,10 +93,18 @@ ${mdSplitString}
 
     // Over size
     if (chunkLength + nextLineLength > chunkSize) {
-      chunks.push(chunk);
-      chunk = `${header}
-${mdSplitString}
-`;
+      // 单行非常的长，直接分割
+      if (chunkLength > maxSize) {
+        const newChunks = commonSplit({
+          ...props,
+          text: chunk.replace(defaultChunk, '').trim()
+        }).chunks;
+        chunks.push(...newChunks);
+      } else {
+        chunks.push(chunk);
+      }
+
+      chunk = defaultChunk;
     }
     chunk += `${splitText2Lines[i]}\n`;
   }
@@ -346,17 +355,21 @@ const commonSplit = (props: SplitProps): SplitResponse => {
     const isMarkdownStep = checkIsMarkdownSplit(step);
     const isCustomStep = checkIsCustomStep(step);
     const forbidConcat = isCustomStep; // forbid=true时候，lastText肯定为空
-    const textLength = getTextValidLength(text);
 
     // Over step
     if (step >= stepReges.length) {
-      if (textLength < maxSize) {
-        return [text];
+      // Merge lastText with current text to prevent data loss
+      const combinedText = lastText + text;
+      const combinedLength = getTextValidLength(combinedText);
+
+      if (combinedLength < maxSize) {
+        return [combinedText];
       }
       // use slice-chunkSize to split text
+      // Note: Use combinedText.length for slicing, not combinedLength
       const chunks: string[] = [];
-      for (let i = 0; i < textLength; i += chunkSize - overlapLen) {
-        chunks.push(text.slice(i, i + chunkSize));
+      for (let i = 0; i < combinedText.length; i += chunkSize - overlapLen) {
+        chunks.push(combinedText.slice(i, i + chunkSize));
       }
       return chunks;
     }

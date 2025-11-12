@@ -32,13 +32,14 @@ const Auth = ({ children }: { children: JSX.Element | React.ReactNode }) => {
         await clearToken();
         setUserInfo(null);
         return null;
-      } else if (unAuthPage[router.pathname] === true || userInfo) {
+      } else if (unAuthPage[router.pathname] === true) {
         return null;
       } else {
         return initUserInfo();
       }
     },
     {
+      refetchInterval: 10 * 60 * 1000,
       onError(error) {
         console.log('error->', error);
         router.replace(

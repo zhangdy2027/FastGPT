@@ -1,9 +1,7 @@
-import { DELETE, GET, POST } from '@/web/common/api/request';
-import type { UploadImgProps } from '@fastgpt/global/common/file/api.d';
-import type { UploadPresignedURLResponse } from '@fastgpt/service/common/s3/type';
+import { POST } from '@/web/common/api/request';
+import type { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+import type { CreatePostPresignedUrlResult } from '@fastgpt/service/common/s3/type';
 import { type AxiosProgressEvent } from 'axios';
-
-export const postUploadImg = (e: UploadImgProps) => POST<string>('/common/file/uploadImage', e);
 
 export const postUploadFiles = (
   data: FormData,
@@ -32,3 +30,27 @@ export const postS3UploadFile = (
     },
     onUploadProgress
   });
+
+export const getUploadAvatarPresignedUrl = (params: {
+  filename: string;
+  autoExpired?: boolean;
+}) => {
+  return POST<CreatePostPresignedUrlResult>('/common/file/presignAvatarPostUrl', params);
+};
+
+export const getUploadChatFilePresignedUrl = (params: {
+  filename: string;
+  appId: string;
+  chatId: string;
+  outLinkAuthData?: OutLinkChatAuthProps;
+}) => {
+  return POST<CreatePostPresignedUrlResult>('/core/chat/presignChatFilePostUrl', params);
+};
+
+export const getPresignedChatFileGetUrl = (params: {
+  key: string;
+  appId: string;
+  outLinkAuthData?: OutLinkChatAuthProps;
+}) => {
+  return POST<string>('/core/chat/presignChatFileGetUrl', params);
+};

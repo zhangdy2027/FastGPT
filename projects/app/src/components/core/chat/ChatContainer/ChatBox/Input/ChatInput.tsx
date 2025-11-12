@@ -83,6 +83,9 @@ const ChatInput = ({
     selectFileLabel,
     showSelectFile,
     showSelectImg,
+    showSelectVideo,
+    showSelectAudio,
+    showSelectCustomFileExtension,
     removeFiles,
     replaceFiles,
     hasFileUploading
@@ -95,6 +98,12 @@ const ChatInput = ({
   });
   const havInput = !!inputValue || fileList.length > 0;
   const canSendMessage = havInput && !hasFileUploading;
+  const canUploadFile =
+    showSelectFile ||
+    showSelectImg ||
+    showSelectVideo ||
+    showSelectAudio ||
+    showSelectCustomFileExtension;
 
   // Upload files
   useRequest2(uploadFiles, {
@@ -204,7 +213,7 @@ const ChatInput = ({
             }}
             onPaste={(e) => {
               const clipboardData = e.clipboardData;
-              if (clipboardData && (showSelectFile || showSelectImg)) {
+              if (clipboardData && canUploadFile) {
                 const items = clipboardData.items;
                 const files = Array.from(items)
                   .map((item) => (item.kind === 'file' ? item.getAsFile() : undefined))
@@ -236,8 +245,7 @@ const ChatInput = ({
       offFocus,
       setValue,
       handleSend,
-      showSelectFile,
-      showSelectImg,
+      canUploadFile,
       onSelectFile
     ]
   );
@@ -331,7 +339,7 @@ const ChatInput = ({
           {/* Attachment and Voice Group */}
           <Flex alignItems={'center'} h={[8, 9]}>
             {/* file selector button */}
-            {(showSelectFile || showSelectImg) && (
+            {canUploadFile && (
               <Flex
                 alignItems={'center'}
                 justifyContent={'center'}
@@ -383,7 +391,7 @@ const ChatInput = ({
           </Flex>
 
           {/* Divider Container */}
-          {((whisperConfig?.open && !inputValue) || showSelectFile || showSelectImg) && (
+          {((whisperConfig?.open && !inputValue) || canUploadFile) && (
             <Flex alignItems={'center'} justifyContent={'center'} w={2} h={4} mr={2}>
               <Box w={'2px'} h={5} bg={'myGray.200'} />
             </Flex>
@@ -422,8 +430,8 @@ const ChatInput = ({
     );
   }, [
     isPc,
-    showSelectFile,
-    showSelectImg,
+    InputLeftComponent,
+    canUploadFile,
     selectFileLabel,
     selectFileIcon,
     File,
@@ -454,7 +462,7 @@ const ChatInput = ({
       onDrop={(e) => {
         e.preventDefault();
 
-        if (!(showSelectFile || showSelectImg)) return;
+        if (!canUploadFile) return;
         const files = Array.from(e.dataTransfer.files);
 
         const droppedFiles = files.filter((file) => fileTypeFilter(file));

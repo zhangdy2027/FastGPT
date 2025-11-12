@@ -12,7 +12,6 @@ import {
   WritePermissionVal
 } from '@fastgpt/global/support/permission/constant';
 import { TeamAppCreatePermissionVal } from '@fastgpt/global/support/permission/user/constant';
-import { refreshSourceAvatar } from '@fastgpt/service/common/file/image/controller';
 import { pushTrack } from '@fastgpt/service/common/middle/tracks/utils';
 import { type ClientSession } from '@fastgpt/service/common/mongo';
 import { mongoSessionRun } from '@fastgpt/service/common/mongo/sessionRun';
@@ -29,6 +28,7 @@ import { getI18nAppType } from '@fastgpt/service/support/user/audit/util';
 import { MongoResourcePermission } from '@fastgpt/service/support/permission/schema';
 import { getMyModels } from '@fastgpt/service/support/permission/model/controller';
 import { removeUnauthModels } from '@fastgpt/global/core/workflow/utils';
+import { getS3AvatarSource } from '@fastgpt/service/common/s3/sources/avatar';
 
 export type CreateAppBody = {
   parentId?: ParentIdType;
@@ -39,11 +39,14 @@ export type CreateAppBody = {
   modules: AppSchema['modules'];
   edges?: AppSchema['edges'];
   chatConfig?: AppSchema['chatConfig'];
+
+  templateId?: string;
   utmParams?: ShortUrlParams;
 };
 
 async function handler(req: ApiRequestProps<CreateAppBody>) {
-  const { parentId, name, avatar, intro, type, modules, edges, chatConfig, utmParams } = req.body;
+  const { parentId, name, avatar, intro, type, modules, edges, chatConfig, templateId, utmParams } =
+    req.body;
 
   if (!name || !type || !Array.isArray(modules)) {
     return Promise.reject(CommonErrEnum.inheritPermissionError);
@@ -91,7 +94,8 @@ async function handler(req: ApiRequestProps<CreateAppBody>) {
     teamId,
     tmbId,
     userAvatar: tmb?.avatar,
-    username: tmb?.user?.username
+    username: tmb?.user?.username,
+    templateId
   });
 
   pushTrack.createApp({
@@ -122,6 +126,7 @@ export const onCreateApp = async ({
   pluginData,
   username,
   userAvatar,
+  templateId,
   session
 }: {
   parentId?: ParentIdType;
@@ -137,6 +142,7 @@ export const onCreateApp = async ({
   pluginData?: AppSchema['pluginData'];
   username?: string;
   userAvatar?: string;
+  templateId?: string;
   session?: ClientSession;
 }) => {
   const create = async (session: ClientSession) => {
@@ -154,7 +160,8 @@ export const onCreateApp = async ({
           chatConfig,
           type,
           version: 'v2',
-          pluginData
+          pluginData,
+          templateId
         }
       ],
       { session, ordered: true }
@@ -201,7 +208,7 @@ export const onCreateApp = async ({
       });
     })();
 
-    await refreshSourceAvatar(avatar, undefined, session);
+    await getS3AvatarSource().refreshAvatar(avatar, undefined, session);
 
     return appId;
   };

@@ -72,14 +72,17 @@ COPY --from=builder /app/projects/app/next.config.js /app/projects/app/next.conf
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/standalone /app/
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/static /app/projects/app/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/server/chunks /app/projects/app/.next/server/chunks
-COPY --from=builder --chown=nextjs:nodejs /app/projects/app/.next/server/worker /app/projects/app/.next/server/worker
+# copy worker
+COPY --from=builder --chown=nextjs:nodejs /app/projects/app/worker /app/projects/app/worker
 
 COPY --from=maindeps /app/node_modules/tiktoken ./node_modules/tiktoken
 RUN rm -rf ./node_modules/tiktoken/encoders
 COPY --from=maindeps /app/node_modules/@zilliz/milvus2-sdk-node ./node_modules/@zilliz/milvus2-sdk-node
-
+# copy package.json to version file
 COPY --from=builder /app/projects/app/package.json ./package.json 
-COPY ./projects/app/data /app/data
+# copy config
+COPY ./projects/app/data/config.json /app/data/config.json
+
 RUN chown -R nextjs:nodejs /app/data
 
 ENV NODE_ENV=production
