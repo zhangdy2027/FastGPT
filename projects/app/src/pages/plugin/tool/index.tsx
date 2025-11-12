@@ -165,7 +165,7 @@ const ToolKitProvider = () => {
             >
               {t('common:navbar.plugin')}
             </Box>
-            {feConfigs?.docUrl && (
+            {/* {feConfigs?.docUrl && (
               <Button
                 mr={4}
                 onClick={() =>
@@ -187,7 +187,7 @@ const ToolKitProvider = () => {
               >
                 {t('app:toolkit_marketplace_submit_request')}
               </Button>
-            )}
+            )} */}
           </Flex>
           {/* Tags */}
           <Flex mt={2} mb={3} alignItems={'center'}>

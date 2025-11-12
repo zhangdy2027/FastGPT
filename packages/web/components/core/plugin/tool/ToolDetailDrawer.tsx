@@ -318,9 +318,9 @@ const ToolDetailDrawer = ({
             <Box fontSize={'12px'} color="myGray.500" mt={3}>
               {parseI18nString(parentTool?.description || '', i18n.language)}
             </Box>
-            <Box fontSize={'12px'} color="myGray.500" mt={3}>
+            {/* <Box fontSize={'12px'} color="myGray.500" mt={3}>
               {`by ${parentTool?.author || systemTitle || 'FastGPT'}`}
-            </Box>
+            </Box> */}
             <Flex mt={3}>
               <Button
                 w="full"

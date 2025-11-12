@@ -100,6 +100,8 @@ export type SystemVariablesType = {
   responseChatItemId?: string;
   histories: ChatItemType[];
   cTime: string;
+  username?: string;
+  networkSearch?: boolean;
 };
 
 /* node props */

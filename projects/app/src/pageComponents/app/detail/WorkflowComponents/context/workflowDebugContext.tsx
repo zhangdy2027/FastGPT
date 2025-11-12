@@ -18,9 +18,6 @@ import { useMemoEnhance } from '@fastgpt/web/hooks/useMemoEnhance';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
 
-const { userInfo } = useUserStore();
-const { getNetworkSearch } = useChatStore();
-
 export type DebugDataType = {
   runtimeNodes: RuntimeNodeItemType[];
   runtimeEdges: RuntimeEdgeItemType[];
@@ -90,6 +87,8 @@ export const WorkflowDebugProvider = ({ children }: { children: React.ReactNode 
   const onChangeNode = useContextSelector(WorkflowActionsContext, (v) => v.onChangeNode);
   const appDetail = useContextSelector(AppContext, (v) => v.appDetail);
   const appId = appDetail._id;
+  const { userInfo } = useUserStore();
+  const { getNetworkSearch } = useChatStore();
 
   // 调试状态
   const [workflowDebugData, setWorkflowDebugData] = useState<DebugDataType>();

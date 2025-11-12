@@ -267,7 +267,7 @@ const CreateModal = ({ onClose, type }: { type: CreateAppType; onClose: () => vo
                   {t(item.intro as any)}
                 </Box>
                 <Box w={'full'} fontSize={'mini'}>
-                  <Box color={'myGray.500'}>{`By ${item.author || feConfigs.systemTitle}`}</Box>
+                  {/* <Box color={'myGray.500'}>{`By ${item.author || feConfigs.systemTitle}`}</Box> */}
                   <Box
                     className="buttons"
                     display={'none'}

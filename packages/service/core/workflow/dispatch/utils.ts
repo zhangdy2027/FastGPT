@@ -164,7 +164,9 @@ export const filterSystemVariables = (variables: Record<string, any>): SystemVar
     chatId: variables.chatId,
     responseChatItemId: variables.responseChatItemId,
     histories: variables.histories,
-    cTime: variables.cTime
+    cTime: variables.cTime,
+    username: variables.username,
+    networkSearch: variables.networkSearch
   };
 };
 

@@ -1069,7 +1069,9 @@ const getSystemVariables = async ({
     chatId,
     responseChatItemId,
     histories,
-    cTime: getSystemTime(timezone)
+    cTime: getSystemTime(timezone),
+    username: variables.username,
+    networkSearch: variables.networkSearch
   };
 };
 

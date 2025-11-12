@@ -143,7 +143,7 @@ const TemplateMarket = ({
           </Box>
 
           <Box w={'full'} fontSize={'mini'}>
-            <Box color={'myGray.500'}>{`by ${item.author || feConfigs.systemTitle}`}</Box>
+            {/* <Box color={'myGray.500'}>{`by ${item.author || feConfigs.systemTitle}`}</Box> */}
             <Flex
               className="buttons"
               display={'none'}

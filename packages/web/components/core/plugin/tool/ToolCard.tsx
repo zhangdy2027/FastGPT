@@ -194,7 +194,10 @@ const ToolCard = ({
       </Flex>
 
       <Flex w={'full'} fontSize={'mini'} alignItems={'end'} justifyContent={'space-between'}>
-        <Box color={'myGray.500'} mt={3}>{`by ${item.author || systemTitle || 'FastGPT'}`}</Box>
+        {/* <Box color={'myGray.500'} mt={3}>{`by ${item.author || systemTitle || 'FastGPT'}`}</Box> */}
+        <Box color={'transparent'} mt={3}>
+          {'plugin'}
+        </Box>
         {mode === 'marketplace' ? (
           <Button
             className="install-button"

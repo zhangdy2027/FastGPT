@@ -341,7 +341,7 @@ const ToolkitMarketplace = () => {
 
         <ScrollData flex={1} minHeight={0} height="auto" pb={10}>
           <VStack ref={heroSectionRef} w={'full'} gap={8} px={8} pt={4} pb={8} mt={8}>
-            <Box
+            {/* <Box
               position={'relative'}
               display={'inline-flex'}
               px={4}
@@ -369,7 +369,7 @@ const ToolkitMarketplace = () => {
               }}
             >
               Assets for FastGPT
-            </Box>
+            </Box> */}
             <Box fontSize={'45px'} fontWeight={'semibold'} color={'black'}>
               {t('app:toolkit_marketplace_title')}
             </Box>
