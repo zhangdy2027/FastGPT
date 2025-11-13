@@ -358,7 +358,7 @@ const ToolkitMarketplace = ({ marketplaceUrl }: { marketplaceUrl: string }) => {
             zIndex={'999'}
             {...(showCompactSearch ? { right: 4 } : { left: 4 })}
           />
-          {!showCompactSearch && (
+          {/* {!showCompactSearch && (
             <Flex gap={3} position={'absolute'} right={4} top={4}>
               {feConfigs?.docUrl && (
                 <Button
@@ -383,7 +383,7 @@ const ToolkitMarketplace = ({ marketplaceUrl }: { marketplaceUrl: string }) => {
                 </Button>
               )}
             </Flex>
-          )}
+          )} */}
 
           <Box
             h={showCompactSearch ? '90px' : '0'}
