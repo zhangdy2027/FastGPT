@@ -148,15 +148,14 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
           });
           setLoginStore({
             provider: item.provider as OAuthEnum,
-            lastRoute,
+            lastRoute: computedLastRoute,
             state: state.current
           });
           router.replace(redirectUrl, '_self');
           return;
         } else {
-          const lastRoute = router.query.lastRoute as string;
-          if (lastRoute) {
-            const params = lastRoute.split('&');
+          if (computedLastRoute) {
+            const params = computedLastRoute.split('&');
             const aParam = params.find((item: string) => item.includes('account='));
             if (aParam) {
               const account = aParam.split('=')[1];

@@ -84,26 +84,26 @@ const Navbar = ({ unread }: { unread: number }) => {
         link: '/plugin/tool',
         activeLink: ['/plugin/tool']
       },
-      {
-        label: t('common:navbar.Account'),
-        icon: 'navbar/userLight',
-        activeIcon: 'navbar/userFill',
-        link: '/account/info',
-        activeLink: [
-          '/account/bill',
-          '/account/info',
-          '/account/team',
-          '/account/usage',
-          '/account/thirdParty',
-          '/account/apikey',
-          '/account/setting',
-          '/account/inform',
-          '/account/promotion',
-          '/account/model'
-        ]
-      },
       ...(userInfo?.username === 'root'
         ? [
+            {
+              label: t('common:navbar.Account'),
+              icon: 'navbar/userLight',
+              activeIcon: 'navbar/userFill',
+              link: '/account/info',
+              activeLink: [
+                '/account/bill',
+                '/account/info',
+                '/account/team',
+                '/account/usage',
+                '/account/thirdParty',
+                '/account/apikey',
+                '/account/setting',
+                '/account/inform',
+                '/account/promotion',
+                '/account/model'
+              ]
+            },
             {
               label: t('common:navbar.Config'),
               icon: 'support/config/configLight',
