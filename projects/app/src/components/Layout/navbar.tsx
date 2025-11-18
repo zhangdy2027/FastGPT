@@ -50,7 +50,7 @@ const Navbar = ({ unread }: { unread: number }) => {
               label: t('common:navbar.Chat'),
               icon: 'navbar/chatLight',
               activeIcon: 'navbar/chatFill',
-              link: `/chat?appId=${lastChatAppId}&pane=${lastPane}`,
+              link: `/chat?appId=${lastChatAppId}&pane=ra`,
               activeLink: ['/chat']
             }
           ]
