@@ -37,7 +37,7 @@ type Props = {
 
 const AppChatWindow = ({ myApps }: Props) => {
   const { userInfo } = useUserStore();
-  const { chatId, appId, outLinkAuthData } = useChatStore();
+  const { chatId, appId, outLinkAuthData, getNetworkSearch } = useChatStore();
 
   const { t } = useTranslation();
   const { isPc } = useSystem();
@@ -101,10 +101,15 @@ const AppChatWindow = ({ myApps }: Props) => {
       generatingMessage
     }: StartChatFnProps) => {
       const histories = messages.slice(-1);
+      const username = userInfo?.username || '';
       const { responseText } = await streamFetch({
         data: {
           messages: histories,
-          variables,
+          variables: {
+            ...variables,
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
+          },
           responseChatItemId,
           appId,
           chatId

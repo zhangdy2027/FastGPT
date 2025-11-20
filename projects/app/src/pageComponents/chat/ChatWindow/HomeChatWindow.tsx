@@ -74,7 +74,7 @@ const HomeChatWindow = ({ myApps }: Props) => {
 
   const { userInfo } = useUserStore();
   const { llmModelList, defaultModels, feConfigs } = useSystemStore();
-  const { chatId, appId, outLinkAuthData } = useChatStore();
+  const { chatId, appId, outLinkAuthData, getNetworkSearch } = useChatStore();
 
   const forbidLoadChat = useContextSelector(ChatContext, (v) => v.forbidLoadChat);
   const onUpdateHistoryTitle = useContextSelector(ChatContext, (v) => v.onUpdateHistoryTitle);
@@ -210,10 +210,15 @@ const HomeChatWindow = ({ myApps }: Props) => {
 
       // using original workflow of quick app
       if (isQuickApp && appId) {
+        const username = userInfo?.username || '';
         const { responseText } = await streamFetch({
           data: {
             messages: histories,
-            variables,
+            variables: {
+              ...variables,
+              username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+              networkSearch: getNetworkSearch(appId)
+            },
             responseChatItemId,
             appId,
             chatId
@@ -254,12 +259,16 @@ const HomeChatWindow = ({ myApps }: Props) => {
       formData.aiSettings.model = selectedModel;
       formData.selectedTools = tools;
       formData.chatConfig = chatBoxData.app.chatConfig || {};
-
+      const username = userInfo?.username || '';
       const { responseText } = await streamFetch({
         url: '/api/proApi/core/chat/chatHome',
         data: {
           messages: histories,
-          variables,
+          variables: {
+            ...variables,
+            username: username.startsWith('shtl-') ? username.split('shtl-')[1] : username,
+            networkSearch: getNetworkSearch(appId)
+          },
           responseChatItemId,
           appId,
           appName: t('chat:home.chat_app'),
