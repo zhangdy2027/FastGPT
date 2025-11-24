@@ -161,10 +161,7 @@ export async function parseHeaderCert({
 /* set cookie */
 export const TokenName = 'fastgpt_token';
 export const setCookie = (res: NextApiResponse, token: string) => {
-  res.setHeader(
-    'Set-Cookie',
-    `${TokenName}=${token}; Path=/; HttpOnly; Max-Age=604800; Samesite=Strict;`
-  );
+  res.setHeader('Set-Cookie', `${TokenName}=${token}; Path=/; HttpOnly; Samesite=Strict;`);
 };
 
 /* clear cookie */
