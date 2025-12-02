@@ -44,8 +44,6 @@ const Upload = () => {
     collectionId: string;
   };
   const datasetDetail = useContextSelector(DatasetPageContext, (v) => v.datasetDetail);
-  const retrainNewCollectionId = useRef('');
-  const curCollectionId = useRef('');
 
   const { importSource, parentId, sources, setSources, processParamsForm } = useContextSelector(
     DatasetImportContext,
@@ -134,37 +132,43 @@ const Upload = () => {
               ...commonParams,
               collectionId
             });
-            retrainNewCollectionId.current = res.collectionId;
+            axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/updateCollectionId`, {
+              oldCollectionId: collectionId,
+              newCollectionId: res.collectionId
+            });
           } else if (importSource === ImportDataSourceEnum.fileLocal && item.dbFileId) {
             const res = await postCreateDatasetFileCollection({
               ...commonParams,
               fileId: item.dbFileId
             });
-            curCollectionId.current = res.collectionId;
+            const data = new FormData();
+            data.append('collectionId', res.collectionId);
+            if (item.file) {
+              data.append('file', item.file);
+            }
+
+            axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
           } else if (importSource === ImportDataSourceEnum.fileLink && item.link) {
-            const res = await postCreateDatasetLinkCollection({
+            await postCreateDatasetLinkCollection({
               ...commonParams,
               link: item.link,
               metadata: {
                 webPageSelector: webSelector
               }
             });
-            curCollectionId.current = res.collectionId;
           } else if (importSource === ImportDataSourceEnum.fileCustom && item.rawText) {
             // manual collection
-            const res = await postCreateDatasetTextCollection({
+            await postCreateDatasetTextCollection({
               ...commonParams,
               text: item.rawText
             });
-            curCollectionId.current = res.collectionId;
           } else if (importSource === ImportDataSourceEnum.externalFile && item.externalFileUrl) {
-            const res = await postCreateDatasetExternalFileCollection({
+            await postCreateDatasetExternalFileCollection({
               ...commonParams,
               externalFileUrl: item.externalFileUrl,
               externalFileId: item.externalFileId,
               filename: item.sourceName
             });
-            curCollectionId.current = res.collectionId;
           }
 
           setSources((state) =>
@@ -190,23 +194,6 @@ const Upload = () => {
                 : t('common:core.dataset.import.import_success'),
             status: 'success'
           });
-        }
-
-        if (importSource === ImportDataSourceEnum.reTraining && collectionId) {
-          // 重新调整训练参数 retrainNewCollectionId.current：新id，collectionId：旧id
-          await axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/updateCollectionId`, {
-            oldCollectionId: collectionId,
-            newCollectionId: retrainNewCollectionId.current
-          });
-        } else {
-          const uploadResp = sources.map((item: any) => {
-            const data = new FormData();
-            data.append('collectionId', curCollectionId.current);
-            data.append('file', item.file);
-
-            return axios.post(`${window.myConfig.docServerUrl}/shtl/api/online/upload`, data);
-          });
-          await Promise.all(uploadResp);
         }
 
         // Close import page
