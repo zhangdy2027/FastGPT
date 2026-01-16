@@ -49,20 +49,43 @@ function formatDate(date: Date): string {
 function convertWorkbookToNodeXlsxStyle(workbook: XLSX.WorkBook) {
   return workbook.SheetNames.map((sheetName) => {
     const worksheet = workbook.Sheets[sheetName];
-    fillMergedCells(worksheet);
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true, defval: '' });
-    const cleaned = removeEmptyColumns(data as any[][]);
-    // 获取 sheet 最大列数（包括末尾空列）
-    const range = XLSX.utils.decode_range(worksheet['!ref']!);
-    const maxCols = range.e.c + 1;
+
+    // ✅ 空 sheet 兜底
+    if (!worksheet || !worksheet['!ref']) {
+      return {
+        name: sheetName,
+        data: []
+      };
+    }
+
+    if (worksheet['!merges']?.length) {
+      fillMergedCells(worksheet);
+    }
+
+    const rawData = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+      raw: true,
+      defval: ''
+    }) as any[][];
+
+    if (!rawData.length) {
+      return {
+        name: sheetName,
+        data: []
+      };
+    }
+
+    const cleaned = removeEmptyColumns(rawData);
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const maxCols = Math.max(range.e.c + 1, ...cleaned.map((r) => r.length));
 
     return {
       name: sheetName,
       data: cleaned.map((row) =>
         Array.from({ length: maxCols }, (_, i) => {
           const cell = row[i];
-          if (cell instanceof Date) return formatDate(cell); // 日期格式化
-          return cell ?? ''; // 空单元格补 ''
+          if (cell instanceof Date) return formatDate(cell);
+          return cell ?? '';
         })
       )
     };
