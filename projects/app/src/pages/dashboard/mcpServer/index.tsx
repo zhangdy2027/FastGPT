@@ -71,9 +71,9 @@ const McpServer = () => {
                   <Box fontSize={'lg'} color={'myGray.900'} fontWeight={500}>
                     {t('dashboard_mcp:mcp_server')}
                   </Box>
-                  <Box fontSize={'xs'} color={'myGray.500'}>
+                  {/* <Box fontSize={'xs'} color={'myGray.500'}>
                     {t('dashboard_mcp:mcp_server_description')}
-                  </Box>
+                  </Box> */}
                 </Box>
                 <Button
                   isDisabled={!userInfo?.permission.hasApikeyCreatePer}
@@ -90,9 +90,9 @@ const McpServer = () => {
                     {t('dashboard_mcp:mcp_server')}
                   </Box>
                 </HStack>
-                <Box fontSize={'xs'} color={'myGray.500'}>
+                {/* <Box fontSize={'xs'} color={'myGray.500'}>
                   {t('dashboard_mcp:mcp_server_description')}
-                </Box>
+                </Box> */}
                 <Flex mt={2} justifyContent={'flex-end'}>
                   <Button
                     isDisabled={!userInfo?.permission.hasApikeyCreatePer}
