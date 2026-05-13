@@ -34,6 +34,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
   const { isPc } = useSystem();
   const { userInfo } = useUserStore();
   const { appId } = useChatStore();
+  const pamras = new URLSearchParams(location.search);
 
   const datasetCiteData = useContextSelector(ChatItemContext, (v) => v.datasetCiteData);
   const setCiteModalData = useContextSelector(ChatItemContext, (v) => v.setCiteModalData);
@@ -43,8 +44,9 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const [hideSlider, setHideSlider] = useState(false);
 
+  const isEmbed = pamras.get('embed');
+
   const backToSfzyClick = () => {
-    const pamras = new URLSearchParams(location.search);
     if (pamras.get('redir') === 'true') {
       location.href = window.myConfig.sfzyUrl;
     } else {
@@ -106,7 +108,9 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
             >
               返回
             </Button>
-            {userInfo?.team?.memberName && <Box>您好，{userInfo?.team?.memberName}</Box>}
+            {userInfo?.team?.memberName && !isEmbed && (
+              <Box>您好，{userInfo?.team?.memberName}</Box>
+            )}
           </Flex>
         </Flex>
       )}

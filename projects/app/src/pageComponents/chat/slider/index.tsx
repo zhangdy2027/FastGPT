@@ -237,6 +237,9 @@ const LogoSection = () => {
 };
 
 const CustomLogoSection = (props: any) => {
+  const pamras = new URLSearchParams(location.search);
+  const isEmbed = pamras.get('embed');
+
   return (
     <Box
       mt={0}
@@ -246,12 +249,15 @@ const CustomLogoSection = (props: any) => {
     >
       <Flex alignItems={'center'} borderRadius={'md'}>
         <Flex flexDirection={'column'} gap={4}>
-          <Flex alignItems={'center'} justifyContent={'center'} gap={3}>
-            <Image src="/icon/logo.svg" borderRadius="full" boxSize="32px" alt="Dan Abramov" />
-            <Box fontSize={30} fontFamily={'var(--ysbthFont)'} color={'#C01920'}>
-              {'朔风智语'}
-            </Box>
-          </Flex>
+          {!isEmbed && (
+            <Flex alignItems={'center'} justifyContent={'center'} gap={3}>
+              <Image src="/icon/logo.svg" borderRadius="full" boxSize="32px" alt="Dan Abramov" />
+              <Box fontSize={30} fontFamily={'var(--ysbthFont)'} color={'#C01920'}>
+                {'朔风智语'}
+              </Box>
+            </Flex>
+          )}
+
           <InputGroup size="sm">
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="gray.300" />

@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === 'true'
 });
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -26,7 +26,7 @@ const nextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'ALLOW-ALL'
           },
           {
             key: 'X-Content-Type-Options',
@@ -44,7 +44,7 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'geolocation=(self), microphone=(self), camera=(self)'
           }
-        ],
+        ]
       }
     ];
   },
@@ -82,7 +82,6 @@ const nextConfig = {
       config.externals.push('@node-rs/jieba');
 
       if (nextRuntime === 'nodejs') {
-
       }
     } else {
       config.resolve = {
@@ -105,12 +104,7 @@ const nextConfig = {
       // 减少文件监听范围
       config.watchOptions = {
         ...config.watchOptions,
-        ignored: [
-          '**/node_modules',
-          '**/.git',
-          '**/dist',
-          '**/coverage'
-        ],
+        ignored: ['**/node_modules', '**/.git', '**/dist', '**/coverage']
       };
       // 启用持久化缓存
       config.cache = {
@@ -121,7 +115,7 @@ const nextConfig = {
         },
         cacheDirectory: path.resolve(__dirname, '.next/cache/webpack'),
         maxMemoryGenerations: isDev ? 5 : Infinity,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 天
       };
     }
 
@@ -146,4 +140,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
