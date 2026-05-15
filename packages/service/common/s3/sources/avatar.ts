@@ -42,6 +42,10 @@ class S3AvatarSource {
     return this.bucket.createPublicUrl(objectKey);
   }
 
+  async readAvatar(objectKey: string) {
+    return this.bucket.getObject(objectKey);
+  }
+
   async removeAvatarTTL(avatar: string, session?: ClientSession): Promise<void> {
     const key = avatar.slice(this.prefix.length);
     await MongoS3TTL.deleteOne({ minioKey: key, bucketName: this.bucket.name }, session);

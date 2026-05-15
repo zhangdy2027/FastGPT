@@ -7,6 +7,8 @@ import {
   type createPreviewUrlParams,
   CreateGetPresignedUrlParamsSchema
 } from '../type';
+import type { BucketItemStat } from 'minio';
+import type { Readable } from 'node:stream';
 import { defaultS3Options, getSystemMaxFileSize, Mimes } from '../constants';
 import path from 'node:path';
 import { MongoS3TTL } from '../schema';
@@ -108,6 +110,18 @@ export class S3BaseBucket {
     ...params: Parameters<Client['listObjectsV2']> extends [string, ...infer R] ? R : never
   ) {
     return this.client.listObjectsV2(this.name, ...params);
+  }
+
+  async getObject(objectKey: string): Promise<{
+    stream: Readable;
+    stat: BucketItemStat;
+  }> {
+    const [stat, stream] = await Promise.all([
+      this.client.statObject(this.name, objectKey),
+      this.client.getObject(this.name, objectKey)
+    ]);
+
+    return { stat, stream };
   }
 
   async createPostPresignedUrl(
