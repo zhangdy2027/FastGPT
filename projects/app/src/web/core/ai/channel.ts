@@ -15,6 +15,32 @@ interface ResponseDataType {
   data: any;
 }
 
+const formatRequestTime = (date = new Date()) => {
+  const pad = (num: number, len = 2) => `${num}`.padStart(len, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+};
+
+const logRequestStart = ({ method, url }: { method: Method; url: string }) => {
+  console.log(`[request:start] ${formatRequestTime()} ${method} ${url}`);
+};
+
+const logRequestFinish = ({
+  method,
+  url,
+  startTime
+}: {
+  method: Method;
+  url: string;
+  startTime: number;
+}) => {
+  console.log(
+    `[request:finish] ${formatRequestTime()} ${method} ${url} ${Date.now() - startTime}ms`
+  );
+};
+
 /**
  * 请求成功,检查请求头
  */
@@ -73,6 +99,9 @@ function request(url: string, data: any, method: Method): any {
     }
   }
 
+  const startTime = Date.now();
+  logRequestStart({ method, url });
+
   return instance
     .request({
       baseURL: getWebReqUrl('/api/aiproxy/api'),
@@ -82,7 +111,10 @@ function request(url: string, data: any, method: Method): any {
       params: !['POST', 'PUT'].includes(method) ? data : undefined
     })
     .then((res) => checkRes(res.data))
-    .catch((err) => responseError(err));
+    .catch((err) => responseError(err))
+    .finally(() => {
+      logRequestFinish({ method, url, startTime });
+    });
 }
 
 /**

@@ -20,6 +20,32 @@ interface ResponseDataType {
   data: any;
 }
 
+const formatRequestTime = (date = new Date()) => {
+  const pad = (num: number, len = 2) => `${num}`.padStart(len, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+};
+
+const logRequestStart = ({ method, url }: { method: Method; url: string }) => {
+  console.log(`[request:start] ${formatRequestTime()} ${method} ${url}`);
+};
+
+const logRequestFinish = ({
+  method,
+  url,
+  startTime
+}: {
+  method: Method;
+  url: string;
+  startTime: number;
+}) => {
+  console.log(
+    `[request:finish] ${formatRequestTime()} ${method} ${url} ${Date.now() - startTime}ms`
+  );
+};
+
 const maxQuantityMap: Record<
   string,
   {
@@ -158,6 +184,8 @@ function request(url: string, data: any, requestConfig: ConfigType, method: Meth
   }
 
   requestStart({ url, maxQuantity });
+  const startTime = Date.now();
+  logRequestStart({ method, url });
 
   return instance
     .request({
@@ -171,7 +199,10 @@ function request(url: string, data: any, requestConfig: ConfigType, method: Meth
     })
     .then((res) => checkRes(res.data, url, data, requestConfig, method))
     .catch((err) => responseError(err, url, data, requestConfig, method))
-    .finally(() => requestFinish({ url }));
+    .finally(() => {
+      logRequestFinish({ method, url, startTime });
+      requestFinish({ url });
+    });
 }
 
 /**

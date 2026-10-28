@@ -263,7 +263,18 @@ const MobileHeader = ({
   const isShareChat = router.pathname === '/chat/share';
 
   const backToSfzyClick = () => {
-    location.href = window.myConfig.sfzyUrl;
+    const url = new URL(window.myConfig.sfzyUrl, window.location.origin);
+
+    if (!url.hash) {
+      url.hash = '/homeAppList';
+    }
+
+    const [hashPath, hashSearch = ''] = url.hash.slice(1).split('?');
+    const hashParams = new URLSearchParams(hashSearch);
+    hashParams.set('skipPrewarm', '1');
+
+    url.hash = `${hashPath}?${hashParams.toString()}`;
+    location.href = url.toString();
   };
 
   return (

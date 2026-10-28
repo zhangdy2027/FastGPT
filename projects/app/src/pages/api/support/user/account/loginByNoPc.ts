@@ -13,7 +13,7 @@ import { createUserSession } from '@fastgpt/service/support/user/session';
 import requestIp from 'request-ip';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { username } = req.body as PostLoginProps;
+  const { username, embed } = req.body as PostLoginProps & { embed?: boolean };
 
   if (!username) {
     return Promise.reject(CommonErrEnum.invalidParams);
@@ -51,7 +51,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     ip: requestIp.getClientIp(req)
   });
 
-  setCookie(res, token);
+  setCookie(
+    res,
+    token,
+    embed
+      ? {
+          sameSite: 'None',
+          secure: true
+        }
+      : undefined
+  );
 
   return {
     user: userDetail,

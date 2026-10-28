@@ -94,7 +94,7 @@ export const postLogin = ({ password, ...props }: PostLoginProps) =>
     password: hashStr(password)
   });
 
-export const postLoginByNoPc = ({ ...props }) =>
+export const postLoginByNoPc = ({ ...props }: { username: string; embed?: boolean }) =>
   POST<LoginSuccessResponse>('/support/user/account/loginByNoPc', {
     ...props
   });

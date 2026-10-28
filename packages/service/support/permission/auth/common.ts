@@ -160,8 +160,21 @@ export async function parseHeaderCert({
 
 /* set cookie */
 export const TokenName = 'fastgpt_token';
-export const setCookie = (res: NextApiResponse, token: string) => {
-  res.setHeader('Set-Cookie', `${TokenName}=${token}; Path=/; HttpOnly; Samesite=Strict;`);
+export const setCookie = (
+  res: NextApiResponse,
+  token: string,
+  options?: {
+    sameSite?: 'Strict' | 'None';
+    secure?: boolean;
+  }
+) => {
+  const sameSite = options?.sameSite || 'Strict';
+  const secure = options?.secure ? ' Secure;' : '';
+
+  res.setHeader(
+    'Set-Cookie',
+    `${TokenName}=${token}; Path=/; HttpOnly; SameSite=${sameSite};${secure}`
+  );
 };
 
 /* clear cookie */

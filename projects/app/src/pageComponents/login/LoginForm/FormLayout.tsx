@@ -35,6 +35,26 @@ type OAuthItem = {
   redirectUrl?: string;
 };
 
+const getLastRouteParams = (route: string) => {
+  const buildParams = (value: string) => {
+    try {
+      return new URL(value, location.origin).searchParams;
+    } catch {
+      const queryIndex = value.indexOf('?');
+      return new URLSearchParams(queryIndex >= 0 ? value.slice(queryIndex + 1) : value);
+    }
+  };
+
+  const params = buildParams(route);
+  if (Array.from(params.keys()).length > 0 || !/%[0-9A-Fa-f]{2}/.test(route)) return params;
+
+  try {
+    return buildParams(decodeURIComponent(route));
+  } catch {
+    return params;
+  }
+};
+
 const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess }: Props) => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -126,10 +146,11 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
   );
 
   const { runAsync: onNoPcClickLogin, loading: requesting } = useRequest2(
-    async ({ username }: any) => {
+    async ({ username, embed }: { username: string; embed?: boolean }) => {
       loginSuccess(
         await postLoginByNoPc({
-          username
+          username,
+          embed
         })
       );
     },
@@ -141,7 +162,19 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
   const onClickOauth = useCallback(
     async (item: OAuthItem) => {
       if (item.provider === OAuthEnum.sso) {
+        const lastRouteParams = getLastRouteParams(computedLastRoute);
+        const account = lastRouteParams.get('account');
+        const isEmbedLogin = lastRouteParams.has('embed');
+
         if (isPc) {
+          if (isEmbedLogin && account) {
+            onNoPcClickLogin({
+              username: account,
+              embed: true
+            });
+            return;
+          }
+
           const redirectUrl = await POST<string>('/proApi/support/user/account/login/getAuthURL', {
             redirectUri,
             isWecomWorkTerminal
@@ -154,16 +187,11 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
           router.replace(redirectUrl, '_self');
           return;
         } else {
-          if (computedLastRoute) {
-            const params = computedLastRoute.split('&');
-            const aParam = params.find((item: string) => item.includes('account='));
-            if (aParam) {
-              const account = aParam.split('=')[1];
-              onNoPcClickLogin({
-                username: account
-              });
-              return;
-            }
+          if (account) {
+            onNoPcClickLogin({
+              username: account
+            });
+            return;
           }
         }
       }
@@ -178,7 +206,16 @@ const FormLayout = ({ children, setPageType, pageType, fromSignin, loginSuccess 
       }
       item.pageType && setPageType(item.pageType);
     },
-    [computedLastRoute, isWecomWorkTerminal, redirectUri, router, setLoginStore, setPageType]
+    [
+      computedLastRoute,
+      isPc,
+      isWecomWorkTerminal,
+      onNoPcClickLogin,
+      redirectUri,
+      router,
+      setLoginStore,
+      setPageType
+    ]
   );
 
   // Auto login

@@ -36,6 +36,32 @@ const maxQuantityMap: Record<
     }[]
 > = {};
 
+const formatRequestTime = (date = new Date()) => {
+  const pad = (num: number, len = 2) => `${num}`.padStart(len, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+};
+
+const logRequestStart = ({ method, url }: { method: Method; url: string }) => {
+  console.log(`[request:start] ${formatRequestTime()} ${method} ${url}`);
+};
+
+const logRequestFinish = ({
+  method,
+  url,
+  startTime
+}: {
+  method: Method;
+  url: string;
+  startTime: number;
+}) => {
+  console.log(
+    `[request:finish] ${formatRequestTime()} ${method} ${url} ${Date.now() - startTime}ms`
+  );
+};
+
 /*
   Every request generates a unique sign
   If the number of requests exceeds maxQuantity, cancel the earliest request and initiate a new request
@@ -190,6 +216,8 @@ function request(
   }
 
   const { id: signId, abortSignal } = checkMaxQuantity({ url, maxQuantity });
+  const startTime = Date.now();
+  logRequestStart({ method, url });
 
   return instance
     .request({
@@ -204,7 +232,10 @@ function request(
     })
     .then((res) => checkRes(res.data))
     .catch((err) => responseError(err))
-    .finally(() => requestFinish({ signId, url }));
+    .finally(() => {
+      logRequestFinish({ method, url, startTime });
+      requestFinish({ signId, url });
+    });
 }
 
 /**
